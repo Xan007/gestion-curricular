@@ -13,5 +13,6 @@ public class SupabaseProperties {
     private String url;
     private String anonKey;
     private String jwtSecret;
+    private String serviceRoleKey;
 
 }
