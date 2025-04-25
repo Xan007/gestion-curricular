@@ -1,4 +1,4 @@
-package org.unisoftware.gestioncurricular.model;
+package org.unisoftware.gestioncurricular.security.role;
 
 public enum AppRole {
     ADMIN,

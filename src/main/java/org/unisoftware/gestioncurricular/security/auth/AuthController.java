@@ -1,10 +1,9 @@
-package org.unisoftware.gestioncurricular.controller;
+package org.unisoftware.gestioncurricular.security.auth;
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
-import org.unisoftware.gestioncurricular.model.AuthRequest;
-import org.unisoftware.gestioncurricular.service.SupabaseAuthService;
+import org.unisoftware.gestioncurricular.dto.AuthRequest;
 
 @RestController
 @RequestMapping("/auth")

@@ -1,4 +1,4 @@
-package org.unisoftware.gestioncurricular.service;
+package org.unisoftware.gestioncurricular.security.auth;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;

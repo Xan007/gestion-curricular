@@ -1,4 +1,4 @@
-package org.unisoftware.gestioncurricular.filter;
+package org.unisoftware.gestioncurricular.security.auth;
 
 import io.jsonwebtoken.Claims;
 import jakarta.servlet.*;
@@ -7,8 +7,8 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.stereotype.Component;
-import org.unisoftware.gestioncurricular.service.UserRoleService;
-import org.unisoftware.gestioncurricular.util.JwtUtil;
+import org.unisoftware.gestioncurricular.security.util.JwtUtil;
+import org.unisoftware.gestioncurricular.security.role.UserRoleService;
 
 import java.io.IOException;
 import java.util.List;

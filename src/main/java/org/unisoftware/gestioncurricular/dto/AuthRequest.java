@@ -1,4 +1,4 @@
-package org.unisoftware.gestioncurricular.model;
+package org.unisoftware.gestioncurricular.dto;
 
 import lombok.Getter;
 import lombok.Setter;

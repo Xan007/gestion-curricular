@@ -2,9 +2,8 @@ package org.unisoftware.gestioncurricular.entity;
 
 import jakarta.persistence.*;
 import lombok.Getter;
-import org.unisoftware.gestioncurricular.model.AppRole;
+import org.unisoftware.gestioncurricular.security.role.AppRole;
 
-import java.net.ProtocolFamily;
 import java.util.UUID;
 
 @Entity

@@ -1,8 +1,7 @@
-package org.unisoftware.gestioncurricular.service;
+package org.unisoftware.gestioncurricular.security.role;
 
 import org.springframework.stereotype.Service;
 import org.unisoftware.gestioncurricular.entity.UserRole;
-import org.unisoftware.gestioncurricular.model.AppRole;
 import org.unisoftware.gestioncurricular.repository.UserRoleRepository;
 
 import java.util.List;

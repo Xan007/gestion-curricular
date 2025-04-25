@@ -1,4 +1,4 @@
-package org.unisoftware.gestioncurricular.util;
+package org.unisoftware.gestioncurricular.security.util;
 
 import io.jsonwebtoken.*;
 import io.jsonwebtoken.security.Keys;
