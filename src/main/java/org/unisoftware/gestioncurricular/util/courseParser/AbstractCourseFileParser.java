@@ -1,6 +1,9 @@
 package org.unisoftware.gestioncurricular.util.courseParser;
 
 import org.unisoftware.gestioncurricular.dto.CourseDTO;
+import org.unisoftware.gestioncurricular.util.courseEnums.CourseArea;
+import org.unisoftware.gestioncurricular.util.courseEnums.CourseCycle;
+import org.unisoftware.gestioncurricular.util.courseEnums.CourseType;
 
 import java.io.InputStream;
 import java.io.IOException;
@@ -42,7 +45,19 @@ public abstract class AbstractCourseFileParser implements CourseFileParser {
         String relation = cols.length > 6 && !cols[6].isEmpty() ? cols[6].trim() : "1:1";
 
         // Crear el DTO con la validación incluida
-        CourseDTO dto = new CourseDTO(snies, name, type, cycle, area, credits, relation);
+        CourseDTO dto = new CourseDTO(
+                snies,
+                name,
+                CourseType.fromCode(type),
+                CourseCycle.fromCode(cycle),
+                CourseArea.fromCode(area),
+                credits,
+                relation,
+                null,
+                null,
+                null,
+                null
+        );
         dto.setId(snies);
         // Validación de todos los campos
         validate(dto, rowNum);

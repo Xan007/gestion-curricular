@@ -14,10 +14,17 @@ public class CourseRequirement {
     private CourseRequirementId id;
 
     @ManyToOne
-    @JoinColumn(name = "curso_id", insertable = false, updatable = false)
+    @MapsId("courseId")
+    @JoinColumn(name = "curso_id")
     private Course course;
 
     @ManyToOne
-    @JoinColumn(name = "requisito_curso_id", insertable = false, updatable = false)
-    private Course requisitoCurso;
+    @MapsId("programId")
+    @JoinColumn(name = "programa_id")
+    private Program program;
+
+    @ManyToOne
+    @MapsId("prerequisiteCourseId")
+    @JoinColumn(name = "requisito_curso_id")
+    private Course prerequisiteCourse;
 }

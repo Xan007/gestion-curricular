@@ -1,6 +1,7 @@
 package org.unisoftware.gestioncurricular.controller;
 
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import org.unisoftware.gestioncurricular.service.CourseService;
@@ -25,6 +26,7 @@ public class CourseController {
         this.parsers = parsers;
     }
 
+    @PreAuthorize("hasRole('DECANO')")
     @PostMapping("/upload")
     public ResponseEntity<String> uploadCourses(@RequestParam("file") MultipartFile file) {
         String filename = file.getOriginalFilename().toLowerCase();
@@ -42,5 +44,29 @@ public class CourseController {
             System.out.println(e.getMessage());
             return ResponseEntity.badRequest().body(e.getMessage());
         }
+    }
+
+    @GetMapping("/{courseId}")
+    public ResponseEntity<CourseDTO> getCourse(
+            @PathVariable Long courseId
+    ) {
+        CourseDTO dto = courseService.getCourse(courseId);
+
+        return ResponseEntity.ok(dto);
+    }
+
+    @GetMapping
+    public ResponseEntity<List<CourseDTO>> listAll() {
+        return ResponseEntity.ok(
+                courseService.getAllCourses()
+        );
+    }
+
+    @GetMapping("/buscar")
+    public ResponseEntity<CourseDTO> searchByName(
+            @RequestParam("nombre") String nombre
+    ) {
+        CourseDTO dto = courseService.getCourseByName(nombre);
+        return ResponseEntity.ok(dto);
     }
 }

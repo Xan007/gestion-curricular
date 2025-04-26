@@ -11,9 +11,6 @@ public interface CourseMapper {
     // Map DTO to entity for creation
     @Mapping(target = "id", ignore = true)
     @Mapping(target = "createdAt", ignore = true)
-    @Mapping(target = "type", source = "type")  // Aseguramos que se mapea correctamente el tipo
-    @Mapping(target = "cycle", source = "cycle")  // Aseguramos que se mapea correctamente el ciclo
-    @Mapping(target = "area", source = "area")  // Aseguramos que se mapea correctamente el area
     Course toEntity(CourseDTO dto);
 
     // Map entity to DTO if needed

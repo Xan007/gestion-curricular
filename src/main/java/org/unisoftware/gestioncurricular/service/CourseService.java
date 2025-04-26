@@ -8,19 +8,23 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.unisoftware.gestioncurricular.dto.CourseDTO;
 import org.unisoftware.gestioncurricular.entity.Course;
+import org.unisoftware.gestioncurricular.entity.CourseRequirement;
 import org.unisoftware.gestioncurricular.mapper.CourseMapper;
 import org.unisoftware.gestioncurricular.repository.CourseRepository;
+import org.unisoftware.gestioncurricular.repository.CourseRequirementRepository;
 
 @Service
 public class CourseService {
 
     private final CourseRepository courseRepository;
     private final CourseMapper courseMapper;
+    private final CourseRequirementRepository courseRequirementRepository;
 
     public CourseService(CourseRepository courseRepository,
-                         CourseMapper courseMapper) {
+                         CourseMapper courseMapper, CourseRequirementRepository courseRequirementRepository) {
         this.courseRepository = courseRepository;
         this.courseMapper = courseMapper;
+        this.courseRequirementRepository = courseRequirementRepository;
     }
 
     @Transactional
@@ -39,5 +43,27 @@ public class CourseService {
                 courseRepository.save(newCourse);
             }
         }
+    }
+
+    @Transactional(readOnly = true)
+    public CourseDTO getCourse(Long courseId) {
+        Course course = courseRepository.findById(courseId)
+                .orElseThrow(() -> new IllegalArgumentException("Course not found: " + courseId));
+
+        return courseMapper.toDto(course);
+    }
+
+    public List<CourseDTO> getAllCourses() {
+        return courseRepository.findAll()
+                .stream()
+                .map(courseMapper::toDto)
+                .toList();
+    }
+
+    public CourseDTO getCourseByName(String nombre) {
+        Course course = courseRepository.findByNameIgnoreCase(nombre)
+                .orElseThrow(() -> new IllegalArgumentException("Course not found: " + nombre));
+
+        return courseMapper.toDto(course);
     }
 }

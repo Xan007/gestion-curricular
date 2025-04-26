@@ -5,10 +5,13 @@ import jakarta.persistence.Embeddable;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.io.Serializable;
+import java.util.Objects;
+
 @Embeddable
 @Getter
 @Setter
-public class CourseRequirementId implements java.io.Serializable {
+public class CourseRequirementId implements Serializable {
 
     @Column(name = "curso_id")
     private Long courseId;
@@ -17,7 +20,21 @@ public class CourseRequirementId implements java.io.Serializable {
     private Long programId;
 
     @Column(name = "requisito_curso_id")
-    private Long requisitoCursoId;
+    private Long prerequisiteCourseId; // ¡Ahora sí va aquí!
 
-    // equals() y hashCode(), nada más
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof CourseRequirementId)) return false;
+        CourseRequirementId that = (CourseRequirementId) o;
+        return Objects.equals(courseId, that.courseId) &&
+                Objects.equals(programId, that.programId) &&
+                Objects.equals(prerequisiteCourseId, that.prerequisiteCourseId);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(courseId, programId, prerequisiteCourseId);
+    }
 }
+

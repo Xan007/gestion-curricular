@@ -6,4 +6,5 @@ import org.unisoftware.gestioncurricular.entity.Course;
 import java.util.Optional;
 
 public interface CourseRepository extends JpaRepository<Course, Long> {
+    Optional<Course> findByNameIgnoreCase(String nombre);
 }

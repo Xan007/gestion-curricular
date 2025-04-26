@@ -16,7 +16,7 @@ public interface ProgramMapper {
     /**
      * Convierte la entidad Program a ProgramDTO (DTO en inglés).
      */
-    @Mapping(target = "id", ignore = true)
+
     ProgramDTO toDto(Program entity);
 
     /**
@@ -24,13 +24,11 @@ public interface ProgramMapper {
      * Ignoramos id para creación ya que es generado por la base de datos.
      */
     @Mapping(target = "id", ignore = true)
-
     Program toEntity(ProgramDTO dto);
 
     /**
      * Para actualizar una entidad existente con los datos del DTO.
      */
 
-    @Mapping(target = "id", ignore = true)
     void updateFromDto(ProgramDTO dto, @MappingTarget Program entity);
 }

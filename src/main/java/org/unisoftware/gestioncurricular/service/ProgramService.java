@@ -1,9 +1,10 @@
 package org.unisoftware.gestioncurricular.service;
 
-import lombok.Getter;
+import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
+import org.unisoftware.gestioncurricular.dto.CoursePlanDTO;
 import org.unisoftware.gestioncurricular.dto.ProgramDTO;
 import org.unisoftware.gestioncurricular.entity.*;
 import org.unisoftware.gestioncurricular.mapper.ProgramMapper;
@@ -11,9 +12,11 @@ import org.unisoftware.gestioncurricular.repository.CourseProgramRepository;
 import org.unisoftware.gestioncurricular.repository.CourseRepository;
 import org.unisoftware.gestioncurricular.repository.CourseRequirementRepository;
 import org.unisoftware.gestioncurricular.repository.ProgramRepository;
-import org.unisoftware.gestioncurricular.util.StudyPlanExcelParser;
+import org.unisoftware.gestioncurricular.util.studyPlanParser.PlanRow;
+import org.unisoftware.gestioncurricular.util.studyPlanParser.StudyPlanParser;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 public class ProgramService {
@@ -23,17 +26,20 @@ public class ProgramService {
     private final CourseProgramRepository courseProgramRepository;
     private final CourseRequirementRepository requirementRepository;
     private final ProgramMapper programMapper;
+    private final List<StudyPlanParser> studyPlanParsers;
 
     public ProgramService(ProgramRepository programRepository,
                           CourseRepository courseRepository,
                           CourseProgramRepository courseProgramRepository,
                           CourseRequirementRepository requirementRepository,
-                          ProgramMapper programMapper) {
+                          ProgramMapper programMapper,
+                          List<StudyPlanParser> studyPlanParsers) {
         this.programRepository = programRepository;
         this.courseRepository = courseRepository;
         this.courseProgramRepository = courseProgramRepository;
         this.requirementRepository = requirementRepository;
         this.programMapper = programMapper;
+        this.studyPlanParsers = studyPlanParsers;
     }
 
     @Transactional
@@ -51,50 +57,100 @@ public class ProgramService {
     }
 
     @Transactional
-    public void uploadStudyPlan(Long programId, MultipartFile file) {
-        // Verify program exists
-        programRepository.findById(programId)
+    public void processStudyPlan(Long programId, List<PlanRow> planRows) {
+        Program program = programRepository.findById(programId)
                 .orElseThrow(() -> new IllegalArgumentException("Program not found: " + programId));
 
-        // Clear existing plan and requirements for re-upload
         courseProgramRepository.deleteById_ProgramId(programId);
         requirementRepository.deleteById_ProgramId(programId);
 
-        // Parse Excel
-        List<StudyPlanExcelParser.PlanRow> planRows;
-        try {
-            planRows = StudyPlanExcelParser.parse(file);
-        } catch (Exception e) {
-            throw new RuntimeException("Failed to parse Excel file", e);
-        }
-
-        // Process each row
-        for (var row : planRows) {
-            // Find course by SNIES
+        for (PlanRow row : planRows) {
             Course course = courseRepository.findById(row.getSnies())
                     .orElseThrow(() -> new IllegalArgumentException("Course not found SNIES: " + row.getSnies()));
 
-            // Save CourseProgram entry
+            // Guardar curso-programa
             CourseProgram cp = new CourseProgram();
-            var cpId = new CourseProgram.CourseProgramId();
-            cpId.setCourseId(course.getId());
-            cpId.setProgramId(programId);
-            cp.setId(cpId);
+            cp.setCourse(course);
+            cp.setProgram(program);
             cp.setSemester(row.getSemester());
             courseProgramRepository.save(cp);
 
-            // Save each requirement
-            for (Long reqSnies : row.getRequisitos()) {
-                Course reqCourse = courseRepository.findById(reqSnies)
-                        .orElseThrow(() -> new IllegalArgumentException("Prerequisite course not found SNIES: " + reqSnies));
-                CourseRequirement req = new CourseRequirement();
-                CourseRequirementId rid = new CourseRequirementId();
-                rid.setCourseId(course.getId());
-                rid.setProgramId(programId);
-                req.setRequisitoCurso(reqCourse);
-                req.setId(rid);
-                requirementRepository.save(req);
+            System.out.println("Curso: " + course.getId() + " requisitos: " + row.getRequisitos());
+
+            // Guardar requisitos SOLO si hay
+            if (row.getRequisitos() != null && !row.getRequisitos().isEmpty()) {
+                for (Long reqSnies : row.getRequisitos()) {
+                    Course prereq = courseRepository.findById(reqSnies)
+                            .orElseThrow(() -> new IllegalArgumentException("Prerequisite course not found SNIES: " + reqSnies));
+
+                    CourseRequirement cr = new CourseRequirement();
+                    CourseRequirementId crId = new CourseRequirementId();
+                    crId.setCourseId(course.getId());
+                    crId.setProgramId(programId);
+                    crId.setPrerequisiteCourseId(prereq.getId());
+                    cr.setId(crId);
+                    cr.setCourse(course);
+                    cr.setProgram(program);
+                    cr.setPrerequisiteCourse(prereq);
+
+                    requirementRepository.save(cr);
+                }
             }
         }
     }
+
+    @Transactional(readOnly = true)
+    public List<CoursePlanDTO> getStudyPlan(Long programId) {
+        programRepository.findById(programId)
+                .orElseThrow(() -> new IllegalArgumentException("Program not found: " + programId));
+
+        return courseProgramRepository.findById_ProgramId(programId).stream()
+                .map(this::mapToDTO)
+                .collect(Collectors.toList());
+    }
+
+    private CoursePlanDTO mapToDTO(CourseProgram cp) {
+        Course course = cp.getCourse();
+        CoursePlanDTO dto = new CoursePlanDTO();
+
+        dto.setId(course.getId());
+        dto.setName(course.getName());
+
+        // Validar nulos antes de acceder a enums
+        dto.setType(course.getType() != null ? course.getType().getLabel() : null);
+        dto.setCredits(course.getCredits());
+        dto.setRelation(course.getRelation());
+        dto.setArea(course.getArea() != null ? course.getArea().getLabel() : null);
+        dto.setCycle(course.getCycle() != null ? course.getCycle().getLabel() : null);
+
+        dto.setSemester(cp.getSemester());
+
+        // Mapear requisitos
+        List<CourseRequirement> reqs = requirementRepository
+                .findById_ProgramIdAndId_CourseId(cp.getProgram().getId(), course.getId());
+
+        dto.setRequirements(
+                reqs.stream().map(r -> {
+                    return r.getId().getCourseId();
+                }).collect(Collectors.toList())
+        );
+
+        return dto;
+    }
+
+    public ProgramDTO findProgramByName(String name) {
+        Program program = programRepository.findByNameIgnoreCase(name)
+                .orElse(null);
+        return program != null ? programMapper.toDto(program) : null;
+    }
+
+    public List<ProgramDTO> getAllPrograms() {
+        List<Program> programs = programRepository.findAll();
+        return programs.stream()
+                .map(programMapper::toDto)
+                .collect(Collectors.toList());
+    }
+
+
+
 }

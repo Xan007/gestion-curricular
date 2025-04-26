@@ -1,7 +1,6 @@
 package org.unisoftware.gestioncurricular.util.courseParser;
 
 import org.springframework.stereotype.Component;
-import org.unisoftware.gestioncurricular.dto.CourseDTO;
 
 import java.io.BufferedReader;
 import java.io.InputStream;
@@ -22,6 +21,10 @@ public class CsvCourseFileParser extends AbstractCourseFileParser {
             br.readLine(); // skip header
             int rowNum = 2; // contaremos filas para errores
             while ((line = br.readLine()) != null) {
+                if (line.trim().isEmpty()) {
+                    continue; // 🔥 Salta líneas vacías
+                }
+
                 // 1) split por comas **fuera** de dobles comillas
                 String[] values = line.split(CSV_SPLIT_REGEX, -1);
 
@@ -47,6 +50,7 @@ public class CsvCourseFileParser extends AbstractCourseFileParser {
         }
         return rows;
     }
+
 
     @Override
     protected List<String> getSupportedExtensions() {
