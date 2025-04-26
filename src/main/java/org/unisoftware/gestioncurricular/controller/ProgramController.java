@@ -4,16 +4,14 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
-import org.unisoftware.gestioncurricular.dto.CoursePlanDTO;
-import org.unisoftware.gestioncurricular.dto.CoursePlanProjection;
 import org.unisoftware.gestioncurricular.dto.ProgramDTO;
+import org.unisoftware.gestioncurricular.entity.StudyPlanEntry;
 import org.unisoftware.gestioncurricular.service.ProgramService;
 import org.unisoftware.gestioncurricular.util.studyPlanParser.StudyPlanParser;
 import org.unisoftware.gestioncurricular.util.studyPlanParser.PlanRow;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 
-import java.io.InputStream;
 import java.util.List;
 
 @RestController
@@ -75,8 +73,8 @@ public class ProgramController {
     }
 
     @GetMapping("/{programId}/plan-estudio")
-    public ResponseEntity<List<CoursePlanProjection>> getStudyPlan(@PathVariable Long programId) {
-        List<CoursePlanProjection> plan = programService.getStudyPlan(programId);
+    public ResponseEntity<List<StudyPlanEntry>> getStudyPlan(@PathVariable Long programId) {
+        List<StudyPlanEntry> plan = programService.getStudyPlan(programId);
         return ResponseEntity.ok(plan);
     }
 

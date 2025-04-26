@@ -1,27 +1,24 @@
 package org.unisoftware.gestioncurricular.service;
 
-import org.springframework.beans.BeanUtils;
+import jakarta.persistence.EntityManager;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.multipart.MultipartFile;
-import org.unisoftware.gestioncurricular.dto.CoursePlanDTO;
-import org.unisoftware.gestioncurricular.dto.CoursePlanProjection;
 import org.unisoftware.gestioncurricular.dto.ProgramDTO;
 import org.unisoftware.gestioncurricular.entity.*;
 import org.unisoftware.gestioncurricular.mapper.ProgramMapper;
-import org.unisoftware.gestioncurricular.repository.CourseProgramRepository;
-import org.unisoftware.gestioncurricular.repository.CourseRepository;
-import org.unisoftware.gestioncurricular.repository.CourseRequirementRepository;
-import org.unisoftware.gestioncurricular.repository.ProgramRepository;
+import org.unisoftware.gestioncurricular.repository.*;
 import org.unisoftware.gestioncurricular.util.studyPlanParser.PlanRow;
 import org.unisoftware.gestioncurricular.util.studyPlanParser.StudyPlanParser;
 
 import java.util.List;
-import java.util.Map;
 import java.util.stream.Collectors;
 
 @Service
 public class ProgramService {
+
+    @Autowired
+    private EntityManager em;
 
     private final ProgramRepository programRepository;
     private final CourseRepository courseRepository;
@@ -29,19 +26,23 @@ public class ProgramService {
     private final CourseRequirementRepository requirementRepository;
     private final ProgramMapper programMapper;
     private final List<StudyPlanParser> studyPlanParsers;
+    private final StudyPlanViewRepository studyPlanViewRepository;
 
     public ProgramService(ProgramRepository programRepository,
                           CourseRepository courseRepository,
                           CourseProgramRepository courseProgramRepository,
                           CourseRequirementRepository requirementRepository,
                           ProgramMapper programMapper,
-                          List<StudyPlanParser> studyPlanParsers) {
+                          List<StudyPlanParser> studyPlanParsers,
+                          StudyPlanViewRepository studyPlanViewRepository
+    ) {
         this.programRepository = programRepository;
         this.courseRepository = courseRepository;
         this.courseProgramRepository = courseProgramRepository;
         this.requirementRepository = requirementRepository;
         this.programMapper = programMapper;
         this.studyPlanParsers = studyPlanParsers;
+        this.studyPlanViewRepository = studyPlanViewRepository;
     }
 
     @Transactional
@@ -99,14 +100,15 @@ public class ProgramService {
                 }
             }
         }
+
+        em.createNativeQuery("REFRESH MATERIALIZED VIEW study_plan_mv").executeUpdate();
     }
 
     @Transactional(readOnly = true)
-    public List<CoursePlanProjection> getStudyPlan(Long programId) {
+    public List<StudyPlanEntry> getStudyPlan(Long programId) {
         programRepository.findById(programId)
                 .orElseThrow(() -> new IllegalArgumentException("Program not found: " + programId));
-
-        return courseProgramRepository.findStudyPlanByProgramId(programId);
+        return studyPlanViewRepository.findById_ProgramIdOrderBySemesterAscId_CourseIdAsc(programId);
     }
 
 
