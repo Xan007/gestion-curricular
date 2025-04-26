@@ -5,6 +5,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 import org.unisoftware.gestioncurricular.dto.CoursePlanDTO;
+import org.unisoftware.gestioncurricular.dto.CoursePlanProjection;
 import org.unisoftware.gestioncurricular.dto.ProgramDTO;
 import org.unisoftware.gestioncurricular.entity.*;
 import org.unisoftware.gestioncurricular.mapper.ProgramMapper;
@@ -16,6 +17,7 @@ import org.unisoftware.gestioncurricular.util.studyPlanParser.PlanRow;
 import org.unisoftware.gestioncurricular.util.studyPlanParser.StudyPlanParser;
 
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 @Service
@@ -100,43 +102,13 @@ public class ProgramService {
     }
 
     @Transactional(readOnly = true)
-    public List<CoursePlanDTO> getStudyPlan(Long programId) {
+    public List<CoursePlanProjection> getStudyPlan(Long programId) {
         programRepository.findById(programId)
                 .orElseThrow(() -> new IllegalArgumentException("Program not found: " + programId));
 
-        return courseProgramRepository.findById_ProgramId(programId).stream()
-                .map(this::mapToDTO)
-                .collect(Collectors.toList());
+        return courseProgramRepository.findStudyPlanByProgramId(programId);
     }
 
-    private CoursePlanDTO mapToDTO(CourseProgram cp) {
-        Course course = cp.getCourse();
-        CoursePlanDTO dto = new CoursePlanDTO();
-
-        dto.setId(course.getId());
-        dto.setName(course.getName());
-
-        // Validar nulos antes de acceder a enums
-        dto.setType(course.getType() != null ? course.getType().getLabel() : null);
-        dto.setCredits(course.getCredits());
-        dto.setRelation(course.getRelation());
-        dto.setArea(course.getArea() != null ? course.getArea().getLabel() : null);
-        dto.setCycle(course.getCycle() != null ? course.getCycle().getLabel() : null);
-
-        dto.setSemester(cp.getSemester());
-
-        // Mapear requisitos
-        List<CourseRequirement> reqs = requirementRepository
-                .findById_ProgramIdAndId_CourseId(cp.getProgram().getId(), course.getId());
-
-        dto.setRequirements(
-                reqs.stream().map(r -> {
-                    return r.getId().getCourseId();
-                }).collect(Collectors.toList())
-        );
-
-        return dto;
-    }
 
     public ProgramDTO findProgramByName(String name) {
         Program program = programRepository.findByNameIgnoreCase(name)

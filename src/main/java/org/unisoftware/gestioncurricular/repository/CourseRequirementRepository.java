@@ -18,4 +18,6 @@ public interface CourseRequirementRepository
     List<CourseRequirement> findById_ProgramIdAndId_CourseId(Long id, Long id1);
 
     List<CourseRequirement> findById_CourseId(Long courseId);
+
+    List<CourseRequirement> findById_ProgramId(Long programId);
 }
