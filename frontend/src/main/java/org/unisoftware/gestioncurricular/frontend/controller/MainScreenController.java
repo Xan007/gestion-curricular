@@ -54,10 +54,14 @@ public class MainScreenController implements Initializable {
         try {
             String token = SessionManager.getInstance().getToken();
             String username = JwtDecodeUtil.getUsername(token);
-            List<String> roles = JwtDecodeUtil.getRoles(token);
+
+            // Obtener directamente los roles cargados en SessionManager
+            List<String> roles = SessionManager.getInstance().getUserRoles();
 
             Label userLbl = new Label("Usuario: " + (username != null ? username : ""));
             userLbl.setStyle("-fx-font-size: 16px; -fx-font-weight: bold;");
+
+            // Esta línea convierte la lista de roles a texto separado por comas:
             String rolesStr = (roles != null && !roles.isEmpty())
                     ? String.join(", ", roles)
                     : "Sin roles";
