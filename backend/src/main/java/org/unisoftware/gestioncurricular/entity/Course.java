@@ -48,6 +48,4 @@ public class Course {
     @ColumnTransformer(read = "CAST(ciclo AS VARCHAR)", write = "?::curso_ciclo")
     @Convert(converter = CourseCycleConverter.class)
     private CourseCycle cycle;
-
-    // Getters and Setters
 }

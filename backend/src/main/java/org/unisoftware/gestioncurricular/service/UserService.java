@@ -22,7 +22,6 @@ public class UserService {
     private final UserDetailsRepository userDetailsRepository;
     private final UserRoleService userRoleService;
 
-    // Obtener un usuario
     public UserDTO getUser(UUID userId) {
         var authUser = authUserRepository.findById(userId);
         var userDetails = userDetailsRepository.findByUserId(userId).orElse(null);
@@ -31,7 +30,6 @@ public class UserService {
         return mapToDTO(authUser.getId(), authUser.getEmail(), authUser.getCreatedAt(), userDetails, roles);
     }
 
-    // Obtener todos los usuarios
     public List<UserDTO> getAllUsers() {
         var authUsers = authUserRepository.findAll();
         return authUsers.stream()
@@ -43,7 +41,6 @@ public class UserService {
                 .collect(Collectors.toList());
     }
 
-    // Obtener usuarios por rol
     public List<UserDTO> getUsersByRole(AppRole role) {
         var userIds = userRoleService.getUserIdsByRole(role);
         return userIds.stream()
@@ -51,17 +48,14 @@ public class UserService {
                 .collect(Collectors.toList());
     }
 
-    // Asignar rol
     public void assignRole(UUID userId, AppRole role) {
         userRoleService.assignRoleToUser(userId, role);
     }
 
-    // Remover rol
     public void removeAllRoles(UUID userId) {
         userRoleService.removeAllRoles(userId);
     }
 
-    // Mapear a DTO
     private UserDTO mapToDTO(UUID id, String email, java.time.Instant createdAt, UserDetails details, List<String> roles) {
         return new UserDTO(
                 id,

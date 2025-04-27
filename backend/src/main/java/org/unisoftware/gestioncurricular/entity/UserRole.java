@@ -29,8 +29,8 @@ public class UserRole {
             columnDefinition = "app_role"
     )
     @ColumnTransformer(
-            read  = "CAST(role AS VARCHAR)",   // lectura: casteamos el enum a texto
-            write = "?::app_role"              // escritura: mandamos el parámetro como app_role
+            read  = "CAST(role AS VARCHAR)",
+            write = "?::app_role"
     )
     private AppRole role;
 }

@@ -7,7 +7,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
-import org.unisoftware.gestioncurricular.config.customAnnotations.Public;
 import org.unisoftware.gestioncurricular.service.CourseService;
 import org.unisoftware.gestioncurricular.dto.CourseDTO;
 
@@ -78,7 +77,6 @@ public class CourseController {
         }
     }
 
-    @Public
     @GetMapping("/{courseId}")
     @Operation(summary = "Obtener curso", description = "Obtiene la información de un curso por su ID.")
     public ResponseEntity<CourseDTO> getCourse(
@@ -89,7 +87,6 @@ public class CourseController {
         return ResponseEntity.ok(dto);
     }
 
-    @Public
     @GetMapping
     @Operation(summary = "Listar todos los cursos", description = "Obtiene una lista de todos los cursos.")
     public ResponseEntity<List<CourseDTO>> listAll() {
@@ -98,7 +95,6 @@ public class CourseController {
         );
     }
 
-    @Public
     @GetMapping("/buscar")
     @Operation(summary = "Buscar curso por nombre", description = "Busca un curso por su nombre.")
     public ResponseEntity<CourseDTO> searchByName(

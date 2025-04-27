@@ -13,5 +13,4 @@ public class StudyPlanEntryId implements Serializable {
     private Long programId;
     @Column(name="course_id")
     private Long courseId;
-    // equals/hashCode
 }

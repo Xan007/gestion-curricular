@@ -11,7 +11,7 @@ public abstract class AbstractStudyPlanParser implements StudyPlanParser {
     @Override
     public List<PlanRow> parse(MultipartFile file) throws Exception {
         List<PlanRow> result = new ArrayList<>();
-        // extrae cada fila cruda como String[]
+
         List<String[]> raw = extractRows(file.getInputStream());
 
         for (String[] cols : raw) {
@@ -33,10 +33,8 @@ public abstract class AbstractStudyPlanParser implements StudyPlanParser {
         return result;
     }
 
-    /** Extrae de un InputStream la lista de filas en bruto como String[] */
     protected abstract List<String[]> extractRows(InputStream is) throws Exception;
 
-    /** Lógica común: parsea el tercer campo; puede estar separado por ';' o por comas */
     private List<Long> parseRequisitos(String raw) {
         if (raw == null || raw.isBlank()) {
             return List.of();
@@ -55,6 +53,5 @@ public abstract class AbstractStudyPlanParser implements StudyPlanParser {
                 .anyMatch(filename.toLowerCase()::endsWith);
     }
 
-    /** Cada parser concreto declara aquí sus extensiones (".csv", ".xlsx", etc) */
     protected abstract List<String> getSupportedExtensions();
 }

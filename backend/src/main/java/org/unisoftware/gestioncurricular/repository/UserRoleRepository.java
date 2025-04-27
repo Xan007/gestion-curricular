@@ -4,7 +4,6 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.unisoftware.gestioncurricular.entity.UserRole;
 import org.unisoftware.gestioncurricular.security.role.AppRole;
 
-import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;

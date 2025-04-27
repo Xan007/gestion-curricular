@@ -18,13 +18,11 @@ public class CourseService {
 
     private final CourseRepository courseRepository;
     private final CourseMapper courseMapper;
-    private final CourseRequirementRepository courseRequirementRepository;
 
     public CourseService(CourseRepository courseRepository,
-                         CourseMapper courseMapper, CourseRequirementRepository courseRequirementRepository) {
+                         CourseMapper courseMapper) {
         this.courseRepository = courseRepository;
         this.courseMapper = courseMapper;
-        this.courseRequirementRepository = courseRequirementRepository;
     }
 
     @Transactional
@@ -33,7 +31,6 @@ public class CourseService {
             Optional<Course> optCourse = courseRepository.findById(dto.getId());
             if (optCourse.isPresent()) {
                 Course existing = optCourse.get();
-                // MapStruct will update all fields except id & createdAt
                 courseMapper.updateCourseFromDto(dto, existing);
                 courseRepository.save(existing);
             } else {

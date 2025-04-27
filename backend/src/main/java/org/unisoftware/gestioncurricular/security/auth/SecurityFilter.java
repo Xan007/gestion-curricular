@@ -19,12 +19,9 @@ import java.util.stream.Collectors;
 public class SecurityFilter implements Filter {
 
     private final JwtUtil jwtUtil;
-    private final UserRoleService userRoleService;
 
-    public SecurityFilter(JwtUtil jwtUtil,
-                          UserRoleService userRoleService) {
+    public SecurityFilter(JwtUtil jwtUtil) {
         this.jwtUtil = jwtUtil;
-        this.userRoleService = userRoleService;
     }
 
     @Override
@@ -41,11 +38,11 @@ public class SecurityFilter implements Filter {
             if (jwtUtil.isTokenValid(token)) {
                 Claims claims = jwtUtil.extractAllClaims(token);
 
-                // Obtengo el userId y el solo rol de una vez
+                // Obtener el userId y el solo rol de una vez
                 UUID userId = UUID.fromString(claims.getSubject());
                 String role = claims.get("user_role", String.class);
 
-                // Creo la autoridad y la asigno
+                // Crear la autoridad y asignar
                 SimpleGrantedAuthority authority =
                         new SimpleGrantedAuthority("ROLE_" + role.toUpperCase());
                 UsernamePasswordAuthenticationToken auth =

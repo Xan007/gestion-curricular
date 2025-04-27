@@ -17,9 +17,9 @@ public class ExcelCourseFileParser extends AbstractCourseFileParser {
         try (Workbook wb = new XSSFWorkbook(is)) {
             Sheet sheet = wb.getSheetAt(0);
             List<String[]> rows = new ArrayList<>();
-            int rowNum = 2; // Start counting from 2 because we skipped the header
+            int rowNum = 2;
             for (Row r : sheet) {
-                if (r.getRowNum() == 0) continue; // Skip header row
+                if (r.getRowNum() == 0) continue;
                 String[] cols = new String[7];
                 for (int i = 0; i < 7; i++) {
                     Cell c = r.getCell(i);

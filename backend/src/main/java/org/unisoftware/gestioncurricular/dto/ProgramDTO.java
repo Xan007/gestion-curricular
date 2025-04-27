@@ -10,13 +10,13 @@ import lombok.Setter;
 @Setter
 @AllArgsConstructor
 public class ProgramDTO {
-    private Long id; // snies
-    private String name; // 'nombre' translated to 'name'
-    private String professionalProfile; // 'perfilProfesional' translated to 'professionalProfile'
-    private String occupationalProfile; // 'perfilOcupacional' translated to 'occupationalProfile'
-    private String admissionProfile; // 'perfilIngreso' translated to 'admissionProfile'
-    private String competencies; // 'competencias' stays as 'competencies'
-    private Long learningOutcomesFileId; // 'resultadosAprendizajeFileId' translated to 'learningOutcomesFileId'
-    private Integer duration; // 'duracion' translated to 'duration'
-    private String awardingDegree; // 'tituloOtorga' translated to 'awardingDegree'
+    private Long id;
+    private String name;
+    private String professionalProfile;
+    private String occupationalProfile;
+    private String admissionProfile;
+    private String competencies;
+    private Long learningOutcomesFileId;
+    private Integer duration;
+    private String awardingDegree;
 }

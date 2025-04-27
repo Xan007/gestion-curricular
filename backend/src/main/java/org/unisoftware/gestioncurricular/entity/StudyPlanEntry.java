@@ -30,6 +30,5 @@ public class StudyPlanEntry {
     private Integer semester;
     @Column(name = "requirements")
     private Long[] requirements;
-    // getters only (vista inmutable)
 }
 
