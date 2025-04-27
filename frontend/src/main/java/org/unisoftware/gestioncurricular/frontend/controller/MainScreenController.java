@@ -5,6 +5,7 @@ import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
 import javafx.geometry.Insets;
+import javafx.geometry.Pos;
 import javafx.scene.Node;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
@@ -55,25 +56,31 @@ public class MainScreenController implements Initializable {
             String token = SessionManager.getInstance().getToken();
             String username = JwtDecodeUtil.getUsername(token);
 
-            // Obtener directamente los roles cargados en SessionManager
             List<String> roles = SessionManager.getInstance().getUserRoles();
-
-            Label userLbl = new Label("Usuario: " + (username != null ? username : ""));
-            userLbl.setStyle("-fx-font-size: 16px; -fx-font-weight: bold;");
-
-            // Esta línea convierte la lista de roles a texto separado por comas:
             String rolesStr = (roles != null && !roles.isEmpty())
                     ? String.join(", ", roles)
                     : "Sin roles";
-            Label rolesLbl = new Label("Roles: " + rolesStr);
-            rolesLbl.setStyle("-fx-font-size: 13px;");
 
-            userBox.getChildren().addAll(userLbl, rolesLbl);
+            // Icono, puede ser emoji o FontAwesome/SVG si tienes librería
+            Label iconLbl = new Label("👤");
+            iconLbl.setStyle("-fx-font-size: 22px;");
+
+            Label userLbl = new Label(username != null ? username : "");
+            userLbl.setStyle("-fx-font-size: 16px; -fx-font-weight: bold;");
+
+            Label rolLbl = new Label("(" + rolesStr + ")");
+            rolLbl.setStyle("-fx-font-size: 14px; -fx-text-fill: #4A4A4A; -fx-padding: 0 0 0 7;");
+
+            HBox userInfoHBox = new HBox(10, iconLbl, userLbl, rolLbl);
+            userInfoHBox.setAlignment(Pos.CENTER_LEFT);
+
+            userBox.getChildren().add(userInfoHBox);
 
         } catch (Exception e) {
             userBox.getChildren().add(new Label("Error al obtener información de usuario: " + e.getMessage()));
         }
     }
+
 
     private void mostrarProgramaCard() {
         cardContainer.getChildren().clear();
