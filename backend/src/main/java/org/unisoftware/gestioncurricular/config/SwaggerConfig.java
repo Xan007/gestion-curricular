@@ -40,7 +40,7 @@ public class SwaggerConfig {
     public GroupedOpenApi publicApi() {
         return GroupedOpenApi.builder()
                 .group("public")
-                .packagesToScan("org.unisoftware.gestioncurricular.controller", "org.unisoftware.gestioncurricular.security.auth")
+                .packagesToScan("org.unisoftware.gestioncurricular.controller", "org.unisoftware.gestioncurricular.security")
                 .pathsToExclude("/repository/**", "/entity/**")
                 .build();
     }

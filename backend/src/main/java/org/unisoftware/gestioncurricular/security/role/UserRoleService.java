@@ -11,17 +11,39 @@ import java.util.stream.Collectors;
 @Service
 public class UserRoleService {
 
-    private final UserRoleRepository repo;
+    private final UserRoleRepository userRoleRepository;
 
-    public UserRoleService(UserRoleRepository repo) {
-        this.repo = repo;
+    public UserRoleService(UserRoleRepository userRoleRepository) {
+        this.userRoleRepository = userRoleRepository;
     }
 
     /** Devuelve la lista de roles (como strings) para un usuario dado */
     public List<String> getRolesForUser(UUID userId) {
-        List<UserRole> roles = repo.findByUserId(userId);
+        List<UserRole> roles = userRoleRepository.findByUserId(userId);
         return roles.stream()
                 .map(r -> r.getRole().name())
                 .collect(Collectors.toList());
+    }
+
+    public List<UUID> getUserIdsByRole(AppRole role) {
+        return userRoleRepository.findByRole(role)
+                .stream()
+                .map(UserRole::getUserId)
+                .collect(Collectors.toList());
+    }
+
+    public void assignRoleToUser(UUID userId, AppRole role) {
+        if (userRoleRepository.existsByUserIdAndRole(userId, role)) {
+            return; // Ya tiene el rol
+        }
+        UserRole userRole = new UserRole();
+        userRole.setUserId(userId);
+        userRole.setRole(role);
+        userRoleRepository.save(userRole);
+    }
+
+    public void removeRoleFromUser(UUID userId, AppRole role) {
+        var existingRole = userRoleRepository.findByUserIdAndRole(userId, role);
+        existingRole.ifPresent(userRoleRepository::delete);
     }
 }
