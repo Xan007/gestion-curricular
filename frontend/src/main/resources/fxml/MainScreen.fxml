@@ -1,0 +1,119 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.Tab?>
+<?import javafx.scene.control.TabPane?>
+<?import javafx.scene.control.TableColumn?>
+<?import javafx.scene.control.TableView?>
+<?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.text.Font?>
+
+<BorderPane stylesheets="@../styles/styles.css" xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.unisoftware.gestioncurricular.frontend.controller.MainScreenController">
+    <top>
+        <VBox alignment="CENTER" spacing="10">
+            <padding>
+                <Insets bottom="10" left="20" right="20" top="20" />
+            </padding>
+            <children>
+                <Label styleClass="title-label" text="Gestión Curricular">
+                    <font>
+                        <Font name="System Bold" size="24.0" />
+                    </font>
+                </Label>
+                <HBox alignment="CENTER_LEFT" spacing="20">
+                    <children>
+                        <Label fx:id="welcomeLabel" styleClass="subtitle-label" text="Bienvenido" />
+                        <Label fx:id="userTypeLabel" styleClass="user-type-label" text="Modo: Usuario" />
+                        <HBox HBox.hgrow="ALWAYS" />
+                        <Button fx:id="logoutButton" onAction="#handleLogout" styleClass="secondary-button" text="Cerrar Sesión" />
+                    </children>
+                </HBox>
+            </children>
+        </VBox>
+    </top>
+    <center>
+        <TabPane fx:id="mainTabPane" tabClosingPolicy="UNAVAILABLE">
+            <tabs>
+                <Tab text="Dashboard">
+                    <content>
+                        <VBox alignment="CENTER" spacing="20">
+                            <padding>
+                                <Insets bottom="20" left="20" right="20" top="20" />
+                            </padding>
+                            <children>
+                                <Label styleClass="subtitle-label" text="Panel Principal" />
+                                <Label text="Aquí irá el contenido principal de la aplicación" />
+                                <HBox alignment="CENTER" spacing="10">
+                                    <children>
+                                        <Button onAction="#handleViewCourses" text="Ver Cursos" />
+                                        <Button onAction="#handleEditProfile" text="Editar Perfil" />
+                                        <Button onAction="#handleAddCourse" text="Agregar Curso" />
+                                    </children>
+                                </HBox>
+                            </children>
+                        </VBox>
+                    </content>
+                </Tab>
+                <Tab text="Cursos">
+                    <content>
+                        <VBox alignment="CENTER" spacing="20">
+                            <padding>
+                                <Insets bottom="20" left="20" right="20" top="20" />
+                            </padding>
+                            <children>
+                                <Label styleClass="subtitle-label" text="Gestión de Cursos" />
+                                <HBox alignment="CENTER_RIGHT" spacing="10">
+                                    <children>
+                                        <Button fx:id="refreshCoursesButton" onAction="#handleRefreshCourses" text="Actualizar" />
+                                        <Button fx:id="addNewCourseButton" onAction="#handleAddCourse" text="Nuevo Curso" />
+                                    </children>
+                                </HBox>
+                                <TableView fx:id="coursesTable">
+                                    <columns>
+                                        <TableColumn fx:id="courseNameColumn" text="Nombre del Curso" />
+                                        <TableColumn fx:id="instructorColumn" text="Instructor" />
+                                        <TableColumn fx:id="creditsColumn" text="Créditos" />
+                                        <TableColumn fx:id="actionsColumn" text="Acciones" />
+                                    </columns>
+                                </TableView>
+                            </children>
+                        </VBox>
+                    </content>
+                </Tab>
+                <Tab text="Administración">
+                    <content>
+                        <VBox alignment="CENTER" spacing="20">
+                            <padding>
+                                <Insets bottom="20" left="20" right="20" top="20" />
+                            </padding>
+                            <children>
+                                <Label styleClass="subtitle-label" text="Administración" />
+                                <Label text="Área solo para usuarios registrados" />
+                                <HBox alignment="CENTER" spacing="15">
+                                    <children>
+                                        <Button fx:id="usersManagementButton" onAction="#handleUsersManagement" text="Gestión de Usuarios" />
+                                        <Button fx:id="systemConfigButton" onAction="#handleSystemConfig" text="Configuración del Sistema" />
+                                    </children>
+                                </HBox>
+                            </children>
+                        </VBox>
+                    </content>
+                </Tab>
+            </tabs>
+        </TabPane>
+    </center>
+    <bottom>
+        <HBox alignment="CENTER">
+            <padding>
+                <Insets bottom="20" left="20" right="20" top="10" />
+            </padding>
+            <children>
+                <Label text="© 2025 Gestión Curricular - UniSoftware" />
+            </children>
+        </HBox>
+    </bottom>
+</BorderPane>
