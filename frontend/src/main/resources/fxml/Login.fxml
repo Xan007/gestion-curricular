@@ -40,7 +40,7 @@
             <children>
                 <ImageView fitHeight="44.0" fitWidth="168.0" layoutX="14.0" layoutY="8.0" pickOnBounds="true" preserveRatio="true">
                     <image>
-                        <Image url="imgs/unillanos-universidad-de-los-llanos-logo.png" />
+                        <Image url="@imgs/unillanos-universidad-de-los-llanos-logo.png" />
                     </image>
                 </ImageView>
 

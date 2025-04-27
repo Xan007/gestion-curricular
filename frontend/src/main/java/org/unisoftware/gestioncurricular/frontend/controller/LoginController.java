@@ -50,6 +50,11 @@ public class LoginController {
             messageLabel.getStyleClass().add("error-message");
             return;
         }
+        if (!email.matches("^[\\w-\\.]+@([\\w-]+\\.)+[\\w-]{2,4}$")) {
+            messageLabel.setText("Formato de correo electrónico incorrecto");
+            messageLabel.getStyleClass().add("error-message");
+            return;
+        }
 
         try {
             // Verificar si el servicio está correctamente inyectado
@@ -74,7 +79,7 @@ public class LoginController {
         } catch (Exception e) {
             messageLabel.setText("Error al iniciar sesión: " + e.getMessage());
             messageLabel.getStyleClass().add("error-message");
-            e.printStackTrace(); // Para depuración
+            e.printStackTrace();
         }
     }
 
@@ -84,15 +89,8 @@ public class LoginController {
     @FXML
     public void loginAsGuest(ActionEvent event) {
         try {
-            // Configurar sesión de invitado
             SessionManager.getInstance().setGuestSession();
-
-            // Mensaje informativo para depuración
-            System.out.println("Iniciando sesión como invitado");
-
-            // Navegar a la pantalla principal
             navigateToMainScreen(event);
-
         } catch (Exception e) {
             messageLabel.setText("Error al iniciar sesión como invitado: " + e.getMessage());
             messageLabel.getStyleClass().add("error-message");
@@ -106,7 +104,6 @@ public class LoginController {
     @FXML
     public void navigateToRegister(ActionEvent event) {
         try {
-            // Usar ApplicationContext para cargar el FXML con la factoría de controladores de Spring
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/Register.fxml"));
             loader.setControllerFactory(applicationContext::getBean);
 
@@ -129,7 +126,6 @@ public class LoginController {
      */
     private void navigateToMainScreen(ActionEvent event) {
         try {
-            // Usar ApplicationContext para cargar el FXML con la factoría de controladores de Spring
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/MainScreen.fxml"));
             loader.setControllerFactory(applicationContext::getBean);
 

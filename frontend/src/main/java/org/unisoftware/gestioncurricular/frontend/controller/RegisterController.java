@@ -40,7 +40,7 @@ public class RegisterController {
     private ApplicationContext applicationContext;
 
     /**
-     * Maneja el evento de registro
+     * Maneja el evento de registro de usuario
      */
     @FXML
     public void handleRegister(ActionEvent event) {
@@ -54,20 +54,16 @@ public class RegisterController {
             messageLabel.getStyleClass().add("error-message");
             return;
         }
-
         if (!password.equals(confirmPassword)) {
             messageLabel.setText("Las contraseñas no coinciden");
             messageLabel.getStyleClass().add("error-message");
             return;
         }
-
-        // Validación básica de formato de email
         if (!email.matches("^[\\w-\\.]+@([\\w-]+\\.)+[\\w-]{2,4}$")) {
             messageLabel.setText("Formato de correo electrónico incorrecto");
             messageLabel.getStyleClass().add("error-message");
             return;
         }
-
         if (password.length() < 6) {
             messageLabel.setText("La contraseña debe tener al menos 6 caracteres");
             messageLabel.getStyleClass().add("error-message");
@@ -82,7 +78,7 @@ public class RegisterController {
                 return;
             }
 
-            // Registrar al usuario con el servicio de autenticación
+            // Intento de registro con el servicio de autenticación
             String token = authService.signUp(email, password);
 
             // Guardar el token en el gestor de sesión
@@ -97,20 +93,18 @@ public class RegisterController {
         } catch (Exception e) {
             messageLabel.setText("Error al registrar usuario: " + e.getMessage());
             messageLabel.getStyleClass().add("error-message");
-            e.printStackTrace(); // Para depuración
+            e.printStackTrace();
         }
     }
 
     /**
-     * Navega de vuelta a la pantalla de inicio de sesión
+     * Navega a la pantalla de inicio de sesión
      */
     @FXML
     public void navigateToLogin(ActionEvent event) {
         try {
-            // Usar ApplicationContext para cargar el FXML con la factoría de controladores de Spring
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/Login.fxml"));
             loader.setControllerFactory(applicationContext::getBean);
-
             Parent loginView = loader.load();
             Scene loginScene = new Scene(loginView);
 
@@ -130,10 +124,8 @@ public class RegisterController {
      */
     private void navigateToMainScreen(ActionEvent event) {
         try {
-            // Usar ApplicationContext para cargar el FXML con la factoría de controladores de Spring
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/MainScreen.fxml"));
             loader.setControllerFactory(applicationContext::getBean);
-
             Parent mainView = loader.load();
             Scene mainScene = new Scene(mainView);
 
