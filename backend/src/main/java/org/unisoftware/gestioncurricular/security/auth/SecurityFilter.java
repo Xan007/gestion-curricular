@@ -40,19 +40,20 @@ public class SecurityFilter implements Filter {
             String token = header.substring(7);
             if (jwtUtil.isTokenValid(token)) {
                 Claims claims = jwtUtil.extractAllClaims(token);
+
+                // Obtengo el userId y el solo rol de una vez
                 UUID userId = UUID.fromString(claims.getSubject());
+                String role = claims.get("user_role", String.class);
 
-                // Carga roles desde la BD
-                List<String> roles = userRoleService.getRolesForUser(userId);
-
-                // Convierte a GrantedAuthority
-                List<SimpleGrantedAuthority> authorities = roles.stream()
-                        .map(r -> new SimpleGrantedAuthority("ROLE_" + r.toUpperCase()))
-                        .collect(Collectors.toList());
-
-                // Autentica
+                // Creo la autoridad y la asigno
+                SimpleGrantedAuthority authority =
+                        new SimpleGrantedAuthority("ROLE_" + role.toUpperCase());
                 UsernamePasswordAuthenticationToken auth =
-                        new UsernamePasswordAuthenticationToken(userId, null, authorities);
+                        new UsernamePasswordAuthenticationToken(
+                                userId,
+                                null,
+                                List.of(authority)
+                        );
                 SecurityContextHolder.getContext().setAuthentication(auth);
             }
         }
