@@ -4,6 +4,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import org.unisoftware.gestioncurricular.dto.UserDTO;
@@ -66,7 +67,8 @@ public class UserController {
         return userService.getUser(userId);
     }
 
-    @Operation(summary = "Asignar rol a usuario", description = "Asigna un nuevo rol a un usuario específico.")
+    @PreAuthorize("hasRole('DECANO')")
+    @Operation(summary = "Asignar rol a usuario", description = "Asigna un nuevo rol a un usuario específico. **Requiere rol 'DECANO'.**")
     @PostMapping("/{id}/assign-role")
     public void assignRole(
             @Parameter(description = "ID del usuario")
@@ -76,13 +78,16 @@ public class UserController {
         userService.assignRole(id, role);
     }
 
-    @Operation(summary = "Remover rol de usuario", description = "Elimina un rol asignado a un usuario específico.")
+    @PreAuthorize("hasRole('DECANO')")
+    @Operation(
+            summary = "Remover roles de usuario",
+            description = "Elimina todos los roles asignados a un usuario específico. **Requiere rol 'DECANO'.**"
+    )
     @DeleteMapping("/{id}/remove-role")
-    public void removeRole(
+    public void removeRoles(
             @Parameter(description = "ID del usuario")
-            @PathVariable UUID id,
-            @Parameter(description = "Rol que se desea eliminar")
-            @RequestParam AppRole role) {
-        userService.removeRole(id, role);
+            @PathVariable UUID id
+    ) {
+        userService.removeAllRoles(id);
     }
 }

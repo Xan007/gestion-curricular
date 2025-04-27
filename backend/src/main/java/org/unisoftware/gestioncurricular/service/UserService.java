@@ -57,8 +57,8 @@ public class UserService {
     }
 
     // Remover rol
-    public void removeRole(UUID userId, AppRole role) {
-        userRoleService.removeRoleFromUser(userId, role);
+    public void removeAllRoles(UUID userId) {
+        userRoleService.removeAllRoles(userId);
     }
 
     // Mapear a DTO

@@ -42,8 +42,8 @@ public class UserRoleService {
         userRoleRepository.save(userRole);
     }
 
-    public void removeRoleFromUser(UUID userId, AppRole role) {
-        var existingRole = userRoleRepository.findByUserIdAndRole(userId, role);
-        existingRole.ifPresent(userRoleRepository::delete);
+    public void removeAllRoles(UUID userId) {
+        var roles = userRoleRepository.findByUserId(userId);
+        userRoleRepository.deleteAll(roles);
     }
 }

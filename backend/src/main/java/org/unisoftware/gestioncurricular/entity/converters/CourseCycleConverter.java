@@ -1,4 +1,4 @@
-package org.unisoftware.gestioncurricular.entity.enumTypes;
+package org.unisoftware.gestioncurricular.entity.converters;
 
 import jakarta.persistence.AttributeConverter;
 import jakarta.persistence.Converter;
