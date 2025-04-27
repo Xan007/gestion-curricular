@@ -13,11 +13,21 @@ import java.io.InputStream;
 @Service
 public class CourseServiceFront {
 
-    // Cambia la URL base según tu configuración real
     private static final String BASE_URL = "http://localhost:8080/cursos";
 
     public List<CourseDTO> listCourses() throws Exception {
         URL url = new URL(BASE_URL);
+        HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+        conn.setRequestMethod("GET");
+        try (InputStream in = conn.getInputStream()) {
+            ObjectMapper mapper = new ObjectMapper();
+            return mapper.readValue(in, new TypeReference<List<CourseDTO>>() {});
+        }
+    }
+
+    public List<CourseDTO> listCoursesByProgramaId(Long programaId) throws Exception {
+        String urlStr = BASE_URL + "/por-programa/" + programaId;
+        URL url = new URL(urlStr);
         HttpURLConnection conn = (HttpURLConnection) url.openConnection();
         conn.setRequestMethod("GET");
         try (InputStream in = conn.getInputStream()) {

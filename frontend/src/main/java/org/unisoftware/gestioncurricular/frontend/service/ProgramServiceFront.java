@@ -3,6 +3,7 @@ package org.unisoftware.gestioncurricular.frontend.service;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.unisoftware.gestioncurricular.frontend.dto.ProgramDTO;
+import org.unisoftware.gestioncurricular.frontend.dto.StudyPlanEntryDTO;
 import org.springframework.stereotype.Service;
 
 import java.net.HttpURLConnection;
@@ -13,7 +14,6 @@ import java.io.InputStream;
 @Service
 public class ProgramServiceFront {
 
-    // Cambia la URL base según tu configuración real
     private static final String BASE_URL = "http://localhost:8080/programas";
 
     public List<ProgramDTO> listPrograms() throws Exception {
@@ -23,6 +23,19 @@ public class ProgramServiceFront {
         try (InputStream in = conn.getInputStream()) {
             ObjectMapper mapper = new ObjectMapper();
             return mapper.readValue(in, new TypeReference<List<ProgramDTO>>() {});
+        }
+    }
+
+    /**
+     * Obtiene el plan de estudios de un programa por su ID
+     */
+    public List<StudyPlanEntryDTO> getStudyPlan(Long programaId) throws Exception {
+        URL url = new URL(BASE_URL + "/" + programaId + "/plan-estudio");
+        HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+        conn.setRequestMethod("GET");
+        try (InputStream in = conn.getInputStream()) {
+            ObjectMapper mapper = new ObjectMapper();
+            return mapper.readValue(in, new TypeReference<List<StudyPlanEntryDTO>>() {});
         }
     }
 }

@@ -10,7 +10,7 @@
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.text.Font?>
 
-<AnchorPane prefHeight="509.0" prefWidth="582.0" xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.unisoftware.gestioncurricular.frontend.controller.LoginController">
+<AnchorPane stylesheets="@/css/styles.css" prefHeight="509.0" prefWidth="582.0" xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.unisoftware.gestioncurricular.frontend.controller.LoginController">
     <children>
         <Label layoutX="203.0" layoutY="81.0" styleClass="subtitle-label" text="Iniciar Sesión">
             <font>

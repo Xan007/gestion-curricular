@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<AnchorPane stylesheets="@/css/styles.css" xmlns:fx="http://javafx.com/fxml" fx:controller="org.unisoftware.gestioncurricular.frontend.controller.ProgramCoursesScreenController">
+    <VBox spacing="16" prefHeight="600" prefWidth="800" alignment="TOP_CENTER">
+        <HBox alignment="CENTER_LEFT" spacing="18">
+            <Button text="&lt; Volver" onAction="#handleVolver"/>
+            <Label fx:id="programNameLabel" style="-fx-font-size:19px; -fx-font-weight:bold;"/>
+        </HBox>
+        <ScrollPane fitToWidth="true" fitToHeight="true" maxHeight="500" maxWidth="780">
+            <VBox fx:id="coursesContainer" spacing="18"/>
+        </ScrollPane>
+    </VBox>
+</AnchorPane>

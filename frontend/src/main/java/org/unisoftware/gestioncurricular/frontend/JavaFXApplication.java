@@ -49,7 +49,7 @@ public class JavaFXApplication extends Application {
 
             // Intentar cargar estilos CSS (con manejo de error)
             try {
-                scene.getStylesheets().add(getClass().getResource("/styles/styles.css").toExternalForm());
+                scene.getStylesheets().add(getClass().getResource("/css/styles.css").toExternalForm());
             } catch (Exception e) {
                 System.err.println("No se pudo cargar la hoja de estilos: " + e.getMessage());
             }

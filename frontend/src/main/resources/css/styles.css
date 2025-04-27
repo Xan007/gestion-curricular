@@ -1,0 +1,114 @@
+/* Colores principales */
+.root {
+    -fx-background-color: #fff;
+}
+
+/* Botones generales */
+.button {
+    -fx-background-color: #d32f2f;
+    -fx-text-fill: #fff;
+    -fx-font-size: 15px;
+    -fx-background-radius: 10;
+    -fx-padding: 10 25 10 25;
+    -fx-font-weight: bold;
+    -fx-cursor: hand;
+    -fx-effect: dropshadow( gaussian , #d32f2f, 5,0,0,2);
+}
+
+.button:hover {
+    -fx-background-color: #b71c1c;
+}
+
+/* Títulos */
+.label {
+    -fx-font-family: "Segoe UI", Helvetica, Arial, sans-serif;
+    -fx-text-fill: #222;
+    -fx-font-size: 16px;
+}
+
+.title, .main-title {
+    -fx-font-size: 28px;
+    -fx-font-weight: bold;
+    -fx-text-fill: #d32f2f;
+}
+
+/* Tarjetas/contenedores */
+.card, .content-card, .main-card {
+    -fx-background-color: #fff;
+    -fx-border-width: 0 0 2 0;
+    -fx-border-color: #d32f2f;
+    -fx-background-radius: 10;
+    -fx-padding: 20;
+    -fx-effect: dropshadow(gaussian, #bdbdbd, 8, 0, 0, 2);
+}
+
+/* Barras superiores, pie de página, cabecera */
+.header-bar, .footer-bar {
+    -fx-background-color: #222;
+    -fx-padding: 14 10 14 30;
+}
+
+.header-bar .label {
+    -fx-text-fill: #fff;
+    -fx-font-size: 18px;
+    -fx-font-weight: bold;
+}
+
+/* Errores y éxito */
+.error-message {
+    -fx-text-fill: #d32f2f;
+    -fx-font-weight: bold;
+}
+.success-message {
+    -fx-text-fill: #388e3c;
+    -fx-font-weight: bold;
+}
+
+/* Personalización de cuadros de texto */
+.text-field, .password-field {
+    -fx-background-radius: 8;
+    -fx-background-color: #fafafa;
+    -fx-border-color: #d32f2f;
+    -fx-border-width: 0 0 2 0;
+    -fx-font-size: 16px;
+    -fx-padding: 8 10 8 10;
+}
+
+/* Scroll */
+.scroll-pane {
+    -fx-background-color: transparent;
+}
+
+/* Título principal */
+.title-label {
+    -fx-font-family: "Segoe UI", Arial, Helvetica, sans-serif;
+    -fx-font-size: 40px;
+    -fx-text-fill: #d32f2f;
+    -fx-font-weight: bold;
+}
+
+/* Subtítulo grande (ej: "Iniciar Sesión") */
+.subtitle-label {
+    -fx-font-family: "Segoe UI Semibold", Arial, Helvetica, sans-serif;
+    -fx-font-size: 28px;
+    -fx-text-fill: #1d1d1d;
+    -fx-font-weight: semi-bold;
+    -fx-padding: 0 0 16 0;
+}
+
+/* Etiquetas de campos */
+.field-label {
+    -fx-font-family: "Segoe UI", Arial, Helvetica;
+    -fx-font-size: 15px;
+    -fx-text-fill: #ff2d00;
+    -fx-font-weight: 600;
+    -fx-letter-spacing: 0.5px;
+}
+
+/* Mensaje (errores, información) */
+.message-label {
+    -fx-font-size: 15px;
+    -fx-font-family: "Segoe UI", Arial;
+    -fx-text-fill: #d32f2f;
+    -fx-font-weight: 600;
+}

@@ -1,79 +1,16 @@
 <?xml version="1.0" encoding="UTF-8"?>
-
-<?import javafx.geometry.Insets?>
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
+<?import javafx.geometry.*?>
 
-<BorderPane stylesheets="@../styles/styles.css"
-            xmlns="http://javafx.com/javafx/17"
-            xmlns:fx="http://javafx.com/fxml/1"
-            fx:controller="org.unisoftware.gestioncurricular.frontend.controller.MainScreenController">
-    <top>
-        <VBox alignment="CENTER" spacing="6.0" BorderPane.alignment="CENTER">
-            <children>
-                <HBox alignment="CENTER_LEFT" spacing="10.0">
-                    <children>
-                        <Label text="Gestión Curricular" styleClass="main-title"/>
-                        <Pane HBox.hgrow="ALWAYS"/>
-                        <Button fx:id="logoutButton" text="Cerrar sesión" onAction="#handleLogout"/>
-                    </children>
-                </HBox>
-            </children>
-        </VBox>
-    </top>
-    <center>
-        <TabPane fx:id="tabPanePrincipal">
-            <tabs>
-                <Tab text="Programas">
-                    <VBox spacing="10.0">
-                        <padding>
-                            <Insets top="10" right="10" bottom="10" left="10" />
-                        </padding>
-                        <children>
-                            <TableView fx:id="programTable" layoutX="20.0" layoutY="60.0" prefHeight="380.0" prefWidth="940.0">
-                                <columns>
-                                    <TableColumn fx:id="idColumn" prefWidth="50.0" text="ID" />
-                                    <TableColumn fx:id="nameColumn" prefWidth="120.0" text="Name" />
-                                    <TableColumn fx:id="professionalProfileColumn" prefWidth="140.0" text="Professional Profile" />
-                                    <TableColumn fx:id="occupationalProfileColumn" prefWidth="140.0" text="Occupational Profile" />
-                                    <TableColumn fx:id="admissionProfileColumn" prefWidth="140.0" text="Admission Profile" />
-                                    <TableColumn fx:id="competenciesColumn" prefWidth="120.0" text="Competencies" />
-                                    <TableColumn fx:id="learningOutcomesFileIdColumn" prefWidth="100.0" text="Learning Outcomes File ID" />
-                                    <TableColumn fx:id="durationColumn" prefWidth="70.0" text="Duration" />
-                                    <TableColumn fx:id="awardingDegreeColumn" prefWidth="120.0" text="Awarding Degree" />
-                                </columns>
-                            </TableView>
-                        </children>
-                    </VBox>
-                </Tab>
-                <Tab text="Cursos">
-                    <VBox spacing="10.0">
-                        <padding>
-                            <Insets top="10" right="10" bottom="10" left="10" />
-                        </padding>
-                        <children>
-                            <TableView fx:id="courseTableView">
-                                <columns>
-                                    <TableColumn fx:id="colCourseId"      text="ID"      prefWidth="60"/>
-                                    <TableColumn fx:id="colCourseName"    text="Nombre"  prefWidth="150"/>
-                                    <TableColumn fx:id="colCourseType"    text="Tipo"    prefWidth="80"/>
-                                    <TableColumn fx:id="colCourseCredits" text="Créditos" prefWidth="70"/>
-                                    <TableColumn fx:id="colCourseRelation" text="Relación" prefWidth="90"/>
-                                    <TableColumn fx:id="colCourseArea"    text="Área"     prefWidth="110"/>
-                                    <TableColumn fx:id="colCourseCycle"   text="Ciclo"    prefWidth="100"/>
-                                </columns>
-                            </TableView>
-                        </children>
-                    </VBox>
-                </Tab>
-            </tabs>
-        </TabPane>
-    </center>
-    <bottom>
-        <HBox alignment="BOTTOM_RIGHT" spacing="10.0" BorderPane.alignment="BOTTOM_RIGHT" styleClass="footer-pane">
-            <children>
-                <Label text="Universidad Ejemplo © 2024" />
-            </children>
+<AnchorPane xmlns:fx="http://javafx.com/fxml" fx:controller="org.unisoftware.gestioncurricular.frontend.controller.MainScreenController"
+            stylesheets="@/css/styles.css">
+    <VBox alignment="TOP_CENTER" prefHeight="600.0" prefWidth="800.0" spacing="30.0" styleClass="main-card">
+        <HBox spacing="20" alignment="CENTER_RIGHT" prefWidth="800" styleClass="header-bar">
+            <Label text="Gestión Curricular" styleClass="main-title"/>
+            <Pane HBox.hgrow="ALWAYS"/>
+            <Button text="Cerrar sesión" onAction="#handleLogout"/>
         </HBox>
-    </bottom>
-</BorderPane>
+        <VBox fx:id="cardContainer" alignment="TOP_CENTER" spacing="20"/>
+    </VBox>
+</AnchorPane>
