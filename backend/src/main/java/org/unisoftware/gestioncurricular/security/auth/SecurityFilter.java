@@ -19,12 +19,9 @@ import java.util.stream.Collectors;
 public class SecurityFilter implements Filter {
 
     private final JwtUtil jwtUtil;
-    private final UserRoleService userRoleService;
 
-    public SecurityFilter(JwtUtil jwtUtil,
-                          UserRoleService userRoleService) {
+    public SecurityFilter(JwtUtil jwtUtil) {
         this.jwtUtil = jwtUtil;
-        this.userRoleService = userRoleService;
     }
 
     @Override
@@ -40,19 +37,20 @@ public class SecurityFilter implements Filter {
             String token = header.substring(7);
             if (jwtUtil.isTokenValid(token)) {
                 Claims claims = jwtUtil.extractAllClaims(token);
+
+                // Obtener el userId y el solo rol de una vez
                 UUID userId = UUID.fromString(claims.getSubject());
+                String role = claims.get("user_role", String.class);
 
-                // Carga roles desde la BD
-                List<String> roles = userRoleService.getRolesForUser(userId);
-
-                // Convierte a GrantedAuthority
-                List<SimpleGrantedAuthority> authorities = roles.stream()
-                        .map(r -> new SimpleGrantedAuthority("ROLE_" + r.toUpperCase()))
-                        .collect(Collectors.toList());
-
-                // Autentica
+                // Crear la autoridad y asignar
+                SimpleGrantedAuthority authority =
+                        new SimpleGrantedAuthority("ROLE_" + role.toUpperCase());
                 UsernamePasswordAuthenticationToken auth =
-                        new UsernamePasswordAuthenticationToken(userId, null, authorities);
+                        new UsernamePasswordAuthenticationToken(
+                                userId,
+                                null,
+                                List.of(authority)
+                        );
                 SecurityContextHolder.getContext().setAuthentication(auth);
             }
         }

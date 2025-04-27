@@ -17,10 +17,10 @@ public abstract class AbstractCourseFileParser implements CourseFileParser {
     public List<CourseDTO> parse(InputStream is) throws IOException {
         List<String[]> rows = extractRows(is);
         List<CourseDTO> dtos = new ArrayList<>();
-        int rowNum = 2; // Start counting from 2 because we skipped the header
+        int rowNum = 2;
         for (String[] cols : rows) {
             try {
-                CourseDTO dto = processRow(cols, rowNum); // Use processRow for custom logic
+                CourseDTO dto = processRow(cols, rowNum);
                 dtos.add(dto);
             } catch (IllegalArgumentException ex) {
                 System.out.println(ex.getMessage());
@@ -68,9 +68,7 @@ public abstract class AbstractCourseFileParser implements CourseFileParser {
     // Método de validación global
     protected void validate(CourseDTO dto, int rowNum) {
         try {
-            // Validar los valores del DTO
             validateSnies(dto.getId(), rowNum);
-            // No es necesario hacer validación explícita de 'type', 'cycle', y 'area' aquí, ya que los enums ya validan
             validateCredits(dto.getCredits(), rowNum);
             validateRelation(dto.getRelation());
         } catch (IllegalArgumentException ex) {

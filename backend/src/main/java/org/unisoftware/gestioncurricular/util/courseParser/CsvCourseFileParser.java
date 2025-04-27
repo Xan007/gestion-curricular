@@ -18,21 +18,19 @@ public class CsvCourseFileParser extends AbstractCourseFileParser {
         List<String[]> rows = new ArrayList<>();
         try (BufferedReader br = new BufferedReader(new InputStreamReader(is))) {
             String line;
-            br.readLine(); // skip header
-            int rowNum = 2; // contaremos filas para errores
+            br.readLine();
+            int rowNum = 2;
             while ((line = br.readLine()) != null) {
                 if (line.trim().isEmpty()) {
-                    continue; // 🔥 Salta líneas vacías
+                    continue;
                 }
 
-                // 1) split por comas **fuera** de dobles comillas
                 String[] values = line.split(CSV_SPLIT_REGEX, -1);
 
-                // 2) limpia comillas alrededor de cada valor
                 for (int i = 0; i < values.length; i++) {
                     values[i] = values[i].trim()
-                            .replaceAll("^\"|\"$", "")   // quita " al inicio/fin
-                            .replaceAll("^'|'$", "");    // y también '
+                            .replaceAll("^\"|\"$", "")
+                            .replaceAll("^'|'$", "");
                 }
 
                 // 3) valida fila

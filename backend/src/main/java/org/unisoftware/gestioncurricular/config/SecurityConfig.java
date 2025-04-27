@@ -8,13 +8,7 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
-import org.springframework.web.method.HandlerMethod;
-import org.springframework.web.servlet.HandlerMapping;
-import org.springframework.security.web.util.matcher.RequestMatcher;
-import org.unisoftware.gestioncurricular.config.customAnnotations.Public;
 import org.unisoftware.gestioncurricular.security.auth.SecurityFilter;
-
-import java.util.Map;
 
 @Configuration
 @EnableMethodSecurity

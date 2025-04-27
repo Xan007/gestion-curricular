@@ -2,15 +2,11 @@ package org.unisoftware.gestioncurricular.controller;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
-import io.swagger.v3.oas.annotations.media.Content;
-import io.swagger.v3.oas.annotations.media.Schema;
-import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
-import org.unisoftware.gestioncurricular.config.customAnnotations.Public;
 import org.unisoftware.gestioncurricular.dto.ProgramDTO;
 import org.unisoftware.gestioncurricular.entity.StudyPlanEntry;
 import org.unisoftware.gestioncurricular.service.ProgramService;
@@ -81,7 +77,6 @@ public class ProgramController {
         }
     }
 
-    @Public
     @GetMapping("/{programId}")
     @Operation(summary = "Obtener programa", description = "Obtiene la información de un programa por su ID.")
     public ResponseEntity<ProgramDTO> getProgram(
@@ -113,7 +108,6 @@ public class ProgramController {
         return ResponseEntity.status(HttpStatus.CREATED).body(id);
     }
 
-    @Public
     @GetMapping("/{programId}/plan-estudio")
     @Operation(summary = "Obtener plan de estudios", description = "Obtiene el plan de estudios de un programa por su ID.")
     public ResponseEntity<List<StudyPlanEntry>> getStudyPlan(
@@ -123,7 +117,6 @@ public class ProgramController {
         return ResponseEntity.ok(plan);
     }
 
-    @Public
     @GetMapping("/buscar")
     @Operation(summary = "Buscar programa por nombre", description = "Busca un programa por su nombre.")
     public ResponseEntity<ProgramDTO> findProgramByName(
@@ -136,7 +129,6 @@ public class ProgramController {
         return ResponseEntity.ok(dto);
     }
 
-    @Public
     @GetMapping
     @Operation(summary = "Listar todos los programas", description = "Obtiene una lista de todos los programas académicos.")
     public ResponseEntity<List<ProgramDTO>> getAllPrograms() {

@@ -18,13 +18,11 @@ public class ExcelStudyPlanParser extends AbstractStudyPlanParser {
         try (Workbook wb = new XSSFWorkbook(is)) {
             Sheet sheet = wb.getSheetAt(0);
             for (Row r : sheet) {
-                if (r.getRowNum() == 0) continue;  // salto cabecera
-                // siempre devolvemos al menos 3 columnas de String
+                if (r.getRowNum() == 0) continue;
+
                 String[] cols = new String[3];
-                // SNIES y semestre
                 cols[0] = r.getCell(0).toString().trim();
                 cols[1] = r.getCell(1).toString().trim();
-                // requisitos raw
                 Cell c2 = r.getCell(2);
                 cols[2] = (c2 == null ? "" : c2.toString().trim());
                 rows.add(cols);

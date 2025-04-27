@@ -4,7 +4,7 @@ import jakarta.persistence.AttributeConverter;
 import jakarta.persistence.Converter;
 import org.unisoftware.gestioncurricular.util.courseEnums.CourseCycle;
 
-@Converter(autoApply = true) // Esto aplica el converter automáticamente a todas las columnas que usan este tipo
+@Converter(autoApply = true)
 public class CourseCycleConverter implements AttributeConverter<CourseCycle, String> {
 
     @Override

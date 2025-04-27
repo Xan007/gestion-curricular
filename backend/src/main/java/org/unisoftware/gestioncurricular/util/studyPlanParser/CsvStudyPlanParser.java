@@ -22,8 +22,8 @@ public class CsvStudyPlanParser extends AbstractStudyPlanParser {
             String line;
             boolean first = true;
             while ((line = br.readLine()) != null) {
-                if (first) { first = false; continue; }   // salto cabecera
-                if (line.isBlank()) continue;            // salto líneas vacías
+                if (first) { first = false; continue; }
+                if (line.isBlank()) continue;
 
                 // split fuera de comillas
                 String[] cols = line.split(SPLIT_REGEX, -1);
