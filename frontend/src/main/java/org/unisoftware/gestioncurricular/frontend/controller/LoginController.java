@@ -15,8 +15,11 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Component;
 import org.unisoftware.gestioncurricular.security.auth.SupabaseAuthService;
 import org.unisoftware.gestioncurricular.frontend.util.SessionManager;
+import org.unisoftware.gestioncurricular.frontend.service.UserServiceFront;
+import org.unisoftware.gestioncurricular.frontend.dto.UserInfoDTO;
 
 import java.io.IOException;
+import java.util.Collections;
 
 @Component
 public class LoginController {
@@ -35,6 +38,9 @@ public class LoginController {
 
     @Autowired
     private ApplicationContext applicationContext;
+
+    @Autowired
+    private UserServiceFront userServiceFront;
 
     /**
      * Maneja el evento de inicio de sesión
@@ -67,10 +73,18 @@ public class LoginController {
             // Intento de inicio de sesión con el servicio de autenticación
             String token = authService.signIn(email, password);
 
-            // Guardar el token en el gestor de sesión
+            // Guardar token
             SessionManager.getInstance().setToken(token);
             SessionManager.getInstance().setUserEmail(email);
-            SessionManager.getInstance().setUserRole("USER");
+
+            // Obtener detalles reales del usuario desde el backend y guardarlos en la sesión
+            UserInfoDTO userInfo = userServiceFront.getCurrentUserInfo();
+            if (userInfo != null) {
+                SessionManager.getInstance().setUserRoles(userInfo.getRoles());
+                SessionManager.getInstance().setUserEmail(userInfo.getEmail());
+            } else {
+                SessionManager.getInstance().setUserRoles(Collections.emptyList());
+            }
             SessionManager.getInstance().setGuest(false);
 
             // Navegar a la pantalla principal
@@ -111,7 +125,12 @@ public class LoginController {
             Scene registerScene = new Scene(registerView);
 
             Stage stage = (Stage) ((Node) event.getSource()).getScene().getWindow();
+            double ancho = stage.getWidth();
+            double alto = stage.getHeight();
+
             stage.setScene(registerScene);
+            stage.setWidth(ancho);
+            stage.setHeight(alto);
             stage.setTitle("Registro de Usuario");
             stage.show();
         } catch (IOException e) {
@@ -121,9 +140,6 @@ public class LoginController {
         }
     }
 
-    /**
-     * Navega a la pantalla principal después de autenticación exitosa
-     */
     private void navigateToMainScreen(ActionEvent event) {
         try {
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/MainScreen.fxml"));
@@ -133,7 +149,12 @@ public class LoginController {
             Scene mainScene = new Scene(mainView);
 
             Stage stage = (Stage) ((Node) event.getSource()).getScene().getWindow();
+            double ancho = stage.getWidth();
+            double alto = stage.getHeight();
+
             stage.setScene(mainScene);
+            stage.setWidth(ancho);
+            stage.setHeight(alto);
             stage.setTitle("Gestión Curricular");
             stage.show();
         } catch (IOException e) {

@@ -3,13 +3,18 @@
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 
-<AnchorPane stylesheets="@/css/styles.css" xmlns:fx="http://javafx.com/fxml" fx:controller="org.unisoftware.gestioncurricular.frontend.controller.ProgramCoursesScreenController">
-    <VBox spacing="16" prefHeight="600" prefWidth="800" alignment="TOP_CENTER">
+<AnchorPane stylesheets="@/css/styles.css" xmlns:fx="http://javafx.com/fxml"
+            fx:controller="org.unisoftware.gestioncurricular.frontend.controller.ProgramCoursesScreenController">
+    <VBox spacing="16" alignment="TOP_CENTER"
+          AnchorPane.topAnchor="0.0" AnchorPane.bottomAnchor="0.0"
+          AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0">
         <HBox alignment="CENTER_LEFT" spacing="18">
             <Button text="&lt; Volver" onAction="#handleVolver"/>
             <Label fx:id="programNameLabel" style="-fx-font-size:19px; -fx-font-weight:bold;"/>
         </HBox>
-        <ScrollPane fitToWidth="true" fitToHeight="true" maxHeight="500" maxWidth="780">
+        <ScrollPane fitToWidth="true" fitToHeight="true"
+                    AnchorPane.topAnchor="0.0" AnchorPane.bottomAnchor="0.0"
+                    AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0">
             <VBox fx:id="coursesContainer" spacing="18"/>
         </ScrollPane>
     </VBox>

@@ -17,6 +17,7 @@ import org.unisoftware.gestioncurricular.security.auth.SupabaseAuthService;
 import org.unisoftware.gestioncurricular.frontend.util.SessionManager;
 
 import java.io.IOException;
+import java.util.Collections;
 
 @Component
 public class RegisterController {
@@ -84,7 +85,7 @@ public class RegisterController {
             // Guardar el token en el gestor de sesión
             SessionManager.getInstance().setToken(token);
             SessionManager.getInstance().setUserEmail(email);
-            SessionManager.getInstance().setUserRole("USER");
+            SessionManager.getInstance().setUserRoles(Collections.singletonList("USER"));
             SessionManager.getInstance().setGuest(false);
 
             // Navegar a la pantalla principal
@@ -97,19 +98,22 @@ public class RegisterController {
         }
     }
 
-    /**
-     * Navega a la pantalla de inicio de sesión
-     */
     @FXML
     public void navigateToLogin(ActionEvent event) {
         try {
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/Login.fxml"));
             loader.setControllerFactory(applicationContext::getBean);
+
             Parent loginView = loader.load();
             Scene loginScene = new Scene(loginView);
 
             Stage stage = (Stage) ((Node) event.getSource()).getScene().getWindow();
+            double ancho = stage.getWidth();
+            double alto = stage.getHeight();
+
             stage.setScene(loginScene);
+            stage.setWidth(ancho);
+            stage.setHeight(alto);
             stage.setTitle("Iniciar Sesión");
             stage.show();
         } catch (IOException e) {
@@ -119,13 +123,12 @@ public class RegisterController {
         }
     }
 
-    /**
-     * Navega a la pantalla principal después de registro exitoso
-     */
+
     private void navigateToMainScreen(ActionEvent event) {
         try {
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/MainScreen.fxml"));
             loader.setControllerFactory(applicationContext::getBean);
+
             Parent mainView = loader.load();
             Scene mainScene = new Scene(mainView);
 

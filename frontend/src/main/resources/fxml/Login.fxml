@@ -1,70 +1,42 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<?import javafx.scene.control.Button?>
-<?import javafx.scene.control.Label?>
-<?import javafx.scene.control.PasswordField?>
-<?import javafx.scene.control.TextField?>
-<?import javafx.scene.image.Image?>
-<?import javafx.scene.image.ImageView?>
-<?import javafx.scene.layout.AnchorPane?>
-<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.geometry.*?>
 <?import javafx.scene.text.Font?>
 
-<AnchorPane stylesheets="@/css/styles.css" prefHeight="509.0" prefWidth="582.0" xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.unisoftware.gestioncurricular.frontend.controller.LoginController">
-    <children>
-        <Label layoutX="203.0" layoutY="81.0" styleClass="subtitle-label" text="Iniciar Sesión">
+<AnchorPane xmlns="http://javafx.com/javafx/17"
+            xmlns:fx="http://javafx.com/fxml/1"
+            fx:controller="org.unisoftware.gestioncurricular.frontend.controller.LoginController"
+            stylesheets="@/css/styles.css">
+    <VBox alignment="CENTER" spacing="20.0"
+          AnchorPane.topAnchor="0.0" AnchorPane.bottomAnchor="0.0"
+          AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0"
+          prefWidth="420" prefHeight="420">
+        <padding>
+            <Insets top="30" left="35" right="35" bottom="30"/>
+        </padding>
+        <Label text="Gestión Curricular" styleClass="title-label">
             <font>
-                <Font name="System Bold" size="29.0" />
+                <Font name="System Bold" size="24.0"/>
             </font>
         </Label>
-
-        <HBox alignment="CENTER" layoutX="20.0" layoutY="345.0" spacing="15.0" />
-        <TextField fx:id="emailField" layoutX="56.0" layoutY="171.0" prefHeight="37.0" prefWidth="482.0" promptText="ejemplo@correo.com" />
-        <PasswordField fx:id="passwordField" layoutX="59.0" layoutY="278.0" prefHeight="37.0" prefWidth="488.0" promptText="Contraseña" />
-        <Button fx:id="registerButton" layoutX="320.0" layoutY="371.0" onAction="#navigateToRegister" prefHeight="48.0" prefWidth="153.0" styleClass="secondary-button" text="Registrarse">
+        <Label text="Inicio de Sesión" styleClass="subtitle-label">
             <font>
-                <Font name="System Bold" size="22.0" />
-            </font>
-        </Button>
-        <Button fx:id="loginButton" layoutX="116.0" layoutY="371.0" onAction="#handleLogin" prefHeight="48.0" prefWidth="177.0" style="-fx-background-color: #ff2d00;" styleClass="primary-button" text="Iniciar Sesión" textFill="WHITE">
-            <font>
-                <Font name="System Bold" size="22.0" />
-            </font>
-        </Button>
-        <Button fx:id="guestButton" layoutX="177.0" layoutY="431.0" onAction="#loginAsGuest" prefHeight="0.0" prefWidth="252.0" style="-fx-background-color: #ff2d00;" styleClass="primary-button" text="Entrar como Invitado" textFill="WHITE">
-            <font>
-                <Font name="System Bold" size="12.0" />
-            </font>
-        </Button>
-        <AnchorPane layoutX="-12.0" prefHeight="60.0" prefWidth="599.0" style="-fx-background-color: #dcdbda;">
-            <children>
-                <ImageView fitHeight="44.0" fitWidth="168.0" layoutX="14.0" layoutY="8.0" pickOnBounds="true" preserveRatio="true">
-                    <image>
-                        <Image url="@imgs/unillanos-universidad-de-los-llanos-logo.png" />
-                    </image>
-                </ImageView>
-
-                <Label layoutX="203.0" layoutY="8.0" prefHeight="44.0" prefWidth="362.0" styleClass="title-label" text="Gestión Curricular" textFill="RED">
-                    <font>
-                        <Font name="Segoe UI Bold" size="40.0" />
-                    </font>
-                </Label>
-            </children>
-        </AnchorPane>
-        <Label layoutX="59.0" layoutY="134.0" prefHeight="37.0" prefWidth="177.0" text="CORREO ELECTRONICO">
-            <font>
-                <Font name="System Bold" size="16.0" />
+                <Font size="18.0"/>
             </font>
         </Label>
-        <Label layoutX="56.0" layoutY="236.0" prefHeight="37.0" prefWidth="177.0" text="CONTRASEÑA">
-            <font>
-                <Font name="System Bold" size="16.0" />
-            </font>
-        </Label>
-        <Label fx:id="messageLabel" alignment="CENTER" layoutX="25.0" layoutY="466.0" prefHeight="26.0" prefWidth="556.0" styleClass="message-label" textAlignment="CENTER">
-            <font>
-                <Font size="14.0" />
-            </font>
-        </Label>
-    </children>
+        <VBox spacing="8" alignment="CENTER">
+            <TextField fx:id="emailField" promptText="Correo electrónico" />
+            <PasswordField fx:id="passwordField" promptText="Contraseña" />
+        </VBox>
+        <HBox alignment="CENTER" spacing="14.0">
+            <Button text="Iniciar sesión" fx:id="loginButton" onAction="#handleLogin" styleClass="primary-button"/>
+            <Button text="Invitado" fx:id="guestButton" onAction="#loginAsGuest" styleClass="secondary-button"/>
+        </HBox>
+        <HBox alignment="CENTER" spacing="14.0">
+            <Button text="Registrarse" fx:id="registerButton" onAction="#navigateToRegister" styleClass="secondary-button"/>
+        </HBox>
+        <Label fx:id="messageLabel" styleClass="message-label"/>
+    </VBox>
 </AnchorPane>

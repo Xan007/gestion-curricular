@@ -5,12 +5,17 @@
 
 <AnchorPane xmlns:fx="http://javafx.com/fxml" fx:controller="org.unisoftware.gestioncurricular.frontend.controller.MainScreenController"
             stylesheets="@/css/styles.css">
-    <VBox alignment="TOP_CENTER" prefHeight="600.0" prefWidth="800.0" spacing="30.0" styleClass="main-card">
-        <HBox spacing="20" alignment="CENTER_RIGHT" prefWidth="800" styleClass="header-bar">
+    <VBox alignment="TOP_CENTER" spacing="30.0" styleClass="main-card"
+          AnchorPane.topAnchor="0.0" AnchorPane.bottomAnchor="0.0"
+          AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0">
+        <HBox spacing="20" alignment="CENTER_RIGHT" styleClass="header-bar"
+              prefWidth="800">
             <Label text="Gestión Curricular" styleClass="main-title"/>
             <Pane HBox.hgrow="ALWAYS"/>
             <Button text="Cerrar sesión" onAction="#handleLogout"/>
         </HBox>
+        <!-- Aquí va el mensaje de usuario y rol -->
+        <VBox fx:id="userBox" alignment="TOP_LEFT" spacing="5" />
         <VBox fx:id="cardContainer" alignment="TOP_CENTER" spacing="20"/>
     </VBox>
 </AnchorPane>
