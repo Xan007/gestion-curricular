@@ -4,6 +4,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
+import org.unisoftware.gestioncurricular.config.customAnnotations.Public;
 import org.unisoftware.gestioncurricular.service.CourseService;
 import org.unisoftware.gestioncurricular.dto.CourseDTO;
 
@@ -46,6 +47,7 @@ public class CourseController {
         }
     }
 
+    @Public
     @GetMapping("/{courseId}")
     public ResponseEntity<CourseDTO> getCourse(
             @PathVariable Long courseId
@@ -55,6 +57,7 @@ public class CourseController {
         return ResponseEntity.ok(dto);
     }
 
+    @Public
     @GetMapping
     public ResponseEntity<List<CourseDTO>> listAll() {
         return ResponseEntity.ok(
@@ -62,6 +65,7 @@ public class CourseController {
         );
     }
 
+    @Public
     @GetMapping("/buscar")
     public ResponseEntity<CourseDTO> searchByName(
             @RequestParam("nombre") String nombre

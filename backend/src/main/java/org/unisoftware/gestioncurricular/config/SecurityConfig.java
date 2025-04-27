@@ -1,6 +1,6 @@
 package org.unisoftware.gestioncurricular.config;
 
-
+import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
@@ -8,7 +8,13 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.web.method.HandlerMethod;
+import org.springframework.web.servlet.HandlerMapping;
+import org.springframework.security.web.util.matcher.RequestMatcher;
+import org.unisoftware.gestioncurricular.config.customAnnotations.Public;
 import org.unisoftware.gestioncurricular.security.auth.SecurityFilter;
+
+import java.util.Map;
 
 @Configuration
 @EnableMethodSecurity
@@ -25,17 +31,9 @@ public class SecurityConfig {
         http
                 .csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers(
-                                "/public/**",
-                                "/auth/**",
-                                "/cursos/**",
-                                "/programas/*/plan-estudio",
-                                "/programas/*"
-                        ).permitAll()
-                        .anyRequest().authenticated()
+                        .anyRequest().permitAll()
                 )
                 .addFilterBefore(securityFilter, UsernamePasswordAuthenticationFilter.class);
-
         return http.build();
     }
 }

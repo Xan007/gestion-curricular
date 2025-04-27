@@ -22,6 +22,8 @@
     <properties>
         <java.version>17</java.version>
         <javafx.version>17.0.2</javafx.version>
+        <maven.compiler.source>23</maven.compiler.source>
+        <maven.compiler.target>23</maven.compiler.target>
     </properties>
 
     <modules>

@@ -16,6 +16,10 @@
     <artifactId>backend</artifactId>
     <name>GestionCurricular-Backend</name>
     <description>Servicios, entidades y seguridad</description>
+    <properties>
+        <maven.compiler.source>23</maven.compiler.source>
+        <maven.compiler.target>23</maven.compiler.target>
+    </properties>
     <packaging>jar</packaging>
 
     <dependencies>
@@ -102,6 +106,10 @@
             <groupId>org.apache.poi</groupId>
             <artifactId>poi-ooxml</artifactId>
             <version>5.4.0</version>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-autoconfigure</artifactId>
         </dependency>
 
 

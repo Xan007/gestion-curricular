@@ -4,6 +4,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
+import org.unisoftware.gestioncurricular.config.customAnnotations.Public;
 import org.unisoftware.gestioncurricular.dto.ProgramDTO;
 import org.unisoftware.gestioncurricular.entity.StudyPlanEntry;
 import org.unisoftware.gestioncurricular.service.ProgramService;
@@ -58,6 +59,7 @@ public class ProgramController {
         }
     }
 
+    @Public
     @GetMapping("/{programId}")
     public ResponseEntity<ProgramDTO> getProgram(@PathVariable Long programId) {
         ProgramDTO dto = programService.getProgram(programId);
@@ -72,12 +74,14 @@ public class ProgramController {
         return ResponseEntity.status(HttpStatus.CREATED).body(id);
     }
 
+    @Public
     @GetMapping("/{programId}/plan-estudio")
     public ResponseEntity<List<StudyPlanEntry>> getStudyPlan(@PathVariable Long programId) {
         List<StudyPlanEntry> plan = programService.getStudyPlan(programId);
         return ResponseEntity.ok(plan);
     }
 
+    @Public
     @GetMapping("/buscar")
     public ResponseEntity<ProgramDTO> findProgramByName(@RequestParam("nombre") String name) {
         ProgramDTO dto = programService.findProgramByName(name);
@@ -87,6 +91,7 @@ public class ProgramController {
         return ResponseEntity.ok(dto);
     }
 
+    @Public
     @GetMapping
     public ResponseEntity<List<ProgramDTO>> getAllPrograms() {
         List<ProgramDTO> programs = programService.getAllPrograms();
