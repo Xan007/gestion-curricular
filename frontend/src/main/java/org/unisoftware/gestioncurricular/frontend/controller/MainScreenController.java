@@ -11,14 +11,14 @@ import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.stage.Stage;
-import org.unisoftware.gestioncurricular.frontend.dto.CourseDTO;
-import org.unisoftware.gestioncurricular.frontend.dto.ProgramDTO;
-import org.unisoftware.gestioncurricular.frontend.service.CourseServiceFront;
-import org.unisoftware.gestioncurricular.frontend.service.ProgramServiceFront;
-import org.unisoftware.gestioncurricular.frontend.util.SessionManager;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Controller;
+import org.unisoftware.gestioncurricular.frontend.util.SessionManager;
+import org.unisoftware.gestioncurricular.frontend.dto.ProgramDTO;
+import org.unisoftware.gestioncurricular.frontend.dto.CourseDTO;
+import org.unisoftware.gestioncurricular.frontend.service.ProgramServiceFront;
+import org.unisoftware.gestioncurricular.frontend.service.CourseServiceFront;
 
 import java.io.IOException;
 import java.net.URL;
@@ -28,18 +28,38 @@ import java.util.ResourceBundle;
 @Controller
 public class MainScreenController implements Initializable {
 
-    // PROGRAMAS
-    @FXML private TableView<ProgramDTO> programTableView;
-    @FXML private TableColumn<ProgramDTO, Long> colProgramId;
-    @FXML private TableColumn<ProgramDTO, String> colProgramName;
-    @FXML private TableColumn<ProgramDTO, String> colPerfilProfesional;
-    @FXML private TableColumn<ProgramDTO, String> colPerfilOcupacional;
-    @FXML private TableColumn<ProgramDTO, String> colPerfilIngreso;
-    @FXML private TableColumn<ProgramDTO, String> colCompetencias;
-    @FXML private TableColumn<ProgramDTO, String> colDuration;
-    @FXML private TableColumn<ProgramDTO, String> colAwardingDegree;
+    // PROGRAMAS: usando las nuevas fx:id del FXML
+    @FXML
+    private TableView<ProgramDTO> programTable;
 
-    // CURSOS
+    @FXML
+    private TableColumn<ProgramDTO, Long> idColumn;
+
+    @FXML
+    private TableColumn<ProgramDTO, String> nameColumn;
+
+    @FXML
+    private TableColumn<ProgramDTO, String> professionalProfileColumn;
+
+    @FXML
+    private TableColumn<ProgramDTO, String> occupationalProfileColumn;
+
+    @FXML
+    private TableColumn<ProgramDTO, String> admissionProfileColumn;
+
+    @FXML
+    private TableColumn<ProgramDTO, String> competenciesColumn;
+
+    @FXML
+    private TableColumn<ProgramDTO, String> learningOutcomesFileIdColumn;
+
+    @FXML
+    private TableColumn<ProgramDTO, String> durationColumn;
+
+    @FXML
+    private TableColumn<ProgramDTO, String> awardingDegreeColumn;
+
+    // CURSOS: por si necesitas ambas tablas
     @FXML private TableView<CourseDTO> courseTableView;
     @FXML private TableColumn<CourseDTO, Long> colCourseId;
     @FXML private TableColumn<CourseDTO, String> colCourseName;
@@ -62,17 +82,19 @@ public class MainScreenController implements Initializable {
     }
 
     private void configurarColumnasProgramas() {
-        colProgramId.setCellValueFactory(new PropertyValueFactory<>("id"));
-        colProgramName.setCellValueFactory(new PropertyValueFactory<>("name"));
-        colPerfilProfesional.setCellValueFactory(new PropertyValueFactory<>("perfilProfesional"));
-        colPerfilOcupacional.setCellValueFactory(new PropertyValueFactory<>("perfilOcupacional"));
-        colPerfilIngreso.setCellValueFactory(new PropertyValueFactory<>("perfilIngreso"));
-        colCompetencias.setCellValueFactory(new PropertyValueFactory<>("competencias"));
-        colDuration.setCellValueFactory(new PropertyValueFactory<>("duration"));
-        colAwardingDegree.setCellValueFactory(new PropertyValueFactory<>("awardingDegree"));
+        idColumn.setCellValueFactory(new PropertyValueFactory<>("id"));
+        nameColumn.setCellValueFactory(new PropertyValueFactory<>("name"));
+        professionalProfileColumn.setCellValueFactory(new PropertyValueFactory<>("professionalProfile"));
+        occupationalProfileColumn.setCellValueFactory(new PropertyValueFactory<>("occupationalProfile"));
+        admissionProfileColumn.setCellValueFactory(new PropertyValueFactory<>("admissionProfile"));
+        competenciesColumn.setCellValueFactory(new PropertyValueFactory<>("competencies"));
+        learningOutcomesFileIdColumn.setCellValueFactory(new PropertyValueFactory<>("learningOutcomesFileId"));
+        durationColumn.setCellValueFactory(new PropertyValueFactory<>("duration"));
+        awardingDegreeColumn.setCellValueFactory(new PropertyValueFactory<>("awardingDegree"));
     }
 
     private void configurarColumnasCursos() {
+        if (courseTableView == null) return; // Por si no existe la tabla en el FXML
         colCourseId.setCellValueFactory(new PropertyValueFactory<>("id"));
         colCourseName.setCellValueFactory(new PropertyValueFactory<>("name"));
         colCourseType.setCellValueFactory(new PropertyValueFactory<>("type"));
@@ -85,13 +107,14 @@ public class MainScreenController implements Initializable {
     private void cargarProgramas() {
         try {
             List<ProgramDTO> lista = programServiceFront.listPrograms();
-            programTableView.getItems().setAll(lista);
+            programTable.getItems().setAll(lista);
         } catch (Exception e) {
             e.printStackTrace();
         }
     }
 
     private void cargarCursos() {
+        if (courseTableView == null) return; // Por si no existe la tabla en el FXML
         try {
             List<CourseDTO> lista = courseServiceFront.listCourses();
             courseTableView.getItems().setAll(lista);
@@ -102,9 +125,7 @@ public class MainScreenController implements Initializable {
 
     @FXML
     public void handleLogout(ActionEvent event) {
-        // Limpiar la sesión
         SessionManager.getInstance().clearSession();
-        // Navegar al login
         try {
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/Login.fxml"));
             loader.setControllerFactory(applicationContext::getBean);

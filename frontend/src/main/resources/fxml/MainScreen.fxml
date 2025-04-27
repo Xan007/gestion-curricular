@@ -30,16 +30,17 @@
                             <Insets top="10" right="10" bottom="10" left="10" />
                         </padding>
                         <children>
-                            <TableView fx:id="programTableView">
+                            <TableView fx:id="programTable" layoutX="20.0" layoutY="60.0" prefHeight="380.0" prefWidth="940.0">
                                 <columns>
-                                    <TableColumn fx:id="colProgramId"         text="ID"               prefWidth="60"/>
-                                    <TableColumn fx:id="colProgramName"       text="Nombre"           prefWidth="150"/>
-                                    <TableColumn fx:id="colPerfilProfesional" text="Perfil Profesional" prefWidth="180"/>
-                                    <TableColumn fx:id="colPerfilOcupacional" text="Perfil Ocupacional" prefWidth="180"/>
-                                    <TableColumn fx:id="colPerfilIngreso"     text="Perfil Ingreso" prefWidth="140"/>
-                                    <TableColumn fx:id="colCompetencias"      text="Competencias" prefWidth="180"/>
-                                    <TableColumn fx:id="colDuration"          text="Duración" prefWidth="80"/>
-                                    <TableColumn fx:id="colAwardingDegree"    text="Grado"    prefWidth="140"/>
+                                    <TableColumn fx:id="idColumn" prefWidth="50.0" text="ID" />
+                                    <TableColumn fx:id="nameColumn" prefWidth="120.0" text="Name" />
+                                    <TableColumn fx:id="professionalProfileColumn" prefWidth="140.0" text="Professional Profile" />
+                                    <TableColumn fx:id="occupationalProfileColumn" prefWidth="140.0" text="Occupational Profile" />
+                                    <TableColumn fx:id="admissionProfileColumn" prefWidth="140.0" text="Admission Profile" />
+                                    <TableColumn fx:id="competenciesColumn" prefWidth="120.0" text="Competencies" />
+                                    <TableColumn fx:id="learningOutcomesFileIdColumn" prefWidth="100.0" text="Learning Outcomes File ID" />
+                                    <TableColumn fx:id="durationColumn" prefWidth="70.0" text="Duration" />
+                                    <TableColumn fx:id="awardingDegreeColumn" prefWidth="120.0" text="Awarding Degree" />
                                 </columns>
                             </TableView>
                         </children>
