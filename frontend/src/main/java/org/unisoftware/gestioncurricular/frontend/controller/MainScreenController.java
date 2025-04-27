@@ -98,6 +98,12 @@ public class MainScreenController implements Initializable {
                 nameLbl.setStyle("-fx-font-size: 22px; -fx-font-weight: bold;");
 
                 Button expandBtn = new Button("Ver más detalles");
+                Button goToCursosBtn = new Button("Ver Cursos del Programa");
+                expandBtn.setWrapText(true);
+                goToCursosBtn.setWrapText(true);
+                expandBtn.setMaxWidth(Double.MAX_VALUE);
+                goToCursosBtn.setMaxWidth(Double.MAX_VALUE);
+
                 VBox datosBox = new VBox(4);
                 datosBox.setVisible(false);
 
@@ -113,16 +119,25 @@ public class MainScreenController implements Initializable {
                         infoLabel("Resultados Aprendizaje FileID: ", prog.getLearningOutcomesFileId() != null ? prog.getLearningOutcomesFileId().toString() : "")
                 );
 
-                Button goToCursosBtn = new Button("Ver Cursos del Programa");
                 goToCursosBtn.setOnAction(e -> abrirCursosPrograma(prog.getId(), prog.getName()));
 
                 HBox botones = new HBox(16, expandBtn, goToCursosBtn);
+                botones.setAlignment(Pos.CENTER_LEFT);
 
-                // Usar SessionManager para revisar roles
                 if (SessionManager.getInstance().hasRole("DIRECTOR_DE_PROGRAMA")) {
                     Button uploadBtn = new Button("Subir plan Excel");
+                    uploadBtn.setWrapText(true);
+                    uploadBtn.setMaxWidth(Double.MAX_VALUE);
                     uploadBtn.setOnAction(e -> handleSubirExcel(prog.getId()));
                     botones.getChildren().add(uploadBtn);
+                }
+
+                // Hacer que todos los botones ocupen el espacio disponible y siempre muestren el texto completo
+                for (Node n : botones.getChildren()) {
+                    if (n instanceof Button) {
+                        HBox.setHgrow(n, javafx.scene.layout.Priority.ALWAYS);
+                        ((Button) n).setMinWidth(160); // Puedes ajustar este ancho mínimo si lo deseas
+                    }
                 }
 
                 card.getChildren().addAll(nameLbl, botones, datosBox);
