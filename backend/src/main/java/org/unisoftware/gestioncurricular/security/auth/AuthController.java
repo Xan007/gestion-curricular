@@ -1,5 +1,10 @@
 package org.unisoftware.gestioncurricular.security.auth;
 
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.http.ResponseEntity;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
@@ -7,12 +12,29 @@ import org.unisoftware.gestioncurricular.dto.AuthRequest;
 
 @RestController
 @RequestMapping("/auth")
+@Tag(name = "Autenticación", description = "Endpoints relacionados con la autenticación de usuarios")
 public class AuthController {
 
     @Autowired
     private SupabaseAuthService authService;
 
     @PostMapping("/signup")
+    @Operation(
+            summary = "Registrar un nuevo usuario",
+            description = "Permite registrar un nuevo usuario proporcionando un correo electrónico y una contraseña.",
+            requestBody = @io.swagger.v3.oas.annotations.parameters.RequestBody(
+                    description = "Datos de registro del usuario",
+                    required = true,
+                    content = @Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = AuthRequest.class)
+                    )
+            ),
+            responses = {
+                    @ApiResponse(responseCode = "201", description = "Usuario registrado exitosamente"),
+                    @ApiResponse(responseCode = "400", description = "Error en los datos proporcionados")
+            }
+    )
     public ResponseEntity<String> signUp(@RequestBody AuthRequest authRequest) {
         try {
             String response = authService.signUp(authRequest.getEmail(), authRequest.getPassword());
@@ -23,6 +45,22 @@ public class AuthController {
     }
 
     @PostMapping("/signin")
+    @Operation(
+            summary = "Iniciar sesión",
+            description = "Permite iniciar sesión proporcionando un correo electrónico y una contraseña. Devuelve un token JWT en caso de éxito.",
+            requestBody = @io.swagger.v3.oas.annotations.parameters.RequestBody(
+                    description = "Credenciales del usuario",
+                    required = true,
+                    content = @Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = AuthRequest.class)
+                    )
+            ),
+            responses = {
+                    @ApiResponse(responseCode = "200", description = "Inicio de sesión exitoso, devuelve el token JWT"),
+                    @ApiResponse(responseCode = "400", description = "Credenciales inválidas")
+            }
+    )
     public ResponseEntity<String> signIn(@RequestBody AuthRequest authRequest) {
         try {
             String jwt = authService.signIn(authRequest.getEmail(), authRequest.getPassword());

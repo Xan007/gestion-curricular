@@ -11,6 +11,7 @@ import lombok.Setter;
 public class Program {
 
     @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     @Column(name = "nombre")

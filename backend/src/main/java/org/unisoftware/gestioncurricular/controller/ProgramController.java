@@ -1,5 +1,11 @@
 package org.unisoftware.gestioncurricular.controller;
 
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
@@ -17,6 +23,7 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/programas")
+@Tag(name = "Programas", description = "Operaciones relacionadas con los programas académicos")
 public class ProgramController {
 
     private final ProgramService programService;
@@ -30,8 +37,23 @@ public class ProgramController {
     }
 
     @PreAuthorize("hasRole('DIRECTOR_DE_PROGRAMA')")
-    @PostMapping("/{programId}/plan-estudio/upload")
+    @PostMapping("/{programId}/upload-plan")
+    @Operation(
+            summary = "Subir plan de estudios",
+            description = "Permite subir un archivo con el plan de estudios de un programa académico. **Requiere un token de autorización y el rol 'DIRECTOR_DE_PROGRAMA'.**",
+            responses = {
+                    @io.swagger.v3.oas.annotations.responses.ApiResponse(
+                            responseCode = "200",
+                            description = "Plan de estudios cargado exitosamente."
+                    ),
+                    @io.swagger.v3.oas.annotations.responses.ApiResponse(
+                            responseCode = "403",
+                            description = "Prohibido. El usuario no tiene los permisos necesarios para acceder a este recurso."
+                    )
+            }
+    )
     public ResponseEntity<String> uploadPlan(
+            @Parameter(description = "ID del programa", required = true)
             @PathVariable Long programId,
             @RequestParam("file") MultipartFile file
     ) {
@@ -61,7 +83,10 @@ public class ProgramController {
 
     @Public
     @GetMapping("/{programId}")
-    public ResponseEntity<ProgramDTO> getProgram(@PathVariable Long programId) {
+    @Operation(summary = "Obtener programa", description = "Obtiene la información de un programa por su ID.")
+    public ResponseEntity<ProgramDTO> getProgram(
+            @Parameter(description = "ID del programa", required = true)
+            @PathVariable Long programId) {
         ProgramDTO dto = programService.getProgram(programId);
         dto.setId(programId);
         return ResponseEntity.ok(dto);
@@ -69,6 +94,20 @@ public class ProgramController {
 
     @PreAuthorize("hasRole('DECANO')")
     @PostMapping("/crear")
+    @Operation(
+            summary = "Crear programa",
+            description = "Crea un nuevo programa académico. **Requiere un token de autorización y el rol 'DECANO'.**",
+            responses = {
+                    @io.swagger.v3.oas.annotations.responses.ApiResponse(
+                            responseCode = "201",
+                            description = "Programa creado exitosamente."
+                    ),
+                    @io.swagger.v3.oas.annotations.responses.ApiResponse(
+                            responseCode = "403",
+                            description = "Prohibido. El usuario no tiene los permisos necesarios para acceder a este recurso."
+                    )
+            }
+    )
     public ResponseEntity<Long> createProgram(@RequestBody ProgramDTO dto) {
         Long id = programService.createProgram(dto);
         return ResponseEntity.status(HttpStatus.CREATED).body(id);
@@ -76,14 +115,20 @@ public class ProgramController {
 
     @Public
     @GetMapping("/{programId}/plan-estudio")
-    public ResponseEntity<List<StudyPlanEntry>> getStudyPlan(@PathVariable Long programId) {
+    @Operation(summary = "Obtener plan de estudios", description = "Obtiene el plan de estudios de un programa por su ID.")
+    public ResponseEntity<List<StudyPlanEntry>> getStudyPlan(
+            @Parameter(description = "ID del programa", required = true)
+            @PathVariable Long programId) {
         List<StudyPlanEntry> plan = programService.getStudyPlan(programId);
         return ResponseEntity.ok(plan);
     }
 
     @Public
     @GetMapping("/buscar")
-    public ResponseEntity<ProgramDTO> findProgramByName(@RequestParam("nombre") String name) {
+    @Operation(summary = "Buscar programa por nombre", description = "Busca un programa por su nombre.")
+    public ResponseEntity<ProgramDTO> findProgramByName(
+            @Parameter(description = "Nombre del programa", required = true)
+            @RequestParam("nombre") String name) {
         ProgramDTO dto = programService.findProgramByName(name);
         if (dto == null) {
             return ResponseEntity.notFound().build();
@@ -93,6 +138,7 @@ public class ProgramController {
 
     @Public
     @GetMapping
+    @Operation(summary = "Listar todos los programas", description = "Obtiene una lista de todos los programas académicos.")
     public ResponseEntity<List<ProgramDTO>> getAllPrograms() {
         List<ProgramDTO> programs = programService.getAllPrograms();
         return ResponseEntity.ok(programs);
