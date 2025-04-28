@@ -1,33 +1,31 @@
 package org.unisoftware.gestioncurricular.frontend.service;
 
-import org.springframework.http.*;
 import org.springframework.stereotype.Service;
-import org.springframework.web.client.RestTemplate;
+import org.unisoftware.gestioncurricular.frontend.util.JwtDecodeUtil;
 import org.unisoftware.gestioncurricular.frontend.util.SessionManager;
 import org.unisoftware.gestioncurricular.frontend.dto.UserInfoDTO;
 
+import java.util.List;
+
 @Service
 public class UserServiceFront {
-    // Endpoint actualizado
-    private final String baseUrl = "http://localhost:8080/users/me/details";
 
     public UserInfoDTO getCurrentUserInfo() {
-        RestTemplate restTemplate = new RestTemplate();
-        HttpHeaders headers = new HttpHeaders();
-        headers.set("Authorization", "Bearer " + SessionManager.getInstance().getToken());
-        headers.set("Accept", "application/hal+json"); // Sugerido por el endpoint
+        String token = SessionManager.getInstance().getToken();
 
-        HttpEntity<String> entity = new HttpEntity<>(headers);
+        // Obtener datos desde el token
+        String email = JwtDecodeUtil.getUsername(token);
+        List<String> roles = JwtDecodeUtil.getRoles(token);
 
-        ResponseEntity<UserInfoDTO> response =
-                restTemplate.exchange(baseUrl, HttpMethod.GET, entity, UserInfoDTO.class);
+        // Guardar en sesión
+        SessionManager.getInstance().setUserEmail(email);
+        SessionManager.getInstance().setUserRoles(roles);
 
-        UserInfoDTO userInfoDTO = response.getBody();
-        // Guardamos datos relevantes en la sesión
-        if (userInfoDTO != null) {
-            SessionManager.getInstance().setUserEmail(userInfoDTO.getEmail());
-            SessionManager.getInstance().setUserRoles(userInfoDTO.getRoles());
-        }
+        // Crear un objeto UserInfoDTO para devolver
+        UserInfoDTO userInfoDTO = new UserInfoDTO();
+        userInfoDTO.setEmail(email);
+        userInfoDTO.setRoles(roles);
+
         return userInfoDTO;
     }
 }

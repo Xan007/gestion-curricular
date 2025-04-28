@@ -86,69 +86,71 @@ public class MainScreenController implements Initializable {
         cardContainer.getChildren().clear();
         try {
             List<ProgramDTO> lista = programServiceFront.listPrograms();
+
             if (!lista.isEmpty()) {
-                ProgramDTO prog = lista.get(0); // Solo el primero
+                for (ProgramDTO prog : lista) { // Iterar sobre todos los programas
+                    VBox card = new VBox(8);
+                    card.setStyle("-fx-background-color: #efefef; -fx-background-radius: 12; -fx-padding: 22;");
+                    card.setPadding(new Insets(16));
+                    card.setMaxWidth(580);
 
-                VBox card = new VBox(8);
-                card.setStyle("-fx-background-color: #efefef; -fx-background-radius: 12; -fx-padding: 22;");
-                card.setPadding(new Insets(16));
-                card.setMaxWidth(580);
+                    Label nameLbl = new Label(prog.getName());
+                    nameLbl.setStyle("-fx-font-size: 22px; -fx-font-weight: bold;");
 
-                Label nameLbl = new Label(prog.getName());
-                nameLbl.setStyle("-fx-font-size: 22px; -fx-font-weight: bold;");
+                    Button expandBtn = new Button("Ver más detalles");
+                    Button goToCursosBtn = new Button("Ver Cursos del Programa");
+                    expandBtn.setWrapText(true);
+                    goToCursosBtn.setWrapText(true);
+                    expandBtn.setMaxWidth(Double.MAX_VALUE);
+                    goToCursosBtn.setMaxWidth(Double.MAX_VALUE);
 
-                Button expandBtn = new Button("Ver más detalles");
-                Button goToCursosBtn = new Button("Ver Cursos del Programa");
-                expandBtn.setWrapText(true);
-                goToCursosBtn.setWrapText(true);
-                expandBtn.setMaxWidth(Double.MAX_VALUE);
-                goToCursosBtn.setMaxWidth(Double.MAX_VALUE);
+                    VBox datosBox = new VBox(4);
+                    datosBox.setVisible(false);
 
-                VBox datosBox = new VBox(4);
-                datosBox.setVisible(false);
+                    expandBtn.setOnAction(e -> datosBox.setVisible(!datosBox.isVisible()));
 
-                expandBtn.setOnAction(e -> datosBox.setVisible(!datosBox.isVisible()));
+                    datosBox.getChildren().addAll(
+                            infoLabel("Título otorgado: ", prog.getAwardingDegree()),
+                            infoLabel("Perfil profesional: ", prog.getProfessionalProfile()),
+                            infoLabel("Perfil ocupacional: ", prog.getOccupationalProfile()),
+                            infoLabel("Perfil de ingreso: ", prog.getAdmissionProfile()),
+                            infoLabel("Competencias: ", prog.getCompetencies()),
+                            infoLabel("Duración semestres: ", prog.getDuration()!=null ? prog.getDuration().toString() : ""),
+                            infoLabel("Resultados Aprendizaje FileID: ", prog.getLearningOutcomesFileId() != null ? prog.getLearningOutcomesFileId().toString() : "")
+                    );
 
-                datosBox.getChildren().addAll(
-                        infoLabel("Título otorgado: ", prog.getAwardingDegree()),
-                        infoLabel("Perfil profesional: ", prog.getProfessionalProfile()),
-                        infoLabel("Perfil ocupacional: ", prog.getOccupationalProfile()),
-                        infoLabel("Perfil de ingreso: ", prog.getAdmissionProfile()),
-                        infoLabel("Competencias: ", prog.getCompetencies()),
-                        infoLabel("Duración semestres: ", prog.getDuration()!=null ? prog.getDuration().toString() : ""),
-                        infoLabel("Resultados Aprendizaje FileID: ", prog.getLearningOutcomesFileId() != null ? prog.getLearningOutcomesFileId().toString() : "")
-                );
+                    goToCursosBtn.setOnAction(e -> abrirCursosPrograma(prog.getId(), prog.getName()));
 
-                goToCursosBtn.setOnAction(e -> abrirCursosPrograma(prog.getId(), prog.getName()));
+                    HBox botones = new HBox(16, expandBtn, goToCursosBtn);
+                    botones.setAlignment(Pos.CENTER_LEFT);
 
-                HBox botones = new HBox(16, expandBtn, goToCursosBtn);
-                botones.setAlignment(Pos.CENTER_LEFT);
-
-                if (SessionManager.getInstance().hasRole("DIRECTOR_DE_PROGRAMA")) {
-                    Button uploadBtn = new Button("Subir plan Excel");
-                    uploadBtn.setWrapText(true);
-                    uploadBtn.setMaxWidth(Double.MAX_VALUE);
-                    uploadBtn.setOnAction(e -> handleSubirExcel(prog.getId()));
-                    botones.getChildren().add(uploadBtn);
-                }
-
-                // Hacer que todos los botones ocupen el espacio disponible y siempre muestren el texto completo
-                for (Node n : botones.getChildren()) {
-                    if (n instanceof Button) {
-                        HBox.setHgrow(n, javafx.scene.layout.Priority.ALWAYS);
-                        ((Button) n).setMinWidth(160); // Puedes ajustar este ancho mínimo si lo deseas
+                    if (SessionManager.getInstance().hasRole("DIRECTOR_DE_PROGRAMA")) {
+                        Button uploadBtn = new Button("Subir plan Excel");
+                        uploadBtn.setWrapText(true);
+                        uploadBtn.setMaxWidth(Double.MAX_VALUE);
+                        uploadBtn.setOnAction(e -> handleSubirExcel(prog.getId()));
+                        botones.getChildren().add(uploadBtn);
                     }
-                }
 
-                card.getChildren().addAll(nameLbl, botones, datosBox);
-                cardContainer.getChildren().add(card);
+                    // Hacer que todos los botones ocupen el espacio disponible y siempre muestren el texto completo
+                    for (Node n : botones.getChildren()) {
+                        if (n instanceof Button) {
+                            HBox.setHgrow(n, javafx.scene.layout.Priority.ALWAYS);
+                            ((Button) n).setMinWidth(160); // Puedes ajustar este ancho mínimo si lo deseas
+                        }
+                    }
+
+                    card.getChildren().addAll(nameLbl, botones, datosBox);
+                    cardContainer.getChildren().add(card);
+                }
             } else {
                 cardContainer.getChildren().add(new Label("No hay programas disponibles."));
             }
         } catch (Exception e) {
-            cardContainer.getChildren().add(new Label("Error al cargar el programa: " + e.getMessage()));
+            cardContainer.getChildren().add(new Label("Error al cargar los programas: " + e.getMessage()));
         }
     }
+
 
     private HBox infoLabel(String label, String value) {
         Label l = new Label(label);
@@ -180,7 +182,7 @@ public class MainScreenController implements Initializable {
         FileChooser fileChooser = new FileChooser();
         fileChooser.setTitle("Selecciona el archivo Excel del plan de estudios");
         fileChooser.getExtensionFilters().add(
-                new FileChooser.ExtensionFilter("Archivos Excel", "*.xlsx", "*.xls"));
+                new FileChooser.ExtensionFilter("Archivos Excel", "*.xlsx", "*.xls", "*.csv"));
         Stage stage = (Stage) cardContainer.getScene().getWindow();
         File selectedFile = fileChooser.showOpenDialog(stage);
         if (selectedFile != null) {

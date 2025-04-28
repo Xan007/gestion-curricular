@@ -18,19 +18,19 @@ public class Program {
     private String name;
 
     @Column(name = "perfil_profesional")
-    private String perfilProfesional;
+    private String professionalProfile;
 
     @Column(name = "perfil_ocupacional")
-    private String perfilOcupacional;
+    private String occupationalProfile;
 
     @Column(name = "perfil_ingreso")
-    private String perfilIngreso;
+    private String admissionProfile;
 
     @Column(name = "competencias")
-    private String competencias;
+    private String competencies;
 
     @Column(name = "resultados_aprendizaje_file_id")
-    private Long resultadosAprendizajeFileId;
+    private Long learningOutcomesFileId;
 
     @Column(name = "duracion")
     private Integer duration;

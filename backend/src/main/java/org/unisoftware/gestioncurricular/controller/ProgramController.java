@@ -37,6 +37,17 @@ public class ProgramController {
     @Operation(
             summary = "Subir plan de estudios",
             description = "Permite subir un archivo con el plan de estudios de un programa académico. **Requiere un token de autorización y el rol 'DIRECTOR_DE_PROGRAMA'.**",
+            requestBody = @io.swagger.v3.oas.annotations.parameters.RequestBody(
+                    description = "Archivo con el plan de estudios del programa",
+                    required = true,
+                    content = @io.swagger.v3.oas.annotations.media.Content(
+                            mediaType = "multipart/form-data",
+                            schema = @io.swagger.v3.oas.annotations.media.Schema(
+                                    type = "string",
+                                    format = "binary"
+                            )
+                    )
+            ),
             responses = {
                     @io.swagger.v3.oas.annotations.responses.ApiResponse(
                             responseCode = "200",

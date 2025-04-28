@@ -34,13 +34,16 @@ public class CourseController {
     @PostMapping("/upload")
     @Operation(
             summary = "Subir cursos",
-            description = "Permite subir un archivo con información de cursos. **Requiere un token de autorización y el rol 'DECANO'.**",
+            description = "Permite subir un archivo con información de los cursos. **Requiere un token de autorización y el rol 'DECANO'.**",
             requestBody = @io.swagger.v3.oas.annotations.parameters.RequestBody(
                     description = "Archivo con los datos de los cursos",
                     required = true,
                     content = @io.swagger.v3.oas.annotations.media.Content(
                             mediaType = "multipart/form-data",
-                            schema = @io.swagger.v3.oas.annotations.media.Schema(type = "string", format = "binary")
+                            schema = @io.swagger.v3.oas.annotations.media.Schema(
+                                    type = "string",
+                                    format = "binary"
+                            )
                     )
             ),
             responses = {
@@ -60,6 +63,10 @@ public class CourseController {
     )
     public ResponseEntity<String> uploadCourses(
             @RequestParam("file") MultipartFile file) {
+        if (file.isEmpty()) {
+            return ResponseEntity.badRequest().body("No se ha seleccionado ningún archivo.");
+        }
+
         String filename = file.getOriginalFilename().toLowerCase();
         CourseFileParser parser = parsers.stream()
                 .filter(p -> p.supports(filename))

@@ -32,24 +32,15 @@ public class JwtDecodeUtil {
         return "";
     }
 
-    // Para obtener los roles (asumiendo que vienen en "roles" o "role" o "user_role")
     public static List<String> getRoles(String jwtToken) {
         Map<String, Object> claims = decode(jwtToken);
-        Object rolesObj = claims.get("roles");
-        if (rolesObj instanceof List) {
-            return (List<String>) rolesObj;
-        }
-        if (rolesObj instanceof String) {
-            return List.of((String) rolesObj);
-        }
-        if (claims.containsKey("role")) {
-            Object r = claims.get("role");
-            return r instanceof String ? List.of((String) r) : Collections.emptyList();
-        }
+
         if (claims.containsKey("user_role")) {
             Object r = claims.get("user_role");
             return r instanceof String ? List.of((String) r) : Collections.emptyList();
         }
+
         return Collections.emptyList();
     }
+
 }
