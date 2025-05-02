@@ -61,12 +61,40 @@ public class AuthController {
                     @ApiResponse(responseCode = "400", description = "Credenciales inválidas")
             }
     )
-    public ResponseEntity<String> signIn(@RequestBody AuthRequest authRequest) {
+    public ResponseEntity<?> signIn(@RequestBody AuthRequest authRequest) {
         try {
-            String jwt = authService.signIn(authRequest.getEmail(), authRequest.getPassword());
-            return ResponseEntity.ok(jwt);  // Status 200 for OK
+            AuthTokens tokens = authService.signIn(authRequest.getEmail(), authRequest.getPassword());
+            return ResponseEntity.ok(tokens);  // 200 OK
         } catch (Exception e) {
-            return ResponseEntity.status(400).body(e.getMessage());  // Status 400 for Bad Request
+            return ResponseEntity.status(400).body(e.getMessage());  // 400 Bad Request
         }
     }
+
+    @PostMapping("/refresh")
+    @Operation(
+            summary = "Refrescar el token de acceso",
+            description = "Permite obtener un nuevo access_token usando un refresh_token previamente emitido.",
+            requestBody = @io.swagger.v3.oas.annotations.parameters.RequestBody(
+                    description = "Refresh token válido emitido previamente",
+                    required = true,
+                    content = @Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = RefreshRequest.class)
+                    )
+            ),
+            responses = {
+                    @ApiResponse(responseCode = "200", description = "Token refrescado exitosamente, devuelve nuevos tokens"),
+                    @ApiResponse(responseCode = "400", description = "Error al refrescar el token")
+            }
+    )
+    public ResponseEntity<?> refresh(@RequestBody RefreshRequest request) {
+        try {
+            AuthTokens tokens = authService.refreshAccessToken(request.getRefreshToken());
+            return ResponseEntity.ok(tokens);
+        } catch (Exception e) {
+            return ResponseEntity.status(400).body(e.getMessage());
+        }
+    }
+
+
 }

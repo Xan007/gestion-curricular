@@ -13,6 +13,7 @@ import javafx.stage.Stage;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Component;
+import org.unisoftware.gestioncurricular.security.auth.AuthTokens;
 import org.unisoftware.gestioncurricular.security.auth.SupabaseAuthService;
 import org.unisoftware.gestioncurricular.frontend.util.SessionManager;
 import org.unisoftware.gestioncurricular.frontend.service.UserServiceFront;
@@ -71,7 +72,9 @@ public class LoginController {
             }
 
             // Intento de inicio de sesión con el servicio de autenticación
-            String token = authService.signIn(email, password);
+            AuthTokens tokens = authService.signIn(email, password);
+
+            String token = tokens.getAccessToken();
 
             // Guardar token
             SessionManager.getInstance().setToken(token);

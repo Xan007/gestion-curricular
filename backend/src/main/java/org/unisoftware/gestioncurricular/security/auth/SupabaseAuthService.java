@@ -28,7 +28,7 @@ public class SupabaseAuthService {
 
         HttpRequest request = HttpRequest.newBuilder()
                 .uri(new URI(properties.getUrl() + "/auth/v1/signup"))
-                .header("apikey", properties.getAnonKey())
+                .header("apikey", properties.getServiceRoleKey())
                 .header("Content-Type", "application/json")
                 .POST(ofString(json))
                 .build();
@@ -43,12 +43,12 @@ public class SupabaseAuthService {
         return node.get("access_token").asText();
     }
 
-    public String signIn(String email, String password) throws Exception {
+    public AuthTokens signIn(String email, String password) throws Exception {
         String json = String.format("{\"email\":\"%s\",\"password\":\"%s\"}", email, password);
 
         HttpRequest request = HttpRequest.newBuilder()
                 .uri(new URI(properties.getUrl() + "/auth/v1/token?grant_type=password"))
-                .header("apikey", properties.getAnonKey())
+                .header("apikey", properties.getServiceRoleKey())
                 .header("Content-Type", "application/json")
                 .POST(ofString(json))
                 .build();
@@ -60,6 +60,35 @@ public class SupabaseAuthService {
         }
 
         JsonNode node = mapper.readTree(response.body());
-        return node.get("access_token").asText();
+
+        String accessToken = node.get("access_token").asText();
+        String refreshToken = node.has("refresh_token") ? node.get("refresh_token").asText() : null;
+
+        return new AuthTokens(accessToken, refreshToken);
     }
+
+    public AuthTokens refreshAccessToken(String refreshToken) throws Exception {
+        String json = String.format("{\"refresh_token\":\"%s\"}", refreshToken);
+
+        HttpRequest request = HttpRequest.newBuilder()
+                .uri(new URI(properties.getUrl() + "/auth/v1/token?grant_type=refresh_token"))
+                .header("apikey", properties.getServiceRoleKey())
+                .header("Content-Type", "application/json")
+                .POST(HttpRequest.BodyPublishers.ofString(json))
+                .build();
+
+        HttpResponse<String> response = http.send(request, HttpResponse.BodyHandlers.ofString());
+
+        if (response.statusCode() != 200) {
+            throw new RuntimeException("Refresh failed: " + response.body());
+        }
+
+        JsonNode node = mapper.readTree(response.body());
+
+        String newAccessToken = node.get("access_token").asText();
+        String newRefreshToken = node.has("refresh_token") ? node.get("refresh_token").asText() : refreshToken;
+
+        return new AuthTokens(newAccessToken, newRefreshToken);
+    }
+
 }
