@@ -9,11 +9,13 @@ import java.util.Optional;
 import java.util.UUID;
 
 public interface UserRoleRepository extends JpaRepository<UserRole, Long> {
-    List<UserRole> findByUserId(UUID userId);
+    UserRole findByUserId(UUID userId);
 
     Optional<UserRole> findByUserIdAndRole(UUID userId, AppRole role);
 
     List<UserRole> findByRole(AppRole role);
+
+    boolean existsByUserId(UUID userId);
 
     boolean existsByUserIdAndRole(UUID userId, AppRole role);
 }

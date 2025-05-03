@@ -3,6 +3,7 @@ package org.unisoftware.gestioncurricular.dto;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.Setter;
+import org.unisoftware.gestioncurricular.security.role.AppRole;
 
 import java.time.Instant;
 import java.util.List;
@@ -19,5 +20,5 @@ public class UserDTO {
     private String segundoNombre;
     private String primerApellido;
     private String segundoApellido;
-    private List<String> roles;
+    private AppRole role;
 }

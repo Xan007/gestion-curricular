@@ -5,11 +5,11 @@ import org.springframework.stereotype.Service;
 import org.unisoftware.gestioncurricular.dto.UserDTO;
 import org.unisoftware.gestioncurricular.entity.UserDetails;
 import org.unisoftware.gestioncurricular.repository.UserDetailsRepository;
-import org.unisoftware.gestioncurricular.repository.UserRoleRepository;
 import org.unisoftware.gestioncurricular.security.role.AppRole;
 import org.unisoftware.gestioncurricular.security.role.UserRoleService;
 import org.unisoftware.gestioncurricular.security.user.AuthUserRepository;
 
+import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -25,7 +25,7 @@ public class UserService {
     public UserDTO getUser(UUID userId) {
         var authUser = authUserRepository.findById(userId);
         var userDetails = userDetailsRepository.findByUserId(userId).orElse(null);
-        var roles = userRoleService.getRolesForUser(userId);
+        var roles = userRoleService.getRoleForUser(userId);
 
         return mapToDTO(authUser.getId(), authUser.getEmail(), authUser.getCreatedAt(), userDetails, roles);
     }
@@ -35,7 +35,7 @@ public class UserService {
         return authUsers.stream()
                 .map(authUser -> {
                     var details = userDetailsRepository.findByUserId(authUser.getId()).orElse(null);
-                    var roles = userRoleService.getRolesForUser(authUser.getId());
+                    var roles = userRoleService.getRoleForUser(authUser.getId());
                     return mapToDTO(authUser.getId(), authUser.getEmail(), authUser.getCreatedAt(), details, roles);
                 })
                 .collect(Collectors.toList());
@@ -52,11 +52,11 @@ public class UserService {
         userRoleService.assignRoleToUser(userId, role);
     }
 
-    public void removeAllRoles(UUID userId) {
-        userRoleService.removeAllRoles(userId);
+    public void removeRole(UUID userId) {
+        userRoleService.removeRole(userId);
     }
 
-    private UserDTO mapToDTO(UUID id, String email, java.time.Instant createdAt, UserDetails details, List<String> roles) {
+    private UserDTO mapToDTO(UUID id, String email, Instant createdAt, UserDetails details, AppRole role) {
         return new UserDTO(
                 id,
                 email,
@@ -65,14 +65,11 @@ public class UserService {
                 details != null ? details.getSegundoNombre() : null,
                 details != null ? details.getPrimerApellido() : null,
                 details != null ? details.getSegundoApellido() : null,
-                roles
+                role
         );
     }
 
-    public List<AppRole> getUserRoles(UUID userId) {
-        return userRoleService.getRolesForUser(userId)
-                .stream()
-                .map(AppRole::valueOf)
-                .collect(Collectors.toList());
+    public AppRole getUserRole(UUID userId) {
+        return userRoleService.getRoleForUser(userId);
     }
 }

@@ -43,16 +43,16 @@ public class UserController {
 
     @Operation(summary = "Obtener roles de un usuario", description = "Obtiene la lista de roles asignados a un usuario por su ID.")
     @GetMapping("/{id}/role")
-    public List<AppRole> getUserRoles(
+    public AppRole getUserRoles(
             @Parameter(description = "ID del usuario")
             @PathVariable UUID id) {
-        return userService.getUserRoles(id);
+        return userService.getUserRole(id);
     }
 
     @Operation(summary = "Obtener roles del usuario autenticado", description = "Obtiene los roles asignados al usuario actualmente autenticado.")
     @GetMapping("/me/role")
-    public List<AppRole> getMyRoles(@AuthenticationPrincipal UUID userId) {
-        return userService.getUserRoles(userId);
+    public AppRole getMyRoles(@AuthenticationPrincipal UUID userId) {
+        return userService.getUserRole(userId);
     }
 
     @Operation(summary = "Obtener ID del usuario autenticado", description = "Devuelve el ID (UUID) del usuario actualmente autenticado.")
@@ -88,6 +88,6 @@ public class UserController {
             @Parameter(description = "ID del usuario")
             @PathVariable UUID id
     ) {
-        userService.removeAllRoles(id);
+        userService.removeRole(id);
     }
 }
