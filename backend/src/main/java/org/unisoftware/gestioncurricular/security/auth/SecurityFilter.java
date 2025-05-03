@@ -43,6 +43,8 @@ public class SecurityFilter extends OncePerRequestFilter {
         if (header != null && header.startsWith("Bearer ")) {
             String token = header.substring(7);
 
+            request.setAttribute("jwt", token);
+
             if (jwtUtil.isTokenValid(token)) {
                 Claims claims = jwtUtil.extractAllClaims(token);
                 String role = claims.get("role", String.class);
@@ -70,6 +72,8 @@ public class SecurityFilter extends OncePerRequestFilter {
                 }
             }
         }
+
+
 
         filterChain.doFilter(request, response);
     }

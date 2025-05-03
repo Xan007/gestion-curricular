@@ -48,8 +48,8 @@ public class UserService {
                 .collect(Collectors.toList());
     }
 
-    public void assignRole(UUID userId, AppRole role) {
-        userRoleService.assignRoleToUser(userId, role);
+    public void assignRole(UUID userId, AppRole role, String jwtToken) {
+        userRoleService.assignRoleToUser(userId, role, jwtToken);
     }
 
     public void removeRole(UUID userId) {

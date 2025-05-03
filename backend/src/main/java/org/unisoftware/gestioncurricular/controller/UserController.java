@@ -4,11 +4,14 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import org.unisoftware.gestioncurricular.dto.UserDTO;
 import org.unisoftware.gestioncurricular.security.role.AppRole;
+import org.unisoftware.gestioncurricular.security.util.SecurityUtil;
 import org.unisoftware.gestioncurricular.service.UserService;
 
 import java.util.List;
@@ -70,12 +73,19 @@ public class UserController {
     @PreAuthorize("hasRole('DECANO')")
     @Operation(summary = "Asignar rol a usuario", description = "Asigna un nuevo rol a un usuario específico. **Requiere rol 'DECANO'.**")
     @PostMapping("/{id}/assign-role")
-    public void assignRole(
+    public ResponseEntity<Void> assignRole(
             @Parameter(description = "ID del usuario")
             @PathVariable UUID id,
             @Parameter(description = "Rol que se desea asignar")
             @RequestParam AppRole role) {
-        userService.assignRole(id, role);
+        String jwtToken = SecurityUtil.getJwtFromSecurityContext();
+
+        if (jwtToken == null || jwtToken.isBlank()) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
+
+        userService.assignRole(id, role, jwtToken);
+        return ResponseEntity.noContent().build();
     }
 
     @PreAuthorize("hasRole('DECANO')")
