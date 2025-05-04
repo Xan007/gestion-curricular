@@ -27,11 +27,9 @@ public class UserRoleService {
 
     public AppRole getRoleForUser(UUID userId) {
         UserRole role = userRoleRepository.findByUserId(userId);
-        if (role == null) {
-            throw new RuntimeException("No se encontró un rol para el usuario con ID: " + userId);
-        }
-        return role.getRole();
+        return role != null ? role.getRole() : null;
     }
+
 
     public List<UUID> getUserIdsByRole(AppRole role) {
         List<UUID> userIds = userRoleRepository.findByRole(role)
