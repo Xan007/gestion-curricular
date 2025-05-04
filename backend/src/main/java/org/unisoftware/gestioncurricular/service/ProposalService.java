@@ -1,0 +1,90 @@
+package org.unisoftware.gestioncurricular.service;
+
+import org.unisoftware.gestioncurricular.dto.ProposalReviewRequest;
+import org.unisoftware.gestioncurricular.entity.Proposal;
+import org.unisoftware.gestioncurricular.repository.ProposalRepository;
+import org.springframework.stereotype.Service;
+import org.unisoftware.gestioncurricular.util.enums.ProposalStatus;
+
+import java.time.Instant;
+import java.util.List;
+
+/**
+ * Servicio para gestionar la lógica de negocio de las propuestas.
+ */
+@Service
+public class ProposalService {
+
+    private final ProposalRepository proposalRepository;
+
+    public ProposalService(ProposalRepository proposalRepository) {
+        this.proposalRepository = proposalRepository;
+    }
+
+    /**
+     * Obtiene todas las propuestas.
+     */
+    public List<Proposal> getAllProposals() {
+        return proposalRepository.findAll();
+    }
+
+    /**
+     * Obtiene las propuestas por estado.
+     */
+    public List<Proposal> getProposalsByStatus(ProposalStatus status) {
+        return proposalRepository.findByStatus(status);
+    }
+
+    public Proposal reviewProposal(Long id, ProposalReviewRequest.Action action, String observations, String role) {
+        Proposal proposal = proposalRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("Propuesta no encontrada: " + id));
+
+        ProposalStatus currentStatus = proposal.getStatus();
+
+        switch (role) {
+            case "ROLE_DIRECTOR_DE_PROGRAMA":
+                if (currentStatus != ProposalStatus.EN_REVISION_DIRECTOR) {
+                    throw new IllegalStateException("La propuesta no está en revisión del director");
+                }
+
+                if (action == ProposalReviewRequest.Action.ACCEPT) {
+                    proposal.setStatus(ProposalStatus.EN_REVISION_COMITE);
+                } else if (action == ProposalReviewRequest.Action.REJECT) {
+                    proposal.setStatus(ProposalStatus.AJUSTES_SOLICITADOS);
+                } else {
+                    throw new IllegalArgumentException("Acción no válida para el director");
+                }
+                break;
+
+            case "ROLE_COMITE_DE_PROGRAMA":
+                if (currentStatus != ProposalStatus.EN_REVISION_COMITE) {
+                    throw new IllegalStateException("La propuesta no está en revisión del comité");
+                }
+
+                if (action == ProposalReviewRequest.Action.ACCEPT) {
+                    proposal.setStatus(ProposalStatus.ACEPTADA);
+                } else if (action == ProposalReviewRequest.Action.REJECT) {
+                    proposal.setStatus(ProposalStatus.RECHAZADA);
+                } else {
+                    throw new IllegalArgumentException("Acción no válida para el comité");
+                }
+                break;
+
+            default:
+                throw new SecurityException("Rol no autorizado para esta operación");
+        }
+
+        // Acumular observaciones
+        String existing = proposal.getObservations();
+        String prefix = "[" + Instant.now() + " - " + role + " - " + action.name() + "]";
+        String newEntry = prefix + (observations != null && !observations.isBlank() ? " " + observations : "");
+        String updatedObservations = (existing == null || existing.isBlank())
+                ? newEntry
+                : existing + "\n" + newEntry;
+
+        proposal.setObservations(updatedObservations);
+        proposal.setLastUpdatedAt(Instant.now());
+
+        return proposalRepository.save(proposal);
+    }
+}

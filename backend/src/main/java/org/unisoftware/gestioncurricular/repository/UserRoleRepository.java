@@ -2,7 +2,7 @@ package org.unisoftware.gestioncurricular.repository;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.unisoftware.gestioncurricular.entity.UserRole;
-import org.unisoftware.gestioncurricular.security.role.AppRole;
+import org.unisoftware.gestioncurricular.util.enums.AppRole;
 
 import java.util.List;
 import java.util.Optional;

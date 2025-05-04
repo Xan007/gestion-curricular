@@ -2,7 +2,7 @@ package org.unisoftware.gestioncurricular.entity.converters;
 
 import jakarta.persistence.AttributeConverter;
 import jakarta.persistence.Converter;
-import org.unisoftware.gestioncurricular.util.courseEnums.CourseArea;
+import org.unisoftware.gestioncurricular.util.enums.courseEnums.CourseArea;
 
 @Converter(autoApply = true)
 public class CourseAreaConverter implements AttributeConverter<CourseArea, String> {

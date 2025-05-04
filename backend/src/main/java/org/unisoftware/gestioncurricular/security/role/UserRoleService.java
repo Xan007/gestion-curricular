@@ -4,6 +4,7 @@ import org.springframework.stereotype.Service;
 import org.unisoftware.gestioncurricular.config.SupabaseProperties;
 import org.unisoftware.gestioncurricular.entity.UserRole;
 import org.unisoftware.gestioncurricular.repository.UserRoleRepository;
+import org.unisoftware.gestioncurricular.util.enums.AppRole;
 
 import java.net.URI;
 import java.net.http.HttpClient;

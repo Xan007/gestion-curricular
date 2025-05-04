@@ -7,9 +7,9 @@ import org.hibernate.annotations.ColumnTransformer;
 import org.unisoftware.gestioncurricular.entity.converters.CourseAreaConverter;
 import org.unisoftware.gestioncurricular.entity.converters.CourseCycleConverter;
 import org.unisoftware.gestioncurricular.entity.converters.CourseTypeConverter;
-import org.unisoftware.gestioncurricular.util.courseEnums.CourseArea;
-import org.unisoftware.gestioncurricular.util.courseEnums.CourseCycle;
-import org.unisoftware.gestioncurricular.util.courseEnums.CourseType;
+import org.unisoftware.gestioncurricular.util.enums.courseEnums.CourseArea;
+import org.unisoftware.gestioncurricular.util.enums.courseEnums.CourseCycle;
+import org.unisoftware.gestioncurricular.util.enums.courseEnums.CourseType;
 
 import java.time.LocalDateTime;
 

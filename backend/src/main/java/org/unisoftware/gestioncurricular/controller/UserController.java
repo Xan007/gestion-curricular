@@ -10,7 +10,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import org.unisoftware.gestioncurricular.dto.UserDTO;
-import org.unisoftware.gestioncurricular.security.role.AppRole;
+import org.unisoftware.gestioncurricular.util.enums.AppRole;
 import org.unisoftware.gestioncurricular.security.util.SecurityUtil;
 import org.unisoftware.gestioncurricular.service.UserService;
 

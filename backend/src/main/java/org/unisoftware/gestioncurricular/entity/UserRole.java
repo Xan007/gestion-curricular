@@ -4,7 +4,7 @@ import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
 import org.hibernate.annotations.ColumnTransformer;
-import org.unisoftware.gestioncurricular.security.role.AppRole;
+import org.unisoftware.gestioncurricular.util.enums.AppRole;
 import org.unisoftware.gestioncurricular.entity.converters.AppRoleConverter;
 
 import java.util.UUID;

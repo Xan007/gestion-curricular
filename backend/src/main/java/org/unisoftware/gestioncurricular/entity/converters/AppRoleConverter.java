@@ -2,7 +2,7 @@ package org.unisoftware.gestioncurricular.entity.converters;
 
 import jakarta.persistence.AttributeConverter;
 import jakarta.persistence.Converter;
-import org.unisoftware.gestioncurricular.security.role.AppRole;
+import org.unisoftware.gestioncurricular.util.enums.AppRole;
 
 @Converter(autoApply = true)
 public class AppRoleConverter implements AttributeConverter<AppRole, String> {

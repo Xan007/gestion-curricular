@@ -3,10 +3,9 @@ package org.unisoftware.gestioncurricular.dto;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.Setter;
-import org.unisoftware.gestioncurricular.security.role.AppRole;
+import org.unisoftware.gestioncurricular.util.enums.AppRole;
 
 import java.time.Instant;
-import java.util.List;
 import java.util.UUID;
 
 @Getter

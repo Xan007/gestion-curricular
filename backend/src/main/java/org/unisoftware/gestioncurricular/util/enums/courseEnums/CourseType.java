@@ -1,24 +1,25 @@
-package org.unisoftware.gestioncurricular.util.courseEnums;
+package org.unisoftware.gestioncurricular.util.enums.courseEnums;
 
+import lombok.Getter;
+
+@Getter
 public enum CourseType {
     teorico("T", "teorico"), practico("P", "practica"), teorico_practico("TP", "teorico_practico");
 
+    /**
+     * -- GETTER --
+     * Abreviatura para guardar en la DB
+     */
     private final String code;
+    /**
+     * -- GETTER --
+     * Texto legible para mostrar al usuario
+     */
     private final String label;
 
     CourseType(String code, String label) {
         this.code = code;
         this.label = label;
-    }
-
-    /** Abreviatura para guardar en la DB */
-    public String getCode() {
-        return code;
-    }
-
-    /** Texto legible para mostrar al usuario */
-    public String getLabel() {
-        return label;
     }
 
     /** Convierte abreviatura a enum */

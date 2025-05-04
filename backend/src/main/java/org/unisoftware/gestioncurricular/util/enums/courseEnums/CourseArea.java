@@ -1,5 +1,8 @@
-package org.unisoftware.gestioncurricular.util.courseEnums;
+package org.unisoftware.gestioncurricular.util.enums.courseEnums;
 
+import lombok.Getter;
+
+@Getter
 public enum CourseArea {
     profesional("PS", "profesional"),
     basica("BA", "basica"),
@@ -7,22 +10,20 @@ public enum CourseArea {
     profundizacion("PZ", "profundizacion"),
     investigacion("I", "investigacion");
 
+    /**
+     * -- GETTER --
+     * Abreviatura para guardar en la DB
+     */
     private final String code;
+    /**
+     * -- GETTER --
+     * Texto legible para mostrar al usuario
+     */
     private final String label;
 
     CourseArea(String code, String label) {
         this.code = code;
         this.label = label;
-    }
-
-    /** Abreviatura para guardar en la DB */
-    public String getCode() {
-        return code;
-    }
-
-    /** Texto legible para mostrar al usuario */
-    public String getLabel() {
-        return label;
     }
 
     /** Convierte abreviatura a enum */

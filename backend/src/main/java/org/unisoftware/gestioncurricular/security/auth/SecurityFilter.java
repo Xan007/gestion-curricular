@@ -11,7 +11,7 @@ import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 import org.unisoftware.gestioncurricular.config.SupabaseProperties;
-import org.unisoftware.gestioncurricular.security.role.AppRole;
+import org.unisoftware.gestioncurricular.util.enums.AppRole;
 import org.unisoftware.gestioncurricular.security.role.UserRoleService;
 import org.unisoftware.gestioncurricular.security.util.JwtUtil;
 
@@ -23,12 +23,10 @@ import java.util.UUID;
 public class SecurityFilter extends OncePerRequestFilter {
 
     private final JwtUtil jwtUtil;
-    private final SupabaseProperties supabaseProperties;
     private final UserRoleService userRoleService;
 
     public SecurityFilter(JwtUtil jwtUtil, SupabaseProperties supabaseProperties, UserRoleService userRoleService) {
         this.jwtUtil = jwtUtil;
-        this.supabaseProperties = supabaseProperties;
         this.userRoleService = userRoleService;
     }
 

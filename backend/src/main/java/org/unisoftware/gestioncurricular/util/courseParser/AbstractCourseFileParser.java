@@ -1,9 +1,9 @@
 package org.unisoftware.gestioncurricular.util.courseParser;
 
 import org.unisoftware.gestioncurricular.dto.CourseDTO;
-import org.unisoftware.gestioncurricular.util.courseEnums.CourseArea;
-import org.unisoftware.gestioncurricular.util.courseEnums.CourseCycle;
-import org.unisoftware.gestioncurricular.util.courseEnums.CourseType;
+import org.unisoftware.gestioncurricular.util.enums.courseEnums.CourseArea;
+import org.unisoftware.gestioncurricular.util.enums.courseEnums.CourseCycle;
+import org.unisoftware.gestioncurricular.util.enums.courseEnums.CourseType;
 
 import java.io.InputStream;
 import java.io.IOException;

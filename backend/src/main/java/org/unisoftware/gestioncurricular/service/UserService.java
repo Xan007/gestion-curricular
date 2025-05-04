@@ -5,7 +5,7 @@ import org.springframework.stereotype.Service;
 import org.unisoftware.gestioncurricular.dto.UserDTO;
 import org.unisoftware.gestioncurricular.entity.UserDetails;
 import org.unisoftware.gestioncurricular.repository.UserDetailsRepository;
-import org.unisoftware.gestioncurricular.security.role.AppRole;
+import org.unisoftware.gestioncurricular.util.enums.AppRole;
 import org.unisoftware.gestioncurricular.security.role.UserRoleService;
 import org.unisoftware.gestioncurricular.security.user.AuthUserRepository;
 
