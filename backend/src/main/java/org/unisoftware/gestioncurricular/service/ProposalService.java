@@ -8,6 +8,7 @@ import org.unisoftware.gestioncurricular.util.enums.ProposalStatus;
 
 import java.time.Instant;
 import java.util.List;
+import java.util.UUID;
 
 /**
  * Servicio para gestionar la lógica de negocio de las propuestas.
@@ -33,6 +34,10 @@ public class ProposalService {
      */
     public List<Proposal> getProposalsByStatus(ProposalStatus status) {
         return proposalRepository.findByStatus(status);
+    }
+
+    public List<Proposal> getProposalsByTeacher(UUID teacherId) {
+        return proposalRepository.findByTeacherId(teacherId);
     }
 
     public Proposal reviewProposal(Long id, ProposalReviewRequest.Action action, String observations, String role) {

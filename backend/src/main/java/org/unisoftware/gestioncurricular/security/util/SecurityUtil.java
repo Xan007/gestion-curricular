@@ -6,6 +6,8 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
 
+import java.util.UUID;
+
 public class SecurityUtil {
 
     public static String getJwtFromSecurityContext() {
@@ -25,5 +27,23 @@ public class SecurityUtil {
                 .map(GrantedAuthority::getAuthority)
                 .findFirst()
                 .orElse(null);
+    }
+
+    public static UUID getCurrentUserId() {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        if (auth == null) return null;
+        Object principal = auth.getPrincipal();
+        if (principal instanceof UUID) {
+            return (UUID) principal;
+        }
+        // Por si alguna vez fuera String de todas formas:
+        if (principal instanceof String) {
+            try {
+                return UUID.fromString((String) principal);
+            } catch (IllegalArgumentException e) {
+                return null;
+            }
+        }
+        return null;
     }
 }
