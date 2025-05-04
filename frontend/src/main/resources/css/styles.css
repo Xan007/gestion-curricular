@@ -112,3 +112,80 @@
     -fx-text-fill: #d32f2f;
     -fx-font-weight: 600;
 }
+
+/* --- NUEVO: Personalización de Tablas (TableView) --- */
+.table-view, .custom-table {
+    -fx-background-color: #fafafa;
+    -fx-background-radius: 8;
+    -fx-border-color: #d32f2f;
+    -fx-border-width: 0 0 2 0;
+    -fx-font-size: 15px;
+    -fx-table-cell-border-color: #eeeeee;
+    -fx-effect: dropshadow(gaussian, #bdbdbd, 8, 0, 0, 2);
+    -fx-padding: 6;
+}
+.table-view .column-header-background, .custom-table .column-header-background {
+    -fx-background-color: linear-gradient(to bottom, #d32f2f, #f8bbbd);
+    -fx-border-color: transparent transparent #d32f2f transparent;
+    -fx-font-size: 15px;
+}
+.table-view .table-row-cell:filled:selected, .custom-table .table-row-cell:filled:selected {
+    -fx-background-color: #ffd6d6;
+    -fx-text-fill: #d32f2f;
+}
+.table-view .table-cell, .custom-table .table-cell {
+    -fx-padding: 8 6 8 6;
+}
+.table-view .table-row-cell, .custom-table .table-row-cell {
+    -fx-background-color: transparent;
+}
+.table-view .table-row-cell:hover, .custom-table .table-row-cell:hover {
+    -fx-background-color: #f5eded;
+}
+
+/* --- Mejoras para que los botones NO CORTEN el texto --- */
+.button {
+    -fx-wrap-text: true;
+    -fx-min-width: 120px;
+    -fx-alignment: center;
+}
+
+/* Ajuste para el texto de botón si llega a ser más largo */
+.button .text {
+    -fx-wrap-text: true;
+    -fx-text-alignment: center;
+}
+
+/* ---- CABECERA DE LAS TABLAS PERSONALIZADA ---- */
+.table-view .column-header-background {
+    -fx-background-color: #d32f2f;
+    -fx-background-radius: 8 8 0 0;
+    -fx-border-width: 0 0 2 0;
+    -fx-border-color: #d32f2f;
+}
+
+/* Estilo de la columna en sí misma */
+.table-view .column-header {
+    -fx-background-color: transparent;
+    -fx-border-width: 0 1 0 0;
+    -fx-border-color: transparent #fff transparent transparent;
+}
+
+/* Texto de las cabeceras de columna */
+.table-view .column-header .label {
+    -fx-font-family: "Segoe UI Semibold", Arial, Helvetica, sans-serif;
+    -fx-text-fill: #fff;
+    -fx-font-size: 16px;
+    -fx-font-weight: bold;
+    -fx-alignment: center;
+}
+
+.table-view .column-header:hover,
+.table-view .column-header .label:hover {
+    -fx-background-color: #b71c1c;
+    -fx-text-fill: #fff;
+}
+
+.table-view .filler {
+    -fx-background-color: transparent; /* o #d32f2f si prefieres */
+}

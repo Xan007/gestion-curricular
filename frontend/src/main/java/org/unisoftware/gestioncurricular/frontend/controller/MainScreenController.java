@@ -36,6 +36,7 @@ import java.util.ResourceBundle;
 @Component
 public class MainScreenController implements Initializable {
 
+    @FXML private Button adminPlantelBtn;
     @FXML private VBox cardContainer;
     @FXML private VBox userBox; // ¡Agrega este VBox en tu FXML al inicio de la pantalla!
 
@@ -47,7 +48,38 @@ public class MainScreenController implements Initializable {
     public void initialize(URL location, ResourceBundle resources) {
         cargarUsuarioYMostrar();
         mostrarProgramaCard();
+
+        // Mostrar botón solo si el usuario es decano
+        if (SessionManager.getInstance().hasRole("DECANO")) {
+            adminPlantelBtn.setVisible(true);
+            adminPlantelBtn.setManaged(true);
+        } else {
+            adminPlantelBtn.setVisible(false);
+            adminPlantelBtn.setManaged(false);
+        }
+
+        adminPlantelBtn.setOnAction(e -> abrirAdministracionPlantel(e));
     }
+
+    @FXML
+    private void abrirAdministracionPlantel(ActionEvent event) {
+        try {
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/AdminPlantelScreen.fxml"));
+            loader.setControllerFactory(applicationContext::getBean); // <-- Clave para integración Spring
+
+            Parent view = loader.load();
+            Scene scene = new Scene(view);
+            Stage stage = new Stage();
+            stage.setTitle("Administración de Plantel");
+            stage.setScene(scene);
+            stage.show();
+
+        } catch (Exception e) {
+            mostrarAlerta("Error", "No se pudo abrir administración de plantel.\n" + e.getMessage(), Alert.AlertType.ERROR);
+            e.printStackTrace();
+        }
+    }
+
 
     // Ahora usando JwtDecodeUtil para extraer nombre y roles del token
     private void cargarUsuarioYMostrar() {

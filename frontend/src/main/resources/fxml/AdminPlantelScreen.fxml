@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<BorderPane stylesheets="@/css/styles.css"
+            xmlns="http://javafx.com/javafx/8.0.221"
+            xmlns:fx="http://javafx.com/fxml/1"
+            fx:controller="org.unisoftware.gestioncurricular.frontend.controller.AdminPlantelScreenController"
+            styleClass="main-card">
+
+    <center>
+        <VBox spacing="22" alignment="TOP_CENTER" BorderPane.alignment="CENTER" styleClass="card">
+            <Label text="Administración de Plantel"
+                   styleClass="title-label" />
+
+            <TableView fx:id="usersTable" prefHeight="340.0" prefWidth="700.0" styleClass="custom-table">
+                <columns>
+                    <TableColumn fx:id="idCol" text="ID" prefWidth="135.0"/>
+                    <TableColumn fx:id="nameCol" text="Nombre" prefWidth="180.0"/>
+                    <TableColumn fx:id="emailCol" text="Correo" prefWidth="200.0"/>
+                    <TableColumn fx:id="rolesCol" text="Roles" prefWidth="150.0"/>
+                </columns>
+            </TableView>
+
+            <HBox spacing="14" alignment="CENTER_RIGHT">
+                <Label text="Rol:" styleClass="field-label" />
+                <ComboBox fx:id="rolesCombo" prefWidth="180.0" styleClass="text-field"/>
+                <Button fx:id="assignRoleBtn" text="Asignar rol" minWidth="120.0" styleClass="button"/>
+                <Button fx:id="removeRolesBtn" text="Quitar roles" minWidth="120.0" styleClass="button"/>
+            </HBox>
+        </VBox>
+    </center>
+
+    <padding>
+        <Insets top="22" right="32" bottom="22" left="32"/>
+    </padding>
+</BorderPane>

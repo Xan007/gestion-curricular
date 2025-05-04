@@ -13,6 +13,7 @@
               prefWidth="800">
             <Label text="Gestión Curricular" styleClass="main-title"/>
             <Pane HBox.hgrow="ALWAYS"/>
+            <Button fx:id="adminPlantelBtn" text="Administrar Plantel" visible="false" managed="false"/>
             <Button text="Cerrar sesión" onAction="#handleLogout"/>
         </HBox>
         <VBox fx:id="userBox" alignment="TOP_LEFT" spacing="5"/>
