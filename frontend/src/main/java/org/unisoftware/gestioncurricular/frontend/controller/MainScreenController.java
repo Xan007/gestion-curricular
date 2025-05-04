@@ -88,14 +88,21 @@ public class MainScreenController implements Initializable {
             List<ProgramDTO> lista = programServiceFront.listPrograms();
 
             if (!lista.isEmpty()) {
-                for (ProgramDTO prog : lista) { // Iterar sobre todos los programas
-                    VBox card = new VBox(8);
-                    card.setStyle("-fx-background-color: #efefef; -fx-background-radius: 12; -fx-padding: 22;");
-                    card.setPadding(new Insets(16));
-                    card.setMaxWidth(580);
+                for (ProgramDTO prog : lista) {
+                    VBox card = new VBox(12);
+                    card.setStyle(
+                            "-fx-background-color: #ffffff; -fx-background-radius: 12; -fx-padding: 18 18 18 18; "
+                                    + "-fx-effect: dropshadow(gaussian, #bbb, 3,0,0,1);"
+                                    + "-fx-border-color: #d32f2f; -fx-border-width: 0 0 3 0;"
+                    );
+                    card.setPadding(new Insets(20, 24, 20, 24));
+                    card.setMaxWidth(Double.MAX_VALUE);
+                    card.setSpacing(10);
 
                     Label nameLbl = new Label(prog.getName());
-                    nameLbl.setStyle("-fx-font-size: 22px; -fx-font-weight: bold;");
+                    nameLbl.setWrapText(true);
+                    nameLbl.setStyle("-fx-font-size: 22px; -fx-font-weight: bold; -fx-text-fill: #d32f2f;");
+                    nameLbl.setMaxWidth(Double.MAX_VALUE);
 
                     Button expandBtn = new Button("Ver más detalles");
                     Button goToCursosBtn = new Button("Ver Cursos del Programa");
@@ -104,43 +111,55 @@ public class MainScreenController implements Initializable {
                     expandBtn.setMaxWidth(Double.MAX_VALUE);
                     goToCursosBtn.setMaxWidth(Double.MAX_VALUE);
 
-                    VBox datosBox = new VBox(4);
+                    VBox datosBox = new VBox(10);
                     datosBox.setVisible(false);
+                    datosBox.setManaged(false); // <- Importante para ocultar layout
 
-                    expandBtn.setOnAction(e -> datosBox.setVisible(!datosBox.isVisible()));
-
+                    // SUB-TÍTULOS EN SU PROPIO RENGLÓN, INFORMACIÓN DEBAJO:
                     datosBox.getChildren().addAll(
-                            infoLabel("Título otorgado: ", prog.getAwardingDegree()),
-                            infoLabel("Perfil profesional: ", prog.getProfessionalProfile()),
-                            infoLabel("Perfil ocupacional: ", prog.getOccupationalProfile()),
-                            infoLabel("Perfil de ingreso: ", prog.getAdmissionProfile()),
-                            infoLabel("Competencias: ", prog.getCompetencies()),
-                            infoLabel("Duración semestres: ", prog.getDuration()!=null ? prog.getDuration().toString() : ""),
-                            infoLabel("Resultados Aprendizaje FileID: ", prog.getLearningOutcomesFileId() != null ? prog.getLearningOutcomesFileId().toString() : "")
+                            infoRow("Título otorgado:", prog.getAwardingDegree()),
+                            infoRow("Perfil profesional:", prog.getProfessionalProfile()),
+                            infoRow("Perfil ocupacional:", prog.getOccupationalProfile()),
+                            infoRow("Perfil de ingreso:", prog.getAdmissionProfile()),
+                            infoRow("Competencias:", prog.getCompetencies()),
+                            infoRow("Duración semestres:", prog.getDuration()!=null ? prog.getDuration().toString() : ""),
+                            infoRow("Resultados Aprendizaje FileID:", prog.getLearningOutcomesFileId() != null ? prog.getLearningOutcomesFileId().toString() : "")
                     );
+
+                    // EXPAND/COLLAPSE FUNCIONALIDAD!
+                    expandBtn.setOnAction(e -> {
+                        boolean showing = datosBox.isVisible();
+                        datosBox.setVisible(!showing);
+                        datosBox.setManaged(!showing);
+                        expandBtn.setText(!showing ? "Ocultar detalles" : "Ver más detalles");
+                    });
 
                     goToCursosBtn.setOnAction(e -> abrirCursosPrograma(prog.getId(), prog.getName()));
 
                     HBox botones = new HBox(16, expandBtn, goToCursosBtn);
                     botones.setAlignment(Pos.CENTER_LEFT);
+                    botones.setSpacing(10);
 
                     if (SessionManager.getInstance().hasRole("DIRECTOR_DE_PROGRAMA")) {
                         Button uploadBtn = new Button("Subir plan Excel");
                         uploadBtn.setWrapText(true);
                         uploadBtn.setMaxWidth(Double.MAX_VALUE);
-                        uploadBtn.setOnAction(e -> handleSubirExcel(prog.getId()));
+                        uploadBtn.setOnAction(ev -> handleSubirExcel(prog.getId()));
                         botones.getChildren().add(uploadBtn);
                     }
 
-                    // Hacer que todos los botones ocupen el espacio disponible y siempre muestren el texto completo
                     for (Node n : botones.getChildren()) {
-                        if (n instanceof Button) {
-                            HBox.setHgrow(n, javafx.scene.layout.Priority.ALWAYS);
-                            ((Button) n).setMinWidth(160); // Puedes ajustar este ancho mínimo si lo deseas
+                        if (n instanceof Button b) {
+                            HBox.setHgrow(b, javafx.scene.layout.Priority.ALWAYS);
+                            b.setMinWidth(145);
+                            b.setMaxWidth(Double.MAX_VALUE);
                         }
                     }
 
                     card.getChildren().addAll(nameLbl, botones, datosBox);
+                    card.setFillWidth(true);
+                    VBox.setVgrow(card, javafx.scene.layout.Priority.ALWAYS);
+
                     cardContainer.getChildren().add(card);
                 }
             } else {
@@ -151,14 +170,21 @@ public class MainScreenController implements Initializable {
         }
     }
 
+    // NUEVO: Crea subtítulo y valor EN DISTINTOS RENGLONES
+    private VBox infoRow(String subtitulo, String valor) {
+        Label subtitleLbl = new Label(subtitulo);
+        subtitleLbl.setStyle("-fx-font-size: 15px; -fx-font-weight: bold; -fx-text-fill: #d32f2f;");
+        subtitleLbl.setWrapText(true);
+        subtitleLbl.setMaxWidth(Double.MAX_VALUE);
 
-    private HBox infoLabel(String label, String value) {
-        Label l = new Label(label);
-        l.setStyle("-fx-font-weight: bold;");
-        Text v = new Text(value != null ? value : "");
-        HBox h = new HBox(5, l, v);
-        h.setMaxWidth(500);
-        return h;
+        Label valorLbl = new Label(valor != null ? valor : "");
+        valorLbl.setStyle("-fx-font-size: 15px; -fx-text-fill: #333; -fx-padding: 0 0 8 0;");
+        valorLbl.setWrapText(true);
+        valorLbl.setMaxWidth(Double.MAX_VALUE);
+
+        VBox vbox = new VBox(0, subtitleLbl, valorLbl);
+        vbox.setMaxWidth(Double.MAX_VALUE);
+        return vbox;
     }
 
     private void abrirCursosPrograma(Long programaId, String nombrePrograma) {

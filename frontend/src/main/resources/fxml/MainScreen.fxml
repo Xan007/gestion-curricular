@@ -3,7 +3,8 @@
 <?import javafx.scene.layout.*?>
 <?import javafx.geometry.*?>
 
-<AnchorPane xmlns:fx="http://javafx.com/fxml" fx:controller="org.unisoftware.gestioncurricular.frontend.controller.MainScreenController"
+<AnchorPane xmlns:fx="http://javafx.com/fxml"
+            fx:controller="org.unisoftware.gestioncurricular.frontend.controller.MainScreenController"
             stylesheets="@/css/styles.css">
     <VBox alignment="TOP_CENTER" spacing="30.0" styleClass="main-card"
           AnchorPane.topAnchor="0.0" AnchorPane.bottomAnchor="0.0"
@@ -14,8 +15,11 @@
             <Pane HBox.hgrow="ALWAYS"/>
             <Button text="Cerrar sesión" onAction="#handleLogout"/>
         </HBox>
-        <!-- Aquí va el mensaje de usuario y rol -->
-        <VBox fx:id="userBox" alignment="TOP_LEFT" spacing="5" />
-        <VBox fx:id="cardContainer" alignment="TOP_CENTER" spacing="20"/>
+        <VBox fx:id="userBox" alignment="TOP_LEFT" spacing="5"/>
+        <ScrollPane fitToWidth="true" fitToHeight="false" hbarPolicy="NEVER" vbarPolicy="AS_NEEDED"
+                    VBox.vgrow="ALWAYS" styleClass="main-card">
+            <VBox fx:id="cardContainer" alignment="TOP_CENTER" spacing="20"
+                  maxWidth="Infinity"/>
+        </ScrollPane>
     </VBox>
 </AnchorPane>
