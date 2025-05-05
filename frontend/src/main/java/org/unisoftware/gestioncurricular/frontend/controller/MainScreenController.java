@@ -173,7 +173,7 @@ public class MainScreenController implements Initializable {
                     botones.setSpacing(10);
 
                     if (SessionManager.getInstance().hasRole("DIRECTOR_DE_PROGRAMA")) {
-                        Button uploadBtn = new Button("Subir plan Excel");
+                        Button uploadBtn = new Button("Actualizar plan de estudios");
                         uploadBtn.setWrapText(true);
                         uploadBtn.setMaxWidth(Double.MAX_VALUE);
                         uploadBtn.setOnAction(ev -> handleSubirExcel(prog.getId()));
