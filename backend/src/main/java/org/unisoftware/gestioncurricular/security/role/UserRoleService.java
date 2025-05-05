@@ -1,11 +1,15 @@
 package org.unisoftware.gestioncurricular.security.role;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.stereotype.Service;
 import org.unisoftware.gestioncurricular.config.SupabaseProperties;
 import org.unisoftware.gestioncurricular.entity.UserRole;
+import org.unisoftware.gestioncurricular.exception.SupabaseException;
 import org.unisoftware.gestioncurricular.repository.UserRoleRepository;
 import org.unisoftware.gestioncurricular.util.enums.AppRole;
 
+import java.io.IOException;
 import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
@@ -16,6 +20,8 @@ import java.util.stream.Collectors;
 
 @Service
 public class UserRoleService {
+
+    private final HttpClient httpClient = HttpClient.newHttpClient();
 
     private final UserRoleRepository userRoleRepository;
     private final SupabaseProperties supabaseProperties;
@@ -29,7 +35,6 @@ public class UserRoleService {
         UserRole role = userRoleRepository.findByUserId(userId);
         return role != null ? role.getRole() : null;
     }
-
 
     public List<UUID> getUserIdsByRole(AppRole role) {
         List<UUID> userIds = userRoleRepository.findByRole(role)
@@ -57,17 +62,13 @@ public class UserRoleService {
     }
 
     private void assignRoleWithHttp(UUID userId, AppRole newRole, String jwtToken) {
-        try {
-            UserRole existingRole = userRoleRepository.findByUserId(userId);
-            if (existingRole != null) {
-                if (existingRole.getRole() != newRole) {
-                    updateRoleInSupabase(userId, newRole, jwtToken);
-                }
-            } else {
-                insertRoleInSupabase(userId, newRole, jwtToken);
+        UserRole existingRole = userRoleRepository.findByUserId(userId);
+        if (existingRole != null) {
+            if (existingRole.getRole() != newRole) {
+                updateRoleInSupabase(userId, newRole, jwtToken);
             }
-        } catch (Exception e) {
-            throw new RuntimeException("Error al asignar el rol con solicitud HTTP a Supabase para el usuario con ID: " + userId, e);
+        } else {
+            insertRoleInSupabase(userId, newRole, jwtToken);
         }
     }
 
@@ -87,57 +88,65 @@ public class UserRoleService {
     }
 
     private void updateRoleInSupabase(UUID userId, AppRole newRole, String jwtToken) {
-        try {
-            String url = "https://fexiivjyzplakakkiyqm.supabase.co/rest/v1/user_roles?user_id=eq." + userId.toString();
-            String body = String.format("{ \"role\": \"%s\" }", newRole.name());
-
-            HttpRequest request = HttpRequest.newBuilder()
-                    .uri(new URI(url))
-                    .header("apikey", supabaseProperties.getAnonKey())
-                    .header("Authorization", "Bearer " + jwtToken)
-                    .header("Content-Type", "application/json")
-                    .header("Prefer", "return=minimal")
-                    .method("PATCH", HttpRequest.BodyPublishers.ofString(body))
-                    .build();
-
-            HttpResponse<String> response = HttpClient.newHttpClient().send(request, HttpResponse.BodyHandlers.ofString());
-
-            if (response.statusCode() != 200) {
-                throw new RuntimeException("Error actualizando el rol en Supabase para el usuario con ID " + userId + ": " + response.body());
-            }
-        } catch (Exception e) {
-            throw new RuntimeException("Error al actualizar el rol en Supabase para el usuario con ID: " + userId, e);
-        }
+        String url = "https://fexiivjyzplakakkiyqm.supabase.co/rest/v1/user_roles?user_id=eq." + userId;
+        String body = String.format("{\"role\": \"%s\"}", newRole.name());
+        sendSupabaseRequest(url, "PATCH", body, jwtToken, "actualizar", userId);
     }
 
     private void insertRoleInSupabase(UUID userId, AppRole newRole, String jwtToken) {
-        try {
-            String url = "https://fexiivjyzplakakkiyqm.supabase.co/rest/v1/user_roles";
-            String body = String.format("{ \"user_id\": \"%s\", \"role\": \"%s\" }", userId.toString(), newRole.name());
+        String url = "https://fexiivjyzplakakkiyqm.supabase.co/rest/v1/user_roles";
+        String body = String.format("{\"user_id\": \"%s\", \"role\": \"%s\"}", userId, newRole.name());
+        sendSupabaseRequest(url, "POST", body, jwtToken, "insertar", userId);
+    }
 
+    private void sendSupabaseRequest(String url, String method, String body, String jwtToken, String action, UUID userId) {
+        try {
             HttpRequest request = HttpRequest.newBuilder()
-                    .uri(new URI(url))
+                    .uri(URI.create(url))
                     .header("apikey", supabaseProperties.getAnonKey())
                     .header("Authorization", "Bearer " + jwtToken)
                     .header("Content-Type", "application/json")
                     .header("Prefer", "return=minimal")
-                    .method("POST", HttpRequest.BodyPublishers.ofString(body))
+                    .method(method, HttpRequest.BodyPublishers.ofString(body))
                     .build();
 
-            HttpResponse<String> response = HttpClient.newHttpClient().send(request, HttpResponse.BodyHandlers.ofString());
+            HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
 
-            if (response.statusCode() != 200) {
-                throw new RuntimeException("Error insertando el rol en Supabase para el usuario con ID " + userId + ": " + response.body());
+            int statusCode = response.statusCode();
+            ObjectMapper objectMapper = new ObjectMapper();
+            JsonNode responseJson = objectMapper.readTree(response.body());
+
+            String message = responseJson.has("message") ? responseJson.get("message").asText() : "Sin mensaje de error";
+
+            if (statusCode >= 400) {
+                throw new SupabaseException(statusCode, message);
             }
 
-            System.out.println("Rol insertado correctamente en Supabase para el usuario con ID: " + userId);
+        } catch (IOException | InterruptedException e) {
+            Thread.currentThread().interrupt();
+            throw new RuntimeException("Error de red al " + action + " el rol en Supabase para el usuario con ID: " + userId, e);
+        } catch (SupabaseException e) {
+            throw e;
         } catch (Exception e) {
-            System.out.println("insert" + e.getMessage());
-            throw new RuntimeException("Error al insertar el rol en Supabase para el usuario con ID: " + userId, e);
+            throw new RuntimeException("Error inesperado al " + action + " el rol en Supabase para el usuario con ID: " + userId, e);
         }
     }
 
-    public void removeRole(UUID userId) {
+    // Nuevo método para eliminar el rol
+    public void removeRole(UUID userId, String jwtToken) {
+        if (jwtToken != null && !jwtToken.isEmpty()) {
+            removeRoleWithHttp(userId, jwtToken);
+        } else {
+            removeRoleWithRepository(userId);
+        }
+    }
+
+    private void removeRoleWithHttp(UUID userId, String jwtToken) {
+        String url = "https://fexiivjyzplakakkiyqm.supabase.co/rest/v1/user_roles?user_id=eq." + userId;
+        sendSupabaseRequest(url, "DELETE", "", jwtToken, "eliminar", userId);
+    }
+
+    private void removeRoleWithRepository(UUID userId) {
         UserRole role = userRoleRepository.findByUserId(userId);
         if (role == null) {
             throw new RuntimeException("No se encontró un rol para eliminar para el usuario con ID: " + userId);

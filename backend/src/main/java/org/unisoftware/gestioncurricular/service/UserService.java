@@ -3,11 +3,13 @@ package org.unisoftware.gestioncurricular.service;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.unisoftware.gestioncurricular.dto.UserDTO;
+import org.unisoftware.gestioncurricular.entity.AuthUser;
 import org.unisoftware.gestioncurricular.entity.UserDetails;
+import org.unisoftware.gestioncurricular.entity.UserRole;
+import org.unisoftware.gestioncurricular.repository.AuthUserRepository;
 import org.unisoftware.gestioncurricular.repository.UserDetailsRepository;
-import org.unisoftware.gestioncurricular.util.enums.AppRole;
 import org.unisoftware.gestioncurricular.security.role.UserRoleService;
-import org.unisoftware.gestioncurricular.security.user.AuthUserRepository;
+import org.unisoftware.gestioncurricular.util.enums.AppRole;
 
 import java.time.Instant;
 import java.util.List;
@@ -23,21 +25,15 @@ public class UserService {
     private final UserRoleService userRoleService;
 
     public UserDTO getUser(UUID userId) {
-        var authUser = authUserRepository.findById(userId);
-        var userDetails = userDetailsRepository.findByUserId(userId).orElse(null);
-        var roles = userRoleService.getRoleForUser(userId);
-
-        return mapToDTO(authUser.getId(), authUser.getEmail(), authUser.getCreatedAt(), userDetails, roles);
+        return authUserRepository.findById(userId)
+                .map(this::mapToDTO)
+                .orElse(null);
     }
 
     public List<UserDTO> getAllUsers() {
-        var authUsers = authUserRepository.findAll();
-        return authUsers.stream()
-                .map(authUser -> {
-                    var details = userDetailsRepository.findByUserId(authUser.getId()).orElse(null);
-                    var roles = userRoleService.getRoleForUser(authUser.getId());
-                    return mapToDTO(authUser.getId(), authUser.getEmail(), authUser.getCreatedAt(), details, roles);
-                })
+        return authUserRepository.findAll()
+                .stream()
+                .map(this::mapToDTO)
                 .collect(Collectors.toList());
     }
 
@@ -52,10 +48,32 @@ public class UserService {
         userRoleService.assignRoleToUser(userId, role, jwtToken);
     }
 
-    public void removeRole(UUID userId) {
-        userRoleService.removeRole(userId);
+    public void removeRole(UUID userId, String jwtToken) {
+        userRoleService.removeRole(userId, jwtToken);
     }
 
+    public AppRole getUserRole(UUID userId) {
+        return userRoleService.getRoleForUser(userId);
+    }
+
+    // Nuevo mapToDTO usando AuthUser directamente
+    private UserDTO mapToDTO(AuthUser authUser) {
+        UserDetails details = authUser.getUserDetails();
+        UserRole role = authUser.getUserRole();
+
+        return new UserDTO(
+                authUser.getId(),
+                authUser.getEmail(),
+                authUser.getCreatedAt(),
+                details != null ? details.getPrimerNombre() : null,
+                details != null ? details.getSegundoNombre() : null,
+                details != null ? details.getPrimerApellido() : null,
+                details != null ? details.getSegundoApellido() : null,
+                role != null ? role.getRole() : null
+        );
+    }
+
+    // Conservamos esta función privada en caso de que se requiera en alguna parte del sistema
     private UserDTO mapToDTO(UUID id, String email, Instant createdAt, UserDetails details, AppRole role) {
         return new UserDTO(
                 id,
@@ -67,9 +85,5 @@ public class UserService {
                 details != null ? details.getSegundoApellido() : null,
                 role
         );
-    }
-
-    public AppRole getUserRole(UUID userId) {
-        return userRoleService.getRoleForUser(userId);
     }
 }

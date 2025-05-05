@@ -83,12 +83,14 @@ public class LoginController {
             // Obtener detalles reales del usuario desde el backend y guardarlos en la sesión
             UserInfoDTO userInfo = userServiceFront.getCurrentUserInfo();
             if (userInfo != null) {
-                SessionManager.getInstance().setUserRoles(userInfo.getRoles());
+                SessionManager.getInstance().setUserRole(userInfo.getRole());
                 SessionManager.getInstance().setUserEmail(userInfo.getEmail());
             } else {
-                SessionManager.getInstance().setUserRoles(Collections.emptyList());
+                SessionManager.getInstance().setUserRole(null);
             }
             SessionManager.getInstance().setGuest(false);
+
+            System.out.println(userInfo);
 
             // Navegar a la pantalla principal
             navigateToMainScreen(event);

@@ -57,16 +57,16 @@ public class SecurityFilter extends OncePerRequestFilter {
 
                     AppRole currentRole = userRoleService.getRoleForUser(userId);
 
-                    if (currentRole == null) {
-                        throw new ServletException("No roles found for user");
+                    if (currentRole != null) {
+                        SimpleGrantedAuthority authority = new SimpleGrantedAuthority("ROLE_" + currentRole.name().toUpperCase());
+
+                        UsernamePasswordAuthenticationToken auth = new UsernamePasswordAuthenticationToken(
+                                userId, null, List.of(authority)
+                        );
+                        SecurityContextHolder.getContext().setAuthentication(auth);
                     }
 
-                    SimpleGrantedAuthority authority = new SimpleGrantedAuthority("ROLE_" + currentRole.name().toUpperCase());
 
-                    UsernamePasswordAuthenticationToken auth = new UsernamePasswordAuthenticationToken(
-                            userId, null, List.of(authority)
-                    );
-                    SecurityContextHolder.getContext().setAuthentication(auth);
                 }
             }
         }

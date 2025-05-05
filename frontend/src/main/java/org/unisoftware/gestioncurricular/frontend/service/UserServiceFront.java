@@ -15,16 +15,18 @@ public class UserServiceFront {
 
         // Obtener datos desde el token
         String email = JwtDecodeUtil.getUsername(token);
-        List<String> roles = JwtDecodeUtil.getRoles(token);
+        String role = JwtDecodeUtil.getRole(token);
+
+        System.out.println(role);
 
         // Guardar en sesión
         SessionManager.getInstance().setUserEmail(email);
-        SessionManager.getInstance().setUserRoles(roles);
+        SessionManager.getInstance().setUserRole(role);
 
         // Crear un objeto UserInfoDTO para devolver
         UserInfoDTO userInfoDTO = new UserInfoDTO();
         userInfoDTO.setEmail(email);
-        userInfoDTO.setRoles(roles);
+        userInfoDTO.setRole(role);
 
         return userInfoDTO;
     }

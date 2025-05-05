@@ -10,7 +10,7 @@ public class UserInfoDTO {
     private String segundoNombre;
     private String primerApellido;
     private String segundoApellido;
-    private List<String> roles;
+    private String role;
 
     // Getters y setters
 
@@ -70,11 +70,11 @@ public class UserInfoDTO {
         this.segundoApellido = segundoApellido;
     }
 
-    public List<String> getRoles() {
-        return roles;
+    public String getRole() {
+        return role;
     }
 
-    public void setRoles(List<String> roles) {
-        this.roles = roles;
+    public void setRole(String role) {
+        this.role = role;
     }
 }

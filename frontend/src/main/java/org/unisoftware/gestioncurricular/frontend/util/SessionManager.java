@@ -9,12 +9,11 @@ import java.util.List;
  * Seguro para uso en múltiples hilos y preparado para resets limpios.
  */
 public class SessionManager {
-    // Instancia singleton, segura para JavaFX y Spring contextos
     private static final SessionManager instance = new SessionManager();
 
     private volatile String token;
     private volatile String userEmail;
-    private volatile List<String> userRoles;
+    private volatile String userRole;
     private volatile boolean isGuest;
 
     private SessionManager() {
@@ -33,30 +32,28 @@ public class SessionManager {
         return token;
     }
 
-    public synchronized void setUserEmail(String username) {
-        this.userEmail = username;
+    public synchronized void setUserEmail(String email) {
+        this.userEmail = email;
     }
 
     public synchronized String getUserEmail() {
         return userEmail;
     }
 
-    public synchronized void setUserRoles(List<String> roles) {
-        this.userRoles = (roles == null) ? Collections.emptyList() : new ArrayList<>(roles);
+    public synchronized void setUserRole(String role) {
+        this.userRole = role;
     }
 
-    public synchronized List<String> getUserRoles() {
-        return userRoles == null ? Collections.emptyList() : new ArrayList<>(userRoles);
+    public synchronized String getUserRole() {
+        return userRole;
     }
 
     public synchronized boolean hasRole(String role) {
-        List<String> rolesSnapshot = userRoles;
-        if (rolesSnapshot == null) return false;
-        return rolesSnapshot.stream().anyMatch(r -> r.equalsIgnoreCase(role));
+        return userRole != null && userRole.equalsIgnoreCase(role);
     }
 
     public synchronized void setGuest(boolean guest) {
-        isGuest = guest;
+        this.isGuest = guest;
     }
 
     public synchronized boolean isGuest() {
@@ -66,17 +63,14 @@ public class SessionManager {
     public synchronized void setGuestSession() {
         this.token = null;
         this.userEmail = null;
-        this.userRoles = Collections.singletonList("INVITADO");
+        this.userRole = "INVITADO";
         this.isGuest = true;
     }
 
-    /**
-     * Limpia todos los datos de sesión
-     */
     public synchronized void clearSession() {
         this.token = null;
         this.userEmail = null;
-        this.userRoles = Collections.emptyList();
+        this.userRole = null;
         this.isGuest = false;
     }
 }

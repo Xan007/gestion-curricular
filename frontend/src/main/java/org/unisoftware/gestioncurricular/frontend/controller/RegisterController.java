@@ -85,7 +85,7 @@ public class RegisterController {
             // Guardar el token en el gestor de sesión
             SessionManager.getInstance().setToken(token);
             SessionManager.getInstance().setUserEmail(email);
-            SessionManager.getInstance().setUserRoles(Collections.singletonList("USER"));
+            SessionManager.getInstance().setUserRole("USER");
             SessionManager.getInstance().setGuest(false);
 
             // Navegar a la pantalla principal

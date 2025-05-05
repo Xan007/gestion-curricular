@@ -10,6 +10,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import org.unisoftware.gestioncurricular.dto.UserDTO;
+import org.unisoftware.gestioncurricular.security.auth.SecurityFilter;
 import org.unisoftware.gestioncurricular.util.enums.AppRole;
 import org.unisoftware.gestioncurricular.security.util.SecurityUtil;
 import org.unisoftware.gestioncurricular.service.UserService;
@@ -24,6 +25,7 @@ import java.util.UUID;
 public class UserController {
 
     private final UserService userService;
+    private final SecurityFilter securityFilter;
 
     @Operation(summary = "Listar usuarios", description = "Obtiene una lista de usuarios. Puede filtrarse por rol si se pasa como parámetro.")
     @GetMapping
@@ -84,6 +86,10 @@ public class UserController {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
 
+        if (id.equals(SecurityUtil.getCurrentUserId())) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
+        }
+
         userService.assignRole(id, role, jwtToken);
         return ResponseEntity.noContent().build();
     }
@@ -94,10 +100,21 @@ public class UserController {
             description = "Elimina todos los roles asignados a un usuario específico. **Requiere rol 'DECANO'.**"
     )
     @DeleteMapping("/{id}/remove-role")
-    public void removeRoles(
+    public ResponseEntity<Void> removeRoles(
             @Parameter(description = "ID del usuario")
             @PathVariable UUID id
     ) {
-        userService.removeRole(id);
+        String jwtToken = SecurityUtil.getJwtFromSecurityContext();
+
+        if (jwtToken == null || jwtToken.isBlank()) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
+
+        if (id.equals(SecurityUtil.getCurrentUserId())) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
+        }
+
+        userService.removeRole(id, jwtToken);
+        return ResponseEntity.noContent().build();
     }
 }

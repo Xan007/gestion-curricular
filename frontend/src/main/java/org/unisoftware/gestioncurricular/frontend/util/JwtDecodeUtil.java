@@ -32,15 +32,14 @@ public class JwtDecodeUtil {
         return "";
     }
 
-    public static List<String> getRoles(String jwtToken) {
+    public static String getRole(String jwtToken) {
         Map<String, Object> claims = decode(jwtToken);
-
+        System.out.println(claims);
         if (claims.containsKey("user_role")) {
-            Object r = claims.get("user_role");
-            return r instanceof String ? List.of((String) r) : Collections.emptyList();
+            Object role = claims.get("user_role");
+            return role instanceof String ? (String) role : null;
         }
-
-        return Collections.emptyList();
+        return null;
     }
 
 }

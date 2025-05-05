@@ -70,48 +70,32 @@ public class AdminPlantelScreenController {
                     usersData.clear();
                     for (Map<String, Object> u : usuarios) {
                         String id = String.valueOf(u.get("id"));
-                        String nombre = String.valueOf(u.getOrDefault("nombre", ""));
+                        String primerNombre = (String) u.get("primerNombre");
+                        String segundoNombre = (String) u.get("segundoNombre");
+                        String primerApellido = (String) u.get("primerApellido");
+                        String segundoApellido = (String) u.get("segundoApellido");
+
+                        // Concatenar el nombre completo, asegurándose de que no se añadan "null" si algún campo es nulo
+                        StringBuilder nombreCompleto = new StringBuilder();
+                        if (primerNombre != null && !primerNombre.isEmpty()) nombreCompleto.append(primerNombre).append(" ");
+                        if (segundoNombre != null && !segundoNombre.isEmpty()) nombreCompleto.append(segundoNombre).append(" ");
+                        if (primerApellido != null && !primerApellido.isEmpty()) nombreCompleto.append(primerApellido).append(" ");
+                        if (segundoApellido != null && !segundoApellido.isEmpty()) nombreCompleto.append(segundoApellido);
+
+                        // Si el nombre completo está vacío, lo dejamos vacío, de lo contrario, lo recortamos para evitar el último espacio
+                        String nombreCompletoFinal = nombreCompleto.toString().trim();
+
                         String correo = String.valueOf(u.getOrDefault("email", ""));
-                        // Obtener roles haciendo petición a GET /users/{id}/role
-                        obtenerYAgregarFilaUsuario(id, nombre, correo);
+                        String rol = (String) u.getOrDefault("role", "Sin rol");
+                        if (rol == null || rol.equals("null")) {
+                            rol = "Sin rol";
+                        }
+                        usersData.add(new UserTableRow(id, nombreCompletoFinal, correo, rol));
                     }
                 });
             } catch (Exception e) {
                 mostrarAlerta("Error", "No se pudieron cargar los usuarios.");
             }
-        }).start();
-    }
-
-    // Obtiene los roles por usuario y agrega la fila a la tabla
-    private void obtenerYAgregarFilaUsuario(String id, String nombre, String correo) {
-        new Thread(() -> {
-            String roles = "";
-            try {
-                HttpURLConnection conn = (HttpURLConnection) new URL(apiUrl + "/users/" + id + "/role").openConnection();
-                conn.setRequestProperty("Authorization", "Bearer " + SessionManager.getInstance().getToken());
-                conn.setRequestMethod("GET");
-                conn.setDoInput(true);
-
-                try (var in = conn.getInputStream()) {
-                    ObjectMapper mapper = new ObjectMapper();
-                    Object datoRoles = mapper.readValue(in, Object.class);
-                    // Si tu endpoint devuelve una lista, cámbialo a (List<String>)
-                    if (datoRoles instanceof String) {
-                        roles = (String) datoRoles;
-                    } else if (datoRoles instanceof Map) {
-                        Map<?, ?> mapRoles = (Map<?, ?>) datoRoles;
-                        roles = String.valueOf(mapRoles.values());
-                    } else if (datoRoles instanceof List) {
-                        roles = String.join(", ", (List<String>) datoRoles);
-                    }
-                }
-            } catch (Exception e) {
-                roles = "Sin rol";
-            }
-            String finalRoles = roles;
-            Platform.runLater(() -> {
-                usersData.add(new UserTableRow(id, nombre, correo, finalRoles));
-            });
         }).start();
     }
 

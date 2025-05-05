@@ -33,4 +33,8 @@ public class UserRole {
             write = "?::app_role"
     )
     private AppRole role;
+
+    @OneToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "user_id", referencedColumnName = "id", insertable = false, updatable = false)
+    private AuthUser authUser;
 }

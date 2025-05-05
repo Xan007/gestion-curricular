@@ -88,9 +88,9 @@ public class MainScreenController implements Initializable {
             String token = SessionManager.getInstance().getToken();
             String username = JwtDecodeUtil.getUsername(token);
 
-            List<String> roles = SessionManager.getInstance().getUserRoles();
-            String rolesStr = (roles != null && !roles.isEmpty())
-                    ? String.join(", ", roles)
+            String role = SessionManager.getInstance().getUserRole();
+            String rolesStr = (role != null && !role.isEmpty())
+                    ? role
                     : "Sin roles";
 
             // Icono, puede ser emoji o FontAwesome/SVG si tienes librería
