@@ -1,42 +1,36 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<?import javafx.scene.control.*?>
-<?import javafx.scene.layout.*?>
-<?import javafx.geometry.*?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.PasswordField?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.image.Image?>
+<?import javafx.scene.image.ImageView?>
+<?import javafx.scene.layout.AnchorPane?>
 <?import javafx.scene.text.Font?>
 
-<AnchorPane xmlns="http://javafx.com/javafx/17"
-            xmlns:fx="http://javafx.com/fxml/1"
-            fx:controller="org.unisoftware.gestioncurricular.frontend.controller.LoginController"
-            stylesheets="@/css/styles.css">
-    <VBox alignment="CENTER" spacing="20.0"
-          AnchorPane.topAnchor="0.0" AnchorPane.bottomAnchor="0.0"
-          AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0"
-          prefWidth="420" prefHeight="420">
-        <padding>
-            <Insets top="30" left="35" right="35" bottom="30"/>
-        </padding>
-        <Label text="Gestión Curricular" styleClass="title-label">
-            <font>
-                <Font name="System Bold" size="24.0"/>
-            </font>
-        </Label>
-        <Label text="Inicio de Sesión" styleClass="subtitle-label">
-            <font>
-                <Font size="18.0"/>
-            </font>
-        </Label>
-        <VBox spacing="8" alignment="CENTER">
-            <TextField fx:id="emailField" promptText="Correo electrónico" />
-            <PasswordField fx:id="passwordField" promptText="Contraseña" />
-        </VBox>
-        <HBox alignment="CENTER" spacing="14.0">
-            <Button text="Iniciar sesión" fx:id="loginButton" onAction="#handleLogin" styleClass="primary-button"/>
-            <Button text="Invitado" fx:id="guestButton" onAction="#loginAsGuest" styleClass="secondary-button"/>
-        </HBox>
-        <HBox alignment="CENTER" spacing="14.0">
-            <Button text="Registrarse" fx:id="registerButton" onAction="#navigateToRegister" styleClass="secondary-button"/>
-        </HBox>
-        <Label fx:id="messageLabel" styleClass="message-label"/>
-    </VBox>
+<AnchorPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="700.0" prefWidth="900.0" stylesheets="@/css/styles.css" xmlns="http://javafx.com/javafx/23.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.unisoftware.gestioncurricular.frontend.controller.LoginController">
+   <ImageView fitHeight="700.0" fitWidth="900.0" pickOnBounds="true" preserveRatio="true">
+      <image>
+         <Image url="@imgs/LOGIN.jpg" />
+      </image>
+   </ImageView>
+      <TextField fx:id="emailField" layoutX="20.0" layoutY="368.0" prefHeight="35.0" prefWidth="387.0" promptText="Correo electrónico" />
+      <PasswordField fx:id="passwordField" layoutX="20.0" layoutY="440.0" prefHeight="35.0" prefWidth="387.0" promptText="Contraseña" />
+      <Button fx:id="loginButton" layoutX="50.0" layoutY="504.0" onAction="#handleLogin" prefHeight="43.0" prefWidth="163.0" styleClass="primary-button" text="Iniciar sesión">
+      <font>
+         <Font size="18.0" />
+      </font>
+   </Button>
+      <Button fx:id="guestButton" layoutX="239.0" layoutY="504.0" onAction="#loginAsGuest" prefHeight="43.0" prefWidth="136.0" styleClass="secondary-button" text="Invitado">
+      <font>
+         <Font size="18.0" />
+      </font>
+   </Button>
+      <Button fx:id="registerButton" layoutX="155.0" layoutY="564.0" onAction="#navigateToRegister" prefHeight="35.0" prefWidth="153.0" styleClass="secondary-button-reg" text="Registrarse">
+      <font>
+         <Font size="15.0" />
+      </font>
+   </Button>
+     <Label fx:id="messageLabel" layoutX="90.0" layoutY="628.0" prefHeight="25.0" prefWidth="274.0" styleClass="message-label" textAlignment="CENTER" />
 </AnchorPane>

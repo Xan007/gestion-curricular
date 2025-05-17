@@ -1,66 +1,33 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<?import javafx.geometry.Insets?>
 <?import javafx.scene.control.Button?>
 <?import javafx.scene.control.Label?>
 <?import javafx.scene.control.PasswordField?>
 <?import javafx.scene.control.TextField?>
-<?import javafx.scene.layout.ColumnConstraints?>
-<?import javafx.scene.layout.GridPane?>
-<?import javafx.scene.layout.HBox?>
-<?import javafx.scene.layout.RowConstraints?>
-<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.image.Image?>
+<?import javafx.scene.image.ImageView?>
 <?import javafx.scene.layout.AnchorPane?>
 <?import javafx.scene.text.Font?>
 
-<AnchorPane xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1"
-            stylesheets="@/css/styles.css"
-            fx:controller="org.unisoftware.gestioncurricular.frontend.controller.RegisterController">
-    <VBox alignment="CENTER" spacing="20.0"
-          AnchorPane.topAnchor="0.0" AnchorPane.bottomAnchor="0.0"
-          AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0">
-        <padding>
-            <Insets bottom="20.0" left="20.0" right="20.0" top="20.0" />
-        </padding>
+<AnchorPane prefHeight="700.0" prefWidth="900.0" stylesheets="@/css/styles.css" xmlns="http://javafx.com/javafx/23.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.unisoftware.gestioncurricular.frontend.controller.RegisterController">
+   <ImageView fitHeight="700.0" fitWidth="900.0" pickOnBounds="true" preserveRatio="true">
+      <image>
+         <Image url="@imgs/REGISTER.jpg" />
+      </image>
+   </ImageView>
+      <TextField fx:id="emailField" layoutX="26.0" layoutY="313.0" prefHeight="37.0" prefWidth="368.0" promptText="ejemplo@correo.com" />
+      <PasswordField fx:id="passwordField" layoutX="26.0" layoutY="374.0" prefHeight="37.0" prefWidth="368.0" promptText="Contraseña" />
+      <PasswordField fx:id="confirmPasswordField" layoutX="26.0" layoutY="437.0" prefHeight="37.0" prefWidth="368.0" promptText="Confirmar contraseña" />
+      <Button fx:id="registerButton" layoutX="63.0" layoutY="521.0" onAction="#handleRegister" prefHeight="45.0" prefWidth="138.0" styleClass="primary-button" text="Registrarse">
+      <font>
+         <Font size="18.0" />
+      </font>
+   </Button>
+      <Button fx:id="backButton" layoutX="234.0" layoutY="521.0" onAction="#navigateToLogin" prefHeight="45.0" prefWidth="138.0" styleClass="secondary-button" text="Volver">
+      <font>
+         <Font size="18.0" />
+      </font>
+   </Button>
 
-        <Label styleClass="title-label" text="Gestión Curricular">
-            <font>
-                <Font name="System Bold" size="24.0" />
-            </font>
-        </Label>
-
-        <Label styleClass="subtitle-label" text="Registro de Usuario">
-            <font>
-                <Font size="18.0" />
-            </font>
-        </Label>
-
-        <GridPane alignment="CENTER" hgap="10" vgap="10">
-            <columnConstraints>
-                <ColumnConstraints hgrow="SOMETIMES" minWidth="120.0" prefWidth="120.0" />
-                <ColumnConstraints hgrow="SOMETIMES" minWidth="200.0" prefWidth="200.0" />
-            </columnConstraints>
-
-            <Label text="Correo electrónico:" GridPane.columnIndex="0" GridPane.rowIndex="0" />
-            <TextField fx:id="emailField" promptText="ejemplo@correo.com" GridPane.columnIndex="1" GridPane.rowIndex="0" />
-
-            <Label text="Contraseña:" GridPane.columnIndex="0" GridPane.rowIndex="1" />
-            <PasswordField fx:id="passwordField" promptText="Contraseña" GridPane.columnIndex="1" GridPane.rowIndex="1" />
-
-            <Label text="Confirmar contraseña:" GridPane.columnIndex="0" GridPane.rowIndex="2" />
-            <PasswordField fx:id="confirmPasswordField" promptText="Confirmar contraseña" GridPane.columnIndex="1" GridPane.rowIndex="2" />
-            <rowConstraints>
-                <RowConstraints />
-                <RowConstraints />
-                <RowConstraints />
-            </rowConstraints>
-        </GridPane>
-
-        <HBox alignment="CENTER" spacing="15.0">
-            <Button fx:id="registerButton" onAction="#handleRegister" styleClass="primary-button" text="Registrarse" />
-            <Button fx:id="backButton" onAction="#navigateToLogin" styleClass="secondary-button" text="Volver" />
-        </HBox>
-
-        <Label fx:id="messageLabel" styleClass="message-label" />
-    </VBox>
+     <Label fx:id="messageLabel" layoutX="75.0" layoutY="596.0" prefHeight="17.0" prefWidth="300.0" styleClass="message-label" textAlignment="CENTER" />
 </AnchorPane>

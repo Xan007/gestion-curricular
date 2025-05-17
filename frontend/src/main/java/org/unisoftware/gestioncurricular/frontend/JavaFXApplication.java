@@ -52,9 +52,11 @@ public class JavaFXApplication extends Application {
 
             primaryStage.setScene(scene);
             primaryStage.setTitle("Iniciar Sesión - Gestión Curricular");
-            primaryStage.setMinWidth(600);
-            primaryStage.setMinHeight(400);
+            primaryStage.setMinWidth(900);
+            primaryStage.setMinHeight(700);
+            primaryStage.setResizable(false);
             primaryStage.show();
+
 
             // Ya no se asigna el Stage al SessionManager, no es necesario ni correcto
 
