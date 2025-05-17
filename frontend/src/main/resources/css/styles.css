@@ -40,6 +40,8 @@
     -fx-background-color: #fde0dc;
         -fx-text-fill: #ba000d;
         -fx-border-color: #ba000d;
+        -fx-scale-x: 1.05;
+            -fx-scale-y: 1.05;
 }
 
 /* --- BOTÓN REGISTRARSE : SECUNDARIO, LIMPIO --- */
@@ -61,9 +63,70 @@
     -fx-background-color: #fde0dc;
     -fx-text-fill: #ba000d;
     -fx-border-color: #ba000d;
+    -fx-scale-x: 1.05;
+        -fx-scale-y: 1.05;
 }
 
+/* HEADER MODERNIZADO, MINIMALISTA */
+.modern-header {
+    -fx-background-color: #fff;
+    -fx-padding: 18px 32px;
+    -fx-border-width: 0 0 2px 0;
+    -fx-border-color: transparent transparent #111 transparent;
+    -fx-alignment: center-left;
+    -fx-min-height: 64px;
+    -fx-effect: dropshadow(gaussian, #0002, 10, 0.07, 0, 2);
+}
 
+/* TÍTULO PRINCIPAL */
+.main-title {
+    -fx-font-size: 2em;
+    -fx-font-weight: 900;
+    -fx-text-fill: #c62828;
+    -fx-padding: 0 16px 0 0;
+    -fx-letter-spacing: 1px;
+}
+
+/* BOTÓN: Administrar Plantel (borde rojo, texto rojo, fondo blanco, hover a fondo rojo y texto blanco) */
+.btn-admin {
+    -fx-background-color: #fff;
+    -fx-text-fill: #c62828;
+    -fx-font-size: 15px;
+    -fx-border-radius: 10px;
+    -fx-background-radius: 10px;
+    -fx-font-weight: bold;
+    -fx-padding: 6 22 6 22;
+    -fx-cursor: hand;
+    -fx-border-width: 2;
+    -fx-border-color: #c62828;
+    -fx-effect: null;
+    -fx-transition: all 0.18s;
+}
+.btn-admin:hover {
+    -fx-background-color: #c62828;
+    -fx-text-fill: #fff;
+}
+
+/* BOTÓN: Cerrar Sesión (fondo negro, texto blanco, borde negro, hover a fondo rojo y texto blanco) */
+.btn-logout {
+    -fx-background-color: #111;
+    -fx-text-fill: #fff;
+    -fx-font-size: 15px;
+    -fx-border-radius: 10px;
+    -fx-background-radius: 10px;
+    -fx-font-weight: bold;
+    -fx-padding: 6 22 6 22;
+    -fx-cursor: hand;
+    -fx-border-width: 2;
+    -fx-border-color: #111;
+    -fx-effect: null;
+    -fx-transition: all 0.18s;
+}
+.btn-logout:hover {
+    -fx-background-color: #c62828;
+    -fx-border-color: #c62828;
+    -fx-text-fill: #fff;
+}
 
 /* Títulos */
 .label {
@@ -85,7 +148,7 @@
     -fx-border-color: #d32f2f;
     -fx-background-radius: 10;
     -fx-padding: 20;
-    -fx-effect: dropshadow(gaussian, #bdbdbd, 8, 0, 0, 2);
+    /* -fx-effect: dropshadow(gaussian, #bdbdbd, 8, 0, 0, 2);  <-- Eliminar esta línea */
 }
 
 /* Barras superiores, pie de página, cabecera */
@@ -234,4 +297,21 @@
 
 .table-view .filler {
     -fx-background-color: transparent; /* o #d32f2f si prefieres */
+}
+/* Botón minimalista tipo 'Iniciar sesión' */
+.button-modern {
+    -fx-background-color: #c62828;
+    -fx-text-fill: #fff;
+    -fx-background-radius: 10;
+    -fx-font-size: 15px;
+    -fx-font-weight: bold;
+    -fx-padding: 8 18 8 18;
+    -fx-border-width: 0;
+    -fx-cursor: hand;
+    -fx-effect: null;
+    -fx-transition: all 0.18s;
+}
+.button-modern:hover {
+    -fx-background-color: #b71c1c;
+    -fx-text-fill: #fff;
 }

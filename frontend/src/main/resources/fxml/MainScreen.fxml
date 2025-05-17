@@ -9,13 +9,18 @@
     <VBox alignment="TOP_CENTER" spacing="30.0" styleClass="main-card"
           AnchorPane.topAnchor="0.0" AnchorPane.bottomAnchor="0.0"
           AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0">
-        <HBox spacing="20" alignment="CENTER_RIGHT" styleClass="header-bar"
-              prefWidth="800">
+        <!-- HEADER MODERNO -->
+        <HBox spacing="22" alignment="CENTER_LEFT" styleClass="modern-header"
+              AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0"
+              VBox.vgrow="NEVER">
             <Label text="Gestión Curricular" styleClass="main-title"/>
             <Pane HBox.hgrow="ALWAYS"/>
-            <Button fx:id="adminPlantelBtn" text="Administrar Plantel" visible="false" managed="false"/>
-            <Button text="Cerrar sesión" onAction="#handleLogout"/>
+            <Button fx:id="adminPlantelBtn" text="Administrar Plantel"
+                    visible="false" managed="false" styleClass="btn-admin"/>
+            <Button text="Cerrar sesión" onAction="#handleLogout"
+                    styleClass="btn-logout"/>
         </HBox>
+        <!-- RESTO DEL CONTENIDO -->
         <VBox fx:id="userBox" alignment="TOP_LEFT" spacing="5"/>
         <ScrollPane fitToWidth="true" fitToHeight="false" hbarPolicy="NEVER" vbarPolicy="AS_NEEDED"
                     VBox.vgrow="ALWAYS" styleClass="main-card">

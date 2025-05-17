@@ -137,7 +137,9 @@ public class MainScreenController implements Initializable {
                     nameLbl.setMaxWidth(Double.MAX_VALUE);
 
                     Button expandBtn = new Button("Ver más detalles");
+                    expandBtn.getStyleClass().add("button-modern"); // <--- agrega esta línea
                     Button goToCursosBtn = new Button("Ver Cursos del Programa");
+                    goToCursosBtn.getStyleClass().add("button-modern"); // <--- agrega esta línea
                     expandBtn.setWrapText(true);
                     goToCursosBtn.setWrapText(true);
                     expandBtn.setMaxWidth(Double.MAX_VALUE);
@@ -164,6 +166,17 @@ public class MainScreenController implements Initializable {
                         datosBox.setVisible(!showing);
                         datosBox.setManaged(!showing);
                         expandBtn.setText(!showing ? "Ocultar detalles" : "Ver más detalles");
+
+                        // Quitar/poner la sombra en la Card:
+                        if (!showing) {
+                            card.setStyle("-fx-background-color: #ffffff; -fx-background-radius: 12; -fx-padding: 18 18 18 18; "
+                                    + "-fx-effect: dropshadow(gaussian, #bdbdbd, 8, 0, 0, 2);"
+                                    + "-fx-border-color: #d32f2f; -fx-border-width: 0 0 3 0;");
+                        } else {
+                            card.setStyle("-fx-background-color: #ffffff; -fx-background-radius: 12; -fx-padding: 18 18 18 18; "
+                                    + "-fx-effect: none;"
+                                    + "-fx-border-color: #d32f2f; -fx-border-width: 0 0 3 0;");
+                        }
                     });
 
                     goToCursosBtn.setOnAction(e -> abrirCursosPrograma(prog.getId(), prog.getName()));
@@ -176,6 +189,7 @@ public class MainScreenController implements Initializable {
                         Button uploadBtn = new Button("Actualizar plan de estudios");
                         uploadBtn.setWrapText(true);
                         uploadBtn.setMaxWidth(Double.MAX_VALUE);
+                        uploadBtn.getStyleClass().add("button-modern"); // <--- agrega esta línea
                         uploadBtn.setOnAction(ev -> handleSubirExcel(prog.getId()));
                         botones.getChildren().add(uploadBtn);
                     }
