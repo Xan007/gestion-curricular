@@ -15,11 +15,16 @@ public abstract class AbstractStudyPlanParser implements StudyPlanParser {
         List<String[]> raw = extractRows(file.getInputStream());
 
         for (String[] cols : raw) {
-            // SNIES y semestre son obligatorios
-            long snies = Long.parseLong(cols[0].trim());
-            int semester = Integer.parseInt(cols[1].trim());
+            String sniesStr = cols[0].trim();
+            String semesterStr = cols[1].trim();
 
-            // requisitos puede venir vacío
+            if (sniesStr.isEmpty() || semesterStr.isEmpty()) {
+                throw new IllegalArgumentException("SNIES y semestre no pueden estar vacíos. Datos: " + Arrays.toString(cols));
+            }
+
+            long snies = Long.parseLong(sniesStr);
+            int semester = Integer.parseInt(semesterStr);
+
             String rawReq = cols.length > 2 ? cols[2].trim() : "";
             List<Long> reqs = parseRequisitos(rawReq);
 

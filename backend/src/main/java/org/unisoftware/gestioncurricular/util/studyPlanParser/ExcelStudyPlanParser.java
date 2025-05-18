@@ -21,14 +21,32 @@ public class ExcelStudyPlanParser extends AbstractStudyPlanParser {
                 if (r.getRowNum() == 0) continue;
 
                 String[] cols = new String[3];
-                cols[0] = r.getCell(0).toString().trim();
-                cols[1] = r.getCell(1).toString().trim();
-                Cell c2 = r.getCell(2);
-                cols[2] = (c2 == null ? "" : c2.toString().trim());
+                cols[0] = getCellValue(r, 0, true);
+                cols[1] = getCellValue(r, 1, true);
+                cols[2] = getCellValue(r, 2, true);
+
+                if (cols[0].isEmpty() || cols[1].isEmpty()) {
+                    continue;
+                }
+
                 rows.add(cols);
             }
         }
         return rows;
+    }
+
+    private String getCellValue(Row row, int index, boolean truncateAtDot) {
+        Cell cell = row.getCell(index);
+        if (cell == null) return "";
+        String value = cell.toString().trim();
+        if (truncateAtDot) {
+            int dotIndex = value.indexOf(".");
+            if (dotIndex != -1) {
+                value = value.substring(0, dotIndex);
+            }
+        }
+        System.out.println(value);
+        return value;
     }
 
     @Override
