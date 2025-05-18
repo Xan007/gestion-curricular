@@ -20,8 +20,12 @@ public class NotificationService {
         return notificationRepository.findByUserIdOrderByCreatedAtDesc(userId);
     }
 
-    public Notification sendNotification(UUID userId, String title, String description) {
+    public void sendNotification(UUID userId, String title, String description) {
         Notification notification = new Notification(userId, title, description);
-        return notificationRepository.save(notification);
+        notificationRepository.save(notification);
+    }
+
+    public void markAllAsSeenByUserId(UUID userId) {
+        notificationRepository.markAllAsSeenByUserId(userId);
     }
 }

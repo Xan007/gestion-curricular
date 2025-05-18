@@ -75,4 +75,17 @@ public class CourseService {
                 .map(courseMapper::toDto)
                 .toList();
     }
+
+    @Transactional
+    public CourseDTO updateCourse(Long courseId, CourseDTO dto) {
+        Course course = courseRepository.findById(courseId)
+                .orElseThrow(() -> new IllegalArgumentException("Course not found: " + courseId));
+
+        // Actualiza campos del curso con los datos del DTO
+        courseMapper.updateCourseFromDto(dto, course);
+        // No cambiamos createdAt para preservar la fecha original
+        course = courseRepository.save(course);
+        return courseMapper.toDto(course);
+    }
+
 }

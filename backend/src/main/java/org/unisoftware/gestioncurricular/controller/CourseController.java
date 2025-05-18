@@ -84,6 +84,21 @@ public class CourseController {
         }
     }
 
+    @PreAuthorize("hasRole('DECANO')")
+    @PutMapping("/{courseId}")
+    @Operation(
+            summary = "Actualizar curso",
+            description = "Actualiza la información de un curso existente. **Requiere rol DECANO.**"
+    )
+    public ResponseEntity<CourseDTO> updateCourse(
+            @Parameter(description = "ID del curso a actualizar", required = true)
+            @PathVariable Long courseId,
+            @RequestBody CourseDTO courseDTO) {
+
+        CourseDTO updatedCourse = courseService.updateCourse(courseId, courseDTO);
+        return ResponseEntity.ok(updatedCourse);
+    }
+
     @GetMapping("/{courseId}")
     @Operation(summary = "Obtener curso", description = "Obtiene la información de un curso por su ID.")
     public ResponseEntity<CourseDTO> getCourse(

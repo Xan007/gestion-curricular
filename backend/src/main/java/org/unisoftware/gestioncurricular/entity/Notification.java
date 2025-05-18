@@ -31,6 +31,9 @@ public class Notification {
     @Column(name = "created_at", nullable = false, updatable = false)
     private Instant createdAt = Instant.now();
 
+    @Column(nullable = false)
+    private boolean seen = false;
+
     public Notification() {}
 
     public Notification(UUID userId, String title, String description) {
