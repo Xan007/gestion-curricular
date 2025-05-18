@@ -51,7 +51,8 @@ public class ProposalController {
         if (role == null) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
         }
-        Proposal updated = proposalService.reviewProposal(id, request.getAction(), request.getObservations(), role);
+        UUID userId = SecurityUtil.getCurrentUserId();
+        Proposal updated = proposalService.reviewProposal(id, request.getAction(), request.getObservations(), role, userId);
         return ResponseEntity.ok(proposalMapper.toDto(updated));
     }
 

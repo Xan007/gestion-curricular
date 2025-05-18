@@ -1,6 +1,5 @@
 package org.unisoftware.gestioncurricular.service;
 
-import org.apache.xmlbeans.impl.xb.xsdschema.Public;
 import org.unisoftware.gestioncurricular.dto.ProposalReviewRequest;
 import org.unisoftware.gestioncurricular.entity.Proposal;
 import org.unisoftware.gestioncurricular.repository.ProposalRepository;
@@ -18,21 +17,17 @@ import java.util.UUID;
 public class ProposalService {
 
     private final ProposalRepository proposalRepository;
+    private final NotificationService notificationService;
 
-    public ProposalService(ProposalRepository proposalRepository) {
+    public ProposalService(ProposalRepository proposalRepository, NotificationService notificationService) {
         this.proposalRepository = proposalRepository;
+        this.notificationService = notificationService;
     }
 
-    /**
-     * Obtiene todas las propuestas.
-     */
     public List<Proposal> getAllProposals() {
         return proposalRepository.findAll();
     }
 
-    /**
-     * Obtiene las propuestas por estado.
-     */
     public List<Proposal> getProposalsByStatus(ProposalStatus status) {
         return proposalRepository.findByStatus(status);
     }
@@ -41,8 +36,7 @@ public class ProposalService {
         return proposalRepository.findByTeacherId(teacherId);
     }
 
-
-    public Proposal reviewProposal(Long id, ProposalReviewRequest.Action action, String observations, String role) {
+    public Proposal reviewProposal(Long id, ProposalReviewRequest.Action action, String observations, String role, UUID userId) {
         Proposal proposal = proposalRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Propuesta no encontrada: " + id));
 
@@ -81,16 +75,25 @@ public class ProposalService {
                 throw new SecurityException("Rol no autorizado para esta operación");
         }
 
-        // Acumular observaciones
-        String existing = proposal.getObservations();
-        String prefix = "[" + Instant.now() + " - " + role + " - " + action.name() + "]";
-        String newEntry = prefix + (observations != null && !observations.isBlank() ? " " + observations : "");
-        String updatedObservations = (existing == null || existing.isBlank())
-                ? newEntry
-                : existing + "\n" + newEntry;
+        String actionLabel = switch (action) {
+            case ACCEPT -> "ACEPTAR";
+            case REJECT -> currentStatus == ProposalStatus.EN_REVISION_DIRECTOR ? "AJUSTES" : "RECHAZAR";
+        };
 
+        String updatedObservations = appendObservation(proposal.getObservations(), role, userId, actionLabel, observations);
         proposal.setObservations(updatedObservations);
         proposal.setLastUpdatedAt(Instant.now());
+
+        String notifTitle = "Tu propuesta ha sido revisada";
+        String notifBody = String.format(
+                "%s por %s en propuesta [ID: %d, Título: %s]%s",
+                actionLabel,
+                role.replace("ROLE_", ""),
+                proposal.getId(),
+                proposal.getTitle(),
+                (observations != null && !observations.isBlank() ? ": " + observations : "")
+        );
+        notificationService.sendNotification(proposal.getTeacherId(), notifTitle, notifBody);
 
         return proposalRepository.save(proposal);
     }
@@ -132,21 +135,52 @@ public class ProposalService {
                 throw new SecurityException("Rol no autorizado para firmar");
         }
 
-        // Si ambos firmaron y no hay rechazo, se acepta la propuesta
-        if (proposal.isSignedByDirectorPrograma() && proposal.isSignedByDirectorEscuela() && !proposal.isSignatureRejected()) {
+        boolean accepted = proposal.isSignedByDirectorPrograma() &&
+                proposal.isSignedByDirectorEscuela() &&
+                !proposal.isSignatureRejected();
+
+        if (accepted) {
             proposal.setStatus(ProposalStatus.ACEPTADA);
+
+            notificationService.sendNotification(
+                    proposal.getTeacherId(),
+                    "Propuesta aceptada",
+                    String.format(
+                            "Tu propuesta [ID: %d, Título: %s] ha sido firmada por ambos directores y ha sido aceptada.",
+                            proposal.getId(),
+                            proposal.getTitle()
+                    )
+            );
+        } else if (proposal.isSignatureRejected()) {
+            notificationService.sendNotification(
+                    proposal.getTeacherId(),
+                    "Propuesta rechazada",
+                    String.format(
+                            "%s rechazó la propuesta [ID: %d, Título: %s]%s",
+                            role.replace("ROLE_", ""),
+                            proposal.getId(),
+                            proposal.getTitle(),
+                            (observations != null && !observations.isBlank() ? ": " + observations : ".")
+                    )
+            );
         }
 
-        // Guardar observaciones con prefijo de firma
-        String existingObs = proposal.getObservations();
-        String prefix = "[" + Instant.now() + " - " + role + " - SIGNATURE " + (accept ? "ACCEPTED" : "REJECTED") + "]";
-        String newEntry = prefix + (observations != null && !observations.isBlank() ? " " + observations : "");
-        String updatedObs = (existingObs == null || existingObs.isBlank()) ? newEntry : existingObs + "\n" + newEntry;
+        String actionLabel = "FIRMA_" + (accept ? "OK" : "NO");
+        String updatedObs = appendObservation(proposal.getObservations(), role, signerId, actionLabel, observations);
         proposal.setObservations(updatedObs);
-
         proposal.setLastUpdatedAt(Instant.now());
 
         return proposalRepository.save(proposal);
     }
 
+    private String appendObservation(String existing, String role, UUID userId, String actionLabel, String note) {
+        String roleClean = role.replace("ROLE_", "");
+        String timestamp = Instant.now().toString().substring(0, 16); // yyyy-MM-ddTHH:mm
+        String cleanNote = note == null ? "" : note.replaceAll("\\R+", " ").trim();
+        String newEntry = String.join("|", timestamp, roleClean, userId.toString(), actionLabel, cleanNote);
+
+        return (existing == null || existing.isBlank())
+                ? newEntry
+                : existing + "\n" + newEntry;
+    }
 }
