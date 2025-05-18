@@ -44,6 +44,9 @@ public class MainScreenController implements Initializable {
     @FXML private Button adminPlantelBtn;
     @FXML private VBox cardContainer;
     @FXML private VBox userBox; // ¡Agrega este VBox en tu FXML al inicio de la pantalla!
+    @FXML private Button btnPropuestasComite;
+    @FXML private Button btnPropuestasEscuela;
+    @FXML private Button btnPropuestasPrograma;
 
     @Autowired private ProgramServiceFront programServiceFront;
     @Autowired private ExcelUploadService excelUploadService;
@@ -63,7 +66,24 @@ public class MainScreenController implements Initializable {
             adminPlantelBtn.setManaged(false);
         }
 
+        // Mostrar botones de propuestas según rol
+        if (SessionManager.getInstance().hasRole("COMITE_DE_PROGRAMA")) {
+            btnPropuestasComite.setVisible(true);
+            btnPropuestasComite.setManaged(true);
+        }
+        if (SessionManager.getInstance().hasRole("DIRECTOR_DE_ESCUELA")) {
+            btnPropuestasEscuela.setVisible(true);
+            btnPropuestasEscuela.setManaged(true);
+        }
+        if (SessionManager.getInstance().hasRole("DIRECTOR_DE_PROGRAMA")) {
+            btnPropuestasPrograma.setVisible(true);
+            btnPropuestasPrograma.setManaged(true);
+        }
+
         adminPlantelBtn.setOnAction(e -> abrirAdministracionPlantel(e));
+        btnPropuestasComite.setOnAction(e -> mostrarPropuestasMicro("Comité de Programa"));
+        btnPropuestasEscuela.setOnAction(e -> mostrarPropuestasMicro("Escuela"));
+        btnPropuestasPrograma.setOnAction(e -> mostrarPropuestasMicro("Programa"));
     }
 
     @FXML
@@ -438,6 +458,45 @@ public class MainScreenController implements Initializable {
                 }
             }).start();
         }
+    }
+
+    private void mostrarPropuestasMicro(String tipo) {
+        VBox modalContent = new VBox(18);
+        modalContent.setStyle("-fx-background-color: #fff; -fx-padding: 32; -fx-background-radius: 14; -fx-effect: dropshadow(three-pass-box, #d32f2f, 12, 0.18, 0, 4); -fx-border-color: #d32f2f; -fx-border-width: 3;");
+        modalContent.setPrefWidth(400);
+        modalContent.setMinWidth(320);
+        modalContent.setAlignment(Pos.CENTER);
+        Label title = new Label("Propuestas Microcurrículo - " + tipo);
+        title.setStyle("-fx-font-size: 20px; -fx-font-weight: bold; -fx-text-fill: #d32f2f;");
+        Label info = new Label("Aquí se mostrarán las propuestas de microcurrículo para: " + tipo);
+        info.setWrapText(true);
+        Button cerrar = new Button("Cerrar");
+        cerrar.setStyle("-fx-background-color: #d32f2f; -fx-text-fill: #fff; -fx-background-radius: 8; -fx-font-size: 14px; -fx-padding: 6 18 6 18; -fx-font-weight: bold; -fx-border-color: #b71c1c; -fx-border-width: 2;");
+        modalContent.getChildren().addAll(title, info, cerrar);
+
+        VBox modalWrapper = new VBox();
+        modalWrapper.setAlignment(Pos.CENTER);
+        modalWrapper.setFillWidth(true);
+        modalWrapper.setPrefWidth(400);
+        modalWrapper.setMinWidth(320);
+        modalWrapper.getChildren().add(modalContent);
+
+        AnchorPane anchorPane = (AnchorPane) cardContainer.getScene().getRoot();
+        StackPane overlay = new StackPane();
+        overlay.setStyle("-fx-background-color: rgba(30,32,48,0.18);");
+        overlay.setPickOnBounds(true);
+        overlay.setPrefSize(anchorPane.getWidth(), anchorPane.getHeight());
+        overlay.setMinSize(Region.USE_PREF_SIZE, Region.USE_PREF_SIZE);
+        overlay.setMaxSize(Region.USE_PREF_SIZE, Region.USE_PREF_SIZE);
+        overlay.setAlignment(Pos.CENTER);
+        overlay.getChildren().add(modalWrapper);
+        anchorPane.getChildren().add(overlay);
+        AnchorPane.setTopAnchor(overlay, 0.0);
+        AnchorPane.setBottomAnchor(overlay, 0.0);
+        AnchorPane.setLeftAnchor(overlay, 0.0);
+        AnchorPane.setRightAnchor(overlay, 0.0);
+        final StackPane overlayFinal = overlay;
+        cerrar.setOnAction(ev -> anchorPane.getChildren().remove(overlayFinal));
     }
 
     private void mostrarAlerta(String titulo, String mensaje, Alert.AlertType tipo) {

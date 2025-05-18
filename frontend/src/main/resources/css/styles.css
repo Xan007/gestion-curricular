@@ -128,6 +128,25 @@
     -fx-text-fill: #fff;
 }
 
+.btn-micro {
+    -fx-background-color: #fff;
+        -fx-text-fill: #c62828;
+        -fx-font-size: 15px;
+        -fx-border-radius: 10px;
+        -fx-background-radius: 10px;
+        -fx-font-weight: bold;
+        -fx-padding: 6 22 6 22;
+        -fx-cursor: hand;
+        -fx-border-width: 2;
+        -fx-border-color: #c62828;
+        -fx-effect: null;
+        -fx-transition: all 0.18s;
+}
+.btn-micro:hover {
+    -fx-background-color: #c62828;
+        -fx-text-fill: #fff;
+}
+
 /* Títulos */
 .label {
     -fx-font-family: "Segoe UI", Helvetica, Arial, sans-serif;

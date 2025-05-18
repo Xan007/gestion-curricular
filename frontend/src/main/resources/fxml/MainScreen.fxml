@@ -17,6 +17,12 @@
             <Pane HBox.hgrow="ALWAYS"/>
             <Button fx:id="adminPlantelBtn" text="Administrar Plantel"
                     visible="false" managed="false" styleClass="btn-admin"/>
+            <Button fx:id="btnPropuestasComite" text="Propuestas Microcurrículo"
+                    visible="false" managed="false" styleClass="btn-micro"/>
+            <Button fx:id="btnPropuestasEscuela" text="Propuestas Microcurrículo"
+                    visible="false" managed="false" styleClass="btn-micro"/>
+            <Button fx:id="btnPropuestasPrograma" text="Propuestas Microcurrículo"
+                    visible="false" managed="false" styleClass="btn-micro"/>
             <Button text="Cerrar sesión" onAction="#handleLogout"
                     styleClass="btn-logout"/>
         </HBox>
