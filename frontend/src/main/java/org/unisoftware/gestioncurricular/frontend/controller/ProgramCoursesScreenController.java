@@ -12,6 +12,10 @@ import javafx.scene.layout.HBox;
 import javafx.geometry.Pos;
 import javafx.scene.control.ScrollPane;
 import javafx.stage.Stage;
+import javafx.scene.control.Button;
+import javafx.scene.layout.StackPane;
+import javafx.scene.layout.AnchorPane;
+import javafx.scene.layout.Region;
 import java.util.List;
 import java.util.Map;
 import java.util.HashMap;
@@ -94,48 +98,30 @@ public class ProgramCoursesScreenController {
                     VBox card = new VBox(4);
                     card.setAlignment(Pos.TOP_LEFT);
                     card.setStyle(
-                            "-fx-background-color: #42a5f5;" + // azul claro fijo
-                                    "-fx-background-radius: 12;" +
-                                    "-fx-padding: 10 8 10 8;" +
-                                    "-fx-min-width: 190px;" +
-                                    "-fx-max-width: 320px;" +
-                                    "-fx-effect: dropshadow(three-pass-box, #AAAAAA, 3, 0.18, 1, 2);"
+                        "-fx-background-color: #ffffff;" +
+                        "-fx-background-radius: 14;" +
+                        "-fx-padding: 12 10 12 10;" +
+                        "-fx-min-width: 170px;" +
+                        "-fx-max-width: 260px;" +
+                        "-fx-border-color: #d1d5db;" +
+                        "-fx-border-width: 1;" +
+                        "-fx-effect: dropshadow(three-pass-box, #e0e3e7, 4, 0.10, 0, 2);" +
+                        "-fx-cursor: hand;"
                     );
 
-                    Label lnombre = new Label((entry.getName() != null ? entry.getName() : ""));
-                    lnombre.setStyle("-fx-font-weight:bold; -fx-font-size:13px; -fx-text-fill: white;");
+                    // Mostrar solo código y nombre
+                    String codigo = entry.getId() != null && entry.getId().getCourseId() != null ? entry.getId().getCourseId().toString() : "";
+                    String nombre = entry.getName() != null ? entry.getName() : "";
+                    Label lcodigo = new Label(codigo);
+                    lcodigo.setStyle("-fx-font-weight:bold; -fx-font-size:13px; -fx-text-fill: #fff; -fx-background-color: #d32f2f; -fx-background-radius: 8; -fx-padding: 2 8 2 8;");
+                    Label lnombre = new Label(nombre);
+                    lnombre.setStyle("-fx-font-weight:bold; -fx-font-size:14px; -fx-text-fill: #222; ");
                     lnombre.setWrapText(true);
-                    lnombre.setMaxWidth(290);
+                    lnombre.setMaxWidth(220);
+                    card.getChildren().addAll(lcodigo, lnombre);
 
-                    Label larea = new Label("Área: " + (entry.getArea() != null ? entry.getArea() : "N/A"));
-                    larea.setStyle("-fx-text-fill: white;");
-                    Label ltipo = new Label("Tipo: " + (entry.getType() != null ? entry.getType() : "N/A"));
-                    ltipo.setStyle("-fx-text-fill: white;");
-                    Label lciclo = new Label("Ciclo: " + (entry.getCycle() != null ? entry.getCycle() : "N/A"));
-                    lciclo.setStyle("-fx-text-fill: white;");
-                    Label lcreditos = new Label("Créditos: " + (entry.getCredits() != null ? entry.getCredits().toString() : "N/A"));
-                    lcreditos.setStyle("-fx-text-fill: white;");
-                    String relacion = entry.getRelation() != null ? entry.getRelation() : "Ninguna";
-                    Label lrelacion = new Label("Relación: " + relacion);
-                    lrelacion.setStyle("-fx-text-fill: white;");
+                    card.setOnMouseClicked(e -> mostrarDetalleCurso(entry, idNombreCurso));
 
-                    // MOSTRAR NOMBRES DE CURSOS REQUISITOS
-                    List<Long> requisitosList = entry.getRequirements();
-                    String requisitosString;
-                    if (requisitosList != null && !requisitosList.isEmpty()) {
-                        List<String> nombresReq = new ArrayList<>();
-                        for (Long reqId : requisitosList) {
-                            String nombreReq = idNombreCurso.getOrDefault(reqId, reqId.toString());
-                            nombresReq.add(nombreReq);
-                        }
-                        requisitosString = String.join(", ", nombresReq);
-                    } else {
-                        requisitosString = "Ninguno";
-                    }
-                    Label lrequisitos = new Label("Requisitos: " + requisitosString);
-                    lrequisitos.setStyle("-fx-text-fill: white;");
-
-                    card.getChildren().addAll(lnombre, larea, lciclo, ltipo, lcreditos, lrelacion, lrequisitos);
                     columnaSemestre.getChildren().add(card);
                 }
 
@@ -154,6 +140,71 @@ public class ProgramCoursesScreenController {
         }
     }
 
+    private void mostrarDetalleCurso(StudyPlanEntryDTO entry, Map<Long, String> idNombreCurso) {
+        VBox modalContent = new VBox(16);
+        modalContent.setStyle("-fx-background-color: #fff; -fx-padding: 32; -fx-background-radius: 14; -fx-effect: dropshadow(three-pass-box, #222, 12, 0.18, 0, 4);");
+        modalContent.setMaxWidth(520);
+        modalContent.setMinWidth(320);
+        modalContent.setAlignment(Pos.TOP_LEFT);
+
+        Label title = new Label("Detalles del Curso");
+        title.setStyle("-fx-font-size: 22px; -fx-font-weight: bold; -fx-text-fill: #1a2233;");
+        Label codigo = new Label("Código: " + (entry.getId() != null ? entry.getId().getCourseId() : ""));
+        Label nombre = new Label("Nombre: " + (entry.getName() != null ? entry.getName() : ""));
+        nombre.setWrapText(true);
+        Label area = new Label("Área: " + (entry.getArea() != null ? entry.getArea() : "N/A"));
+        Label ciclo = new Label("Ciclo: " + (entry.getCycle() != null ? entry.getCycle() : "N/A"));
+        Label tipo = new Label("Tipo: " + (entry.getType() != null ? entry.getType() : "N/A"));
+        Label creditos = new Label("Créditos: " + (entry.getCredits() != null ? entry.getCredits().toString() : "N/A"));
+        Label relacion = new Label("Relación: " + (entry.getRelation() != null ? entry.getRelation() : "Ninguna"));
+        List<Long> requisitosList = entry.getRequirements();
+        String requisitosString;
+        if (requisitosList != null && !requisitosList.isEmpty()) {
+            List<String> nombresReq = new ArrayList<>();
+            for (Long reqId : requisitosList) {
+                String nombreReq = idNombreCurso.getOrDefault(reqId, reqId.toString());
+                nombresReq.add(nombreReq);
+            }
+            requisitosString = String.join(", ", nombresReq);
+        } else {
+            requisitosString = "Ninguno";
+        }
+        Label requisitos = new Label("Requisitos: " + requisitosString);
+        requisitos.setWrapText(true);
+
+        Button cerrar = new Button("Cerrar");
+        cerrar.setStyle("-fx-background-color: #d32f2f; -fx-text-fill: #fff; -fx-background-radius: 8; -fx-font-size: 14px; -fx-padding: 6 18 6 18; -fx-font-weight: bold; -fx-border-color: #b71c1c; -fx-border-width: 2;");
+        modalContent.getChildren().addAll(title, codigo, nombre, area, ciclo, tipo, creditos, relacion, requisitos, cerrar);
+
+        // Obtener el AnchorPane raíz de la escena
+        AnchorPane anchorPane = (AnchorPane) coursesContainer.getScene().getRoot();
+
+        StackPane overlay = new StackPane();
+        overlay.setStyle("-fx-background-color: rgba(30,32,48,0.18);");
+        overlay.setPickOnBounds(true);
+        overlay.setPrefSize(anchorPane.getWidth(), anchorPane.getHeight());
+        overlay.setMinSize(Region.USE_PREF_SIZE, Region.USE_PREF_SIZE);
+        overlay.setMaxSize(Region.USE_PREF_SIZE, Region.USE_PREF_SIZE);
+        overlay.setAlignment(Pos.CENTER);
+
+        VBox modalWrapper = new VBox();
+        modalWrapper.setAlignment(Pos.CENTER);
+        modalWrapper.setFillWidth(true);
+        modalWrapper.getChildren().add(modalContent);
+        overlay.getChildren().add(modalWrapper);
+
+        // Cambiar borde de la ventana de información a rojo
+        modalContent.setStyle("-fx-background-color: #fff; -fx-padding: 32; -fx-background-radius: 14; -fx-effect: dropshadow(three-pass-box, #d32f2f, 12, 0.18, 0, 4); -fx-border-color: #d32f2f; -fx-border-width: 3;");
+
+        anchorPane.getChildren().add(overlay);
+        AnchorPane.setTopAnchor(overlay, 0.0);
+        AnchorPane.setBottomAnchor(overlay, 0.0);
+        AnchorPane.setLeftAnchor(overlay, 0.0);
+        AnchorPane.setRightAnchor(overlay, 0.0);
+
+        final StackPane overlayFinal = overlay;
+        cerrar.setOnAction(ev -> anchorPane.getChildren().remove(overlayFinal));
+    }
 
     @FXML
     public void handleVolver(ActionEvent event) throws IOException {
@@ -166,3 +217,4 @@ public class ProgramCoursesScreenController {
         stage.show();
     }
 }
+

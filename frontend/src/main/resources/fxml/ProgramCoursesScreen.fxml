@@ -8,14 +8,15 @@
     <VBox spacing="16" alignment="TOP_CENTER"
           AnchorPane.topAnchor="0.0" AnchorPane.bottomAnchor="0.0"
           AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0">
-        <HBox alignment="CENTER_LEFT" spacing="18">
-            <Button text="&lt; Volver" onAction="#handleVolver"/>
-            <Label fx:id="programNameLabel" style="-fx-font-size:19px; -fx-font-weight:bold;"/>
+        <HBox alignment="CENTER_LEFT" spacing="18" style="-fx-background-color: #fff; -fx-padding: 18 32 18 32; -fx-border-color: #111; -fx-border-width: 0 0 2 0;">
+            <Button text="⟵ Volver" onAction="#handleVolver" style="-fx-font-size: 15px; -fx-background-radius: 8; -fx-background-color: linear-gradient(to right, #d32f2f, #b71c1c); -fx-text-fill: #fff; -fx-font-weight: bold; -fx-padding: 7 22 7 22; -fx-effect: dropshadow(three-pass-box, #b71c1c, 2, 0.1, 0, 1); -fx-border-color: #b71c1c; -fx-border-width: 2;"/>
+            <Label fx:id="programNameLabel" style="-fx-font-size:22px; -fx-font-weight:bold; -fx-text-fill: #1a2233; -fx-padding: 0 0 0 18;"/>
         </HBox>
         <ScrollPane fitToWidth="true" fitToHeight="true"
                     AnchorPane.topAnchor="0.0" AnchorPane.bottomAnchor="0.0"
                     AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0">
-            <VBox fx:id="coursesContainer" spacing="18"/>
+            <VBox fx:id="coursesContainer" spacing="18" style="-fx-padding: 18 0 0 0;"/>
         </ScrollPane>
     </VBox>
 </AnchorPane>
+
