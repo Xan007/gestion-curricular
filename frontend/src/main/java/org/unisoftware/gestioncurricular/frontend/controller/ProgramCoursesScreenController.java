@@ -67,7 +67,6 @@ public class ProgramCoursesScreenController {
                 if (entry.getId() != null && entry.getName() != null) {
                     idNombreCurso.put(entry.getId().getCourseId(), entry.getName());
                 }
-
             }
 
             // Mapear los cursos por semestre
@@ -82,6 +81,9 @@ public class ProgramCoursesScreenController {
 
             HBox filaSemestres = new HBox(25);
             filaSemestres.setAlignment(Pos.TOP_CENTER);
+
+            // Mapa para guardar la referencia visual de cada curso
+            Map<Long, VBox> idCardMap = new HashMap<>();
 
             for (Map.Entry<Integer, List<StudyPlanEntryDTO>> semestre : cursosPorSemestre.entrySet()) {
                 Integer numeroSemestre = semestre.getKey();
@@ -98,15 +100,15 @@ public class ProgramCoursesScreenController {
                     VBox card = new VBox(4);
                     card.setAlignment(Pos.TOP_LEFT);
                     card.setStyle(
-                        "-fx-background-color: #ffffff;" +
-                        "-fx-background-radius: 14;" +
-                        "-fx-padding: 12 10 12 10;" +
-                        "-fx-min-width: 170px;" +
-                        "-fx-max-width: 260px;" +
-                        "-fx-border-color: #d1d5db;" +
-                        "-fx-border-width: 1;" +
-                        "-fx-effect: dropshadow(three-pass-box, #e0e3e7, 4, 0.10, 0, 2);" +
-                        "-fx-cursor: hand;"
+                            "-fx-background-color: #ffffff;" +
+                                    "-fx-background-radius: 14;" +
+                                    "-fx-padding: 12 10 12 10;" +
+                                    "-fx-min-width: 170px;" +
+                                    "-fx-max-width: 260px;" +
+                                    "-fx-border-color: #d1d5db;" +
+                                    "-fx-border-width: 1;" +
+                                    "-fx-effect: dropshadow(three-pass-box, #e0e3e7, 4, 0.10, 0, 2);" +
+                                    "-fx-cursor: hand;"
                     );
 
                     // Mostrar solo código y nombre
@@ -123,17 +125,57 @@ public class ProgramCoursesScreenController {
                     card.setOnMouseClicked(e -> mostrarDetalleCurso(entry, idNombreCurso));
 
                     columnaSemestre.getChildren().add(card);
+
+                    // Guardar referencia visual
+                    if (entry.getId() != null && entry.getId().getCourseId() != null) {
+                        idCardMap.put(entry.getId().getCourseId(), card);
+                    }
                 }
 
                 filaSemestres.getChildren().add(columnaSemestre);
             }
 
-            ScrollPane scroll = new ScrollPane(filaSemestres);
+            StackPane stack = new StackPane();
+            stack.getChildren().add(filaSemestres);
+
+            ScrollPane scroll = new ScrollPane(stack);
             scroll.setFitToHeight(true);
             scroll.setFitToWidth(false);
             scroll.setHbarPolicy(ScrollPane.ScrollBarPolicy.ALWAYS);
 
             coursesContainer.getChildren().add(scroll);
+
+            Runnable drawLines = () -> {
+                stack.getChildren().removeIf(n -> n instanceof javafx.scene.canvas.Canvas);
+                javafx.scene.canvas.Canvas canvas = new javafx.scene.canvas.Canvas(stack.getWidth(), stack.getHeight());
+                javafx.scene.canvas.GraphicsContext gc = canvas.getGraphicsContext2D();
+                gc.setStroke(javafx.scene.paint.Color.web("#d32f2f", 0.7));
+                gc.setLineWidth(3);
+
+                for (StudyPlanEntryDTO entry : plan) {
+                    if (entry.getRequirements() != null) {
+                        for (Long reqId : entry.getRequirements()) {
+                            VBox reqCard = idCardMap.get(reqId);
+                            VBox depCard = idCardMap.get(entry.getId().getCourseId());
+                            if (reqCard != null && depCard != null) {
+                                // Coordenadas globales de los cards
+                                javafx.geometry.Point2D reqScene = reqCard.localToScene(reqCard.getWidth(), reqCard.getHeight() / 2);
+                                javafx.geometry.Point2D depScene = depCard.localToScene(0, depCard.getHeight() / 2);
+                                javafx.geometry.Point2D reqStack = stack.sceneToLocal(reqScene);
+                                javafx.geometry.Point2D depStack = stack.sceneToLocal(depScene);
+                                gc.strokeLine(reqStack.getX(), reqStack.getY(), depStack.getX(),depStack.getY());
+                            }
+                        }
+                    }
+                }
+                stack.getChildren().add(0, canvas);
+            };
+
+            // Redibujar líneas cuando cambie el tamaño del stack o scroll
+            stack.widthProperty().addListener((obs, oldVal, newVal) -> javafx.application.Platform.runLater(drawLines));
+            stack.heightProperty().addListener((obs, oldVal, newVal) -> javafx.application.Platform.runLater(drawLines));
+            scroll.viewportBoundsProperty().addListener((obs, oldVal, newVal) -> javafx.application.Platform.runLater(drawLines));
+            javafx.application.Platform.runLater(drawLines);
 
         } catch (Exception e) {
             coursesContainer.getChildren().add(new Label("Error cargando plan de estudios: " + e.getMessage()));
