@@ -173,26 +173,26 @@ public class MainScreenController implements Initializable {
                     nameLbl.setMaxWidth(Double.MAX_VALUE);
 
                     Button expandBtn = new Button("Ver información");
-                    expandBtn.setStyle("-fx-background-color: #d32f2f; -fx-text-fill: #fff; -fx-background-radius: 8; -fx-font-weight: bold; -fx-padding: 8 24 8 24; -fx-border-color: #b71c1c; -fx-border-width: 2; -fx-font-size: 15px;");
                     expandBtn.setWrapText(true);
                     expandBtn.setMaxWidth(Double.MAX_VALUE);
                     expandBtn.setOnAction(e -> mostrarDetallePrograma(prog));
+                    expandBtn.getStyleClass().add("card-btn-red");
 
                     Button goToCursosBtn = new Button("Ver Cursos del Programa");
-                    goToCursosBtn.setStyle("-fx-background-color: #fff; -fx-text-fill: #d32f2f; -fx-background-radius: 8; -fx-font-weight: bold; -fx-padding: 8 24 8 24; -fx-border-color: #d32f2f; -fx-border-width: 2; -fx-font-size: 15px;");
                     goToCursosBtn.setWrapText(true);
                     goToCursosBtn.setMaxWidth(Double.MAX_VALUE);
                     goToCursosBtn.setOnAction(e -> abrirCursosPrograma(prog.getId(), prog.getName()));
+                    goToCursosBtn.getStyleClass().add("card-btn-white");
 
                     // Botón solo para DIRECTOR_DE_PROGRAMA
                     Button actualizarBtn = null;
                     if (SessionManager.getInstance().hasRole("DIRECTOR_DE_PROGRAMA")) {
                         actualizarBtn = new Button("Actualizar plan de estudios");
-                        actualizarBtn.setStyle("-fx-background-color: #fff; -fx-text-fill: #d32f2f; -fx-background-radius: 8; -fx-font-weight: bold; -fx-padding: 8 24 8 24; -fx-border-color: #d32f2f; -fx-border-width: 2; -fx-font-size: 15px;");
                         actualizarBtn.setWrapText(true);
                         actualizarBtn.setMaxWidth(Double.MAX_VALUE);
                         final Long progId = prog.getId();
                         actualizarBtn.setOnAction(e -> handleSubirExcel(progId));
+                        actualizarBtn.getStyleClass().add("card-btn-white");
                     }
 
                     card.getChildren().addAll(nameLbl, expandBtn, goToCursosBtn);

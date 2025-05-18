@@ -334,3 +334,45 @@
     -fx-background-color: #b71c1c;
     -fx-text-fill: #fff;
 }
+
+/* --- BOTONES DE LAS CARDS DE PROGRAMAS --- */
+.card-btn-red {
+    -fx-background-color: #d32f2f;
+    -fx-text-fill: #fff;
+    -fx-background-radius: 8;
+    -fx-font-weight: bold;
+    -fx-padding: 8 24 8 24;
+    -fx-border-color: #b71c1c;
+    -fx-border-width: 2;
+    -fx-font-size: 15px;
+    -fx-cursor: hand;
+    -fx-transition: all 0.18s;
+}
+.card-btn-red:hover {
+    -fx-background-color: #fff;
+    -fx-text-fill: #d32f2f;
+    -fx-border-color: #d32f2f;
+    -fx-scale-x: 1.05;
+    -fx-scale-y: 1.05;
+}
+
+.card-btn-white {
+    -fx-background-color: #fff;
+    -fx-text-fill: #d32f2f;
+    -fx-background-radius: 8;
+    -fx-font-weight: bold;
+    -fx-padding: 8 24 8 24;
+    -fx-border-color: #d32f2f;
+    -fx-border-width: 2;
+    -fx-font-size: 15px;
+    -fx-cursor: hand;
+    -fx-transition: all 0.18s;
+}
+.card-btn-white:hover {
+    -fx-background-color: #d32f2f;
+    -fx-text-fill: #fff;
+    -fx-border-color: #b71c1c;
+    -fx-scale-x: 1.05;
+    -fx-scale-y: 1.05;
+}
+
