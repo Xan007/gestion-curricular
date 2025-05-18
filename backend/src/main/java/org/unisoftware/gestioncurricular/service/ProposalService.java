@@ -1,13 +1,17 @@
 package org.unisoftware.gestioncurricular.service;
 
+import org.springframework.data.jpa.domain.Specification;
 import org.unisoftware.gestioncurricular.dto.ProposalReviewRequest;
 import org.unisoftware.gestioncurricular.entity.Proposal;
 import org.unisoftware.gestioncurricular.repository.ProposalRepository;
 import org.springframework.stereotype.Service;
 import org.unisoftware.gestioncurricular.util.enums.ProposalStatus;
+import jakarta.persistence.criteria.Predicate;
 
 import java.time.Instant;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 
 /**
@@ -182,5 +186,31 @@ public class ProposalService {
         return (existing == null || existing.isBlank())
                 ? newEntry
                 : existing + "\n" + newEntry;
+    }
+
+    public List<Proposal> filterProposals(Long cursoId, UUID docenteId, ProposalStatus estado, Set<ProposalStatus> allowedStatuses) {
+        Specification<Proposal> spec = (root, query, cb) -> {
+            List<Predicate> predicates = new ArrayList<>();
+
+            if (cursoId != null) {
+                predicates.add(cb.equal(root.get("courseId"), cursoId));
+            }
+
+            if (docenteId != null) {
+                predicates.add(cb.equal(root.get("teacherId"), docenteId));
+            }
+
+            if (estado != null) {
+                predicates.add(cb.equal(root.get("status"), estado));
+            }
+
+            if (allowedStatuses != null && !allowedStatuses.isEmpty()) {
+                predicates.add(root.get("status").in(allowedStatuses));
+            }
+
+            return cb.and(predicates.toArray(new Predicate[0]));
+        };
+
+        return proposalRepository.findAll(spec);
     }
 }

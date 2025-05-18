@@ -19,6 +19,7 @@ import org.unisoftware.gestioncurricular.service.ProposalService;
 import org.unisoftware.gestioncurricular.util.enums.ProposalStatus;
 
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
@@ -57,21 +58,42 @@ public class ProposalController {
     }
 
     @PreAuthorize("isAuthenticated()")
-    @Operation(summary = "Listar propuestas", description = "Decano ve todas; director ve en_revision_director; comité ve en_revision_comite; docente ve sus propuestas.")
+    @Operation(summary = "Listar propuestas", description = """
+        Decano ve todas. 
+        Director puede ver propuestas en revisión del director, del comité y esperando firmas. 
+        Comité puede ver propuestas aceptadas, rechazadas y en revisión del comité.
+        Docente solo puede ver sus propuestas.
+        Se pueden filtrar por cursoId, docenteId y estado.
+        """)
     @GetMapping
-    public ResponseEntity<List<ProposalDTO>> listProposals() {
+    public ResponseEntity<List<ProposalDTO>> listProposals(
+            @RequestParam(required = false) Long cursoId,
+            @RequestParam(required = false) UUID docenteId,
+            @RequestParam(required = false) ProposalStatus estado
+    ) {
         String role = SecurityUtil.getCurrentUserRole();
-        List<Proposal> proposals;
         UUID userId = SecurityUtil.getCurrentUserId();
 
+        List<Proposal> proposals;
+
         if ("ROLE_DECANO".equals(role)) {
-            proposals = proposalService.getAllProposals();
+            proposals = proposalService.filterProposals(cursoId, docenteId, estado, null);
         } else if ("ROLE_DIRECTOR_DE_PROGRAMA".equals(role)) {
-            proposals = proposalService.getProposalsByStatus(ProposalStatus.EN_REVISION_DIRECTOR);
+            Set<ProposalStatus> allowedStatuses = Set.of(
+                    ProposalStatus.EN_REVISION_DIRECTOR,
+                    ProposalStatus.EN_REVISION_COMITE,
+                    ProposalStatus.ESPERANDO_FIRMAS
+            );
+            proposals = proposalService.filterProposals(cursoId, docenteId, estado, allowedStatuses);
         } else if ("ROLE_COMITE_DE_PROGRAMA".equals(role)) {
-            proposals = proposalService.getProposalsByStatus(ProposalStatus.EN_REVISION_COMITE);
+            Set<ProposalStatus> allowedStatuses = Set.of(
+                    ProposalStatus.EN_REVISION_COMITE,
+                    ProposalStatus.ACEPTADA,
+                    ProposalStatus.RECHAZADA
+            );
+            proposals = proposalService.filterProposals(cursoId, docenteId, estado, allowedStatuses);
         } else if ("ROLE_DOCENTE".equals(role)) {
-            proposals = proposalService.getProposalsByTeacher(userId);
+            proposals = proposalService.filterProposals(cursoId, userId, estado, null);
         } else {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
         }
@@ -79,6 +101,7 @@ public class ProposalController {
         List<ProposalDTO> dtos = proposals.stream()
                 .map(proposalMapper::toDto)
                 .collect(Collectors.toList());
+
         return ResponseEntity.ok(dtos);
     }
 
