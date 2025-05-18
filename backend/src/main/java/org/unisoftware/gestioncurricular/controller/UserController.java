@@ -27,13 +27,31 @@ public class UserController {
     private final UserService userService;
     private final SecurityFilter securityFilter;
 
-    @Operation(summary = "Listar usuarios", description = "Obtiene una lista de usuarios. Puede filtrarse por rol si se pasa como parámetro.")
+    @Operation(
+            summary = "Listar usuarios",
+            description = """
+    Obtiene una lista de usuarios. Se puede aplicar uno o más de los siguientes filtros:
+    
+    - **Rol**: Filtra los usuarios que tienen un rol específico (`DECANO`, `DIRECTOR`, `COMITE`, etc.).
+    - **Nombre**: Realiza una búsqueda parcial e insensible a mayúsculas/minúsculas en los nombres o apellidos del usuario.
+    - **Email**: Realiza una búsqueda parcial e insensible a mayúsculas/minúsculas por dirección de correo electrónico.
+    
+    Si no se especifica ningún filtro, se devuelven todos los usuarios.
+    """
+    )
     @GetMapping
     public List<UserDTO> getUsers(
             @Parameter(description = "Rol para filtrar los usuarios")
-            @RequestParam(required = false) AppRole role) {
-        if (role != null) {
-            return userService.getUsersByRole(role);
+            @RequestParam(required = false) AppRole role,
+
+            @Parameter(description = "Búsqueda parcial por nombre o apellido del usuario (insensible a mayúsculas)")
+            @RequestParam(required = false) String name,
+
+            @Parameter(description = "Búsqueda parcial por correo electrónico del usuario (insensible a mayúsculas)")
+            @RequestParam(required = false) String email
+    ) {
+        if (role != null || name != null || email != null) {
+            return userService.searchUsers(role, name, email);
         }
         return userService.getAllUsers();
     }
