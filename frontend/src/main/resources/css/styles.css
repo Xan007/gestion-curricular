@@ -147,6 +147,27 @@
         -fx-text-fill: #fff;
 }
 
+.cerrar-btn{
+-fx-background-color: #c62828;
+    -fx-text-fill: #fff;
+    -fx-background-radius: 10;
+    -fx-font-size: 15px;
+    -fx-font-weight: bold;
+    -fx-padding: 8 18 8 18;
+    -fx-border-color: #b71c1c;
+    -fx-border-width: 2;
+    -fx-cursor: hand;
+    -fx-effect: null;
+    -fx-transition: all 0.18s;
+}
+.cerrar-btn:hover {
+    -fx-background-color: #fff;
+        -fx-text-fill: #d32f2f;
+        -fx-border-color: #d32f2f;
+        -fx-scale-x: 1.05;
+        -fx-scale-y: 1.05;
+}
+
 /* Títulos */
 .label {
     -fx-font-family: "Segoe UI", Helvetica, Arial, sans-serif;

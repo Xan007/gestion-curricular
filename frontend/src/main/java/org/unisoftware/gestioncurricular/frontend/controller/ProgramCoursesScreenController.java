@@ -215,7 +215,7 @@ public class ProgramCoursesScreenController {
         requisitos.setWrapText(true);
 
         Button cerrar = new Button("Cerrar");
-        cerrar.setStyle("-fx-background-color: #d32f2f; -fx-text-fill: #fff; -fx-background-radius: 8; -fx-font-size: 14px; -fx-padding: 6 18 6 18; -fx-font-weight: bold; -fx-border-color: #b71c1c; -fx-border-width: 2;");
+        cerrar.getStyleClass().add("cerrar-btn");
         modalContent.getChildren().addAll(title, codigo, nombre, area, ciclo, tipo, creditos, relacion, requisitos, cerrar);
 
         // Obtener el AnchorPane raíz de la escena
