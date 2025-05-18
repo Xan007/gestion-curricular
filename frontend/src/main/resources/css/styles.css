@@ -382,4 +382,26 @@
     -fx-scale-x: 1.05;
     -fx-scale-y: 1.05;
 }
+
+/* --- HOVER PARA LAS CARDS DE LOS CURSOS EN EL SEMÁFORO --- */
+.course-card {
+    -fx-background-color: #ffffff;
+    -fx-background-radius: 14;
+    -fx-padding: 12 10 12 10;
+    -fx-min-width: 170px;
+    -fx-max-width: 260px;
+    -fx-border-color: #d1d5db;
+    -fx-border-width: 1;
+    -fx-effect: dropshadow(three-pass-box, #e0e3e7, 4, 0.10, 0, 2);
+    -fx-cursor: hand;
+    -fx-transition: all 0.22s;
+}
+.course-card:hover {
+    -fx-border-color: #d32f2f;
+    -fx-border-width: 2;
+    -fx-scale-x: 1.03;
+    -fx-scale-y: 1.03;
+    -fx-effect: dropshadow(three-pass-box, #d32f2f88, 8, 0.18, 0, 4);
+}
+
 /* --- BOTONES DE LAS CARDS DE PROGRAMAS (MODIFICADOS) --- */

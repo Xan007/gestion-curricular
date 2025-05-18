@@ -99,18 +99,7 @@ public class ProgramCoursesScreenController {
                 for (StudyPlanEntryDTO entry : cursos) {
                     VBox card = new VBox(4);
                     card.setAlignment(Pos.TOP_LEFT);
-                    card.setStyle(
-                            "-fx-background-color: #ffffff;" +
-                                    "-fx-background-radius: 14;" +
-                                    "-fx-padding: 12 10 12 10;" +
-                                    "-fx-min-width: 170px;" +
-                                    "-fx-max-width: 260px;" +
-                                    "-fx-border-color: #d1d5db;" +
-                                    "-fx-border-width: 1;" +
-                                    "-fx-effect: dropshadow(three-pass-box, #e0e3e7, 4, 0.10, 0, 2);" +
-                                    "-fx-cursor: hand;"
-                    );
-
+                    card.getStyleClass().add("course-card");
                     // Mostrar solo código y nombre
                     String codigo = entry.getId() != null && entry.getId().getCourseId() != null ? entry.getId().getCourseId().toString() : "";
                     String nombre = entry.getName() != null ? entry.getName() : "";
@@ -121,11 +110,8 @@ public class ProgramCoursesScreenController {
                     lnombre.setWrapText(true);
                     lnombre.setMaxWidth(220);
                     card.getChildren().addAll(lcodigo, lnombre);
-
                     card.setOnMouseClicked(e -> mostrarDetalleCurso(entry, idNombreCurso));
-
                     columnaSemestre.getChildren().add(card);
-
                     // Guardar referencia visual
                     if (entry.getId() != null && entry.getId().getCourseId() != null) {
                         idCardMap.put(entry.getId().getCourseId(), card);
