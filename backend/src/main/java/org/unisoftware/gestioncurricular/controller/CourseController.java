@@ -95,12 +95,23 @@ public class CourseController {
     }
 
     @GetMapping
-    @Operation(summary = "Listar todos los cursos", description = "Obtiene una lista de todos los cursos.")
-    public ResponseEntity<List<CourseDTO>> listAll() {
-        return ResponseEntity.ok(
-                courseService.getAllCourses()
-        );
+    @Operation(
+            summary = "Listar cursos",
+            description = "Obtiene una lista de todos los cursos o filtra por programa si se provee el parámetro 'programId'."
+    )
+    public ResponseEntity<List<CourseDTO>> listCourses(
+            @Parameter(description = "ID del programa para filtrar (opcional)")
+            @RequestParam(value = "programId", required = false) Long programId
+    ) {
+        List<CourseDTO> courses;
+        if (programId == null) {
+            courses = courseService.getAllCourses();
+        } else {
+            courses = courseService.getCoursesByProgramId(programId);
+        }
+        return ResponseEntity.ok(courses);
     }
+
 
     @GetMapping("/buscar")
     @Operation(summary = "Buscar curso por nombre", description = "Busca un curso por su nombre.")

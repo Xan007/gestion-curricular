@@ -8,8 +8,10 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.unisoftware.gestioncurricular.dto.CourseDTO;
 import org.unisoftware.gestioncurricular.entity.Course;
+import org.unisoftware.gestioncurricular.entity.CourseProgram;
 import org.unisoftware.gestioncurricular.entity.CourseRequirement;
 import org.unisoftware.gestioncurricular.mapper.CourseMapper;
+import org.unisoftware.gestioncurricular.repository.CourseProgramRepository;
 import org.unisoftware.gestioncurricular.repository.CourseRepository;
 import org.unisoftware.gestioncurricular.repository.CourseRequirementRepository;
 
@@ -18,11 +20,13 @@ public class CourseService {
 
     private final CourseRepository courseRepository;
     private final CourseMapper courseMapper;
+    private final CourseProgramRepository courseProgramRepository;
 
     public CourseService(CourseRepository courseRepository,
-                         CourseMapper courseMapper) {
+                         CourseMapper courseMapper, CourseProgramRepository courseProgramRepository) {
         this.courseRepository = courseRepository;
         this.courseMapper = courseMapper;
+        this.courseProgramRepository = courseProgramRepository;
     }
 
     @Transactional
@@ -62,5 +66,13 @@ public class CourseService {
                 .orElseThrow(() -> new IllegalArgumentException("Course not found: " + nombre));
 
         return courseMapper.toDto(course);
+    }
+
+    public List<CourseDTO> getCoursesByProgramId(Long programId) {
+        List<CourseProgram> coursePrograms = courseProgramRepository.findByProgramIdWithCourse(programId);
+        return coursePrograms.stream()
+                .map(CourseProgram::getCourse)
+                .map(courseMapper::toDto)
+                .toList();
     }
 }
