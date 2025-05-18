@@ -8,6 +8,7 @@ import org.unisoftware.gestioncurricular.util.enums.courseEnums.CourseCycle;
 import org.unisoftware.gestioncurricular.util.enums.courseEnums.CourseType;
 
 import java.util.List;
+import java.util.UUID;
 
 @Getter
 @Setter
@@ -22,7 +23,7 @@ public class CourseDTO {
     private String relation;
 
     private Long microcurriculumFileId;
-    private String teacherId;
+    private UUID teacherId;
     private Integer semester;
     private List<Long> requirements;
 }

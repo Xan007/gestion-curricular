@@ -12,6 +12,7 @@ import org.unisoftware.gestioncurricular.util.enums.courseEnums.CourseCycle;
 import org.unisoftware.gestioncurricular.util.enums.courseEnums.CourseType;
 
 import java.time.LocalDateTime;
+import java.util.UUID;
 
 @Entity
 @Table(name = "cursos")
@@ -48,4 +49,7 @@ public class Course {
     @ColumnTransformer(read = "CAST(ciclo AS VARCHAR)", write = "?::curso_ciclo")
     @Convert(converter = CourseCycleConverter.class)
     private CourseCycle cycle;
+
+    @Column(name = "docente_id")
+    private UUID teacherId;
 }

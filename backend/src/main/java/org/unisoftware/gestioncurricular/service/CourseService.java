@@ -3,6 +3,7 @@ package org.unisoftware.gestioncurricular.service;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -86,6 +87,21 @@ public class CourseService {
         // No cambiamos createdAt para preservar la fecha original
         course = courseRepository.save(course);
         return courseMapper.toDto(course);
+    }
+
+    @Transactional
+    public CourseDTO assignTeacherToCourse(Long courseId, UUID docenteId) {
+        Course course = courseRepository.findById(courseId)
+                .orElseThrow(() -> new IllegalArgumentException("Course not found: " + courseId));
+        course.setTeacherId(docenteId);
+        Course saved = courseRepository.save(course);
+        return courseMapper.toDto(saved);
+    }
+
+    @Transactional(readOnly = true)
+    public List<CourseDTO> getCoursesByDocenteId(UUID docenteId) {
+        List<Course> courses = courseRepository.findByTeacherId(docenteId);
+        return courses.stream().map(courseMapper::toDto).toList();
     }
 
 }

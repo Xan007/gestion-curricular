@@ -12,6 +12,8 @@ import org.unisoftware.gestioncurricular.dto.CourseDTO;
 
 import java.io.InputStream;
 import java.util.List;
+import java.util.UUID;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.unisoftware.gestioncurricular.util.courseParser.CourseFileParser;
 
@@ -136,5 +138,23 @@ public class CourseController {
     ) {
         CourseDTO dto = courseService.getCourseByName(nombre);
         return ResponseEntity.ok(dto);
+    }
+
+    @PreAuthorize("hasRole('DIRECTOR_DE_PROGRAMA')")
+    @PutMapping("/{courseId}/asignar-docente")
+    @Operation(summary = "Asignar docente a un curso", description = "Asigna un docente a un curso. Solo puede hacerlo un DIRECTOR_PROGRAMA.")
+    public ResponseEntity<CourseDTO> assignTeacher(
+            @PathVariable Long courseId,
+            @RequestParam("docenteId") String docenteId) {
+        CourseDTO dto = courseService.assignTeacherToCourse(courseId, UUID.fromString(docenteId));
+        return ResponseEntity.ok(dto);
+    }
+
+    @GetMapping("/docente/{docenteId}")
+    @Operation(summary = "Obtener cursos de un docente", description = "Obtiene todos los cursos asignados a un docente por su ID.")
+    public ResponseEntity<List<CourseDTO>> getCoursesByDocente(
+            @PathVariable String docenteId) {
+        List<CourseDTO> courses = courseService.getCoursesByDocenteId(UUID.fromString(docenteId));
+        return ResponseEntity.ok(courses);
     }
 }
