@@ -471,7 +471,7 @@ public class MainScreenController implements Initializable {
         Label info = new Label("Aquí se mostrarán las propuestas de microcurrículo para: " + tipo);
         info.setWrapText(true);
         Button cerrar = new Button("Cerrar");
-        cerrar.setStyle("-fx-background-color: #d32f2f; -fx-text-fill: #fff; -fx-background-radius: 8; -fx-font-size: 14px; -fx-padding: 6 18 6 18; -fx-font-weight: bold; -fx-border-color: #b71c1c; -fx-border-width: 2;");
+        cerrar.getStyleClass().add("cerrar-btn");
         modalContent.getChildren().addAll(title, info, cerrar);
 
         VBox modalWrapper = new VBox();
