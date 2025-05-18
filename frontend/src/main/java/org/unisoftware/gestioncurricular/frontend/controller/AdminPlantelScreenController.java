@@ -46,7 +46,7 @@ public class AdminPlantelScreenController {
         usersTable.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);
 
         rolesCombo.setItems(FXCollections.observableArrayList(
-                "DECANO", "DIRECTOR_DE_PROGRAMA", "DOCENTE", "COMITE_DE_PROGRAMA"
+                "DECANO", "DIRECTOR_DE_PROGRAMA", "DOCENTE", "COMITE_DE_PROGRAMA", "DIRECTOR_DE_ESCUELA"
         ));
         cargarUsuarios();
 

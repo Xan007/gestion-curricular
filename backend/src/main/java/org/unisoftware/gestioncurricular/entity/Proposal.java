@@ -53,4 +53,19 @@ public class Proposal {
     private Instant lastUpdatedAt = Instant.now();
 
     // getters y setters...
+
+    @Setter
+    @Getter
+    @Column(name = "signed_by_director_programa", nullable = false)
+    private boolean signedByDirectorPrograma = false;
+
+    @Setter
+    @Getter
+    @Column(name = "signed_by_director_escuela", nullable = false)
+    private boolean signedByDirectorEscuela = false;
+
+    @Setter
+    @Getter
+    @Column(name = "signature_rejected", nullable = false)
+    private boolean signatureRejected = false;
 }

@@ -11,6 +11,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.unisoftware.gestioncurricular.dto.ProposalDTO;
 import org.unisoftware.gestioncurricular.dto.ProposalReviewRequest;
+import org.unisoftware.gestioncurricular.dto.SignatureRequest;
 import org.unisoftware.gestioncurricular.entity.Proposal;
 import org.unisoftware.gestioncurricular.mapper.ProposalMapper;
 import org.unisoftware.gestioncurricular.security.util.SecurityUtil;
@@ -36,7 +37,7 @@ public class ProposalController {
     @Operation(summary = "Crear una nueva propuesta", description = "Crea una nueva propuesta académica.")
     @PostMapping
     public ResponseEntity<Void> createProposal(@RequestBody ProposalDTO dto) {
-        // Implementación externa...
+
         return ResponseEntity.status(HttpStatus.NOT_IMPLEMENTED).build();
     }
 
@@ -79,4 +80,37 @@ public class ProposalController {
                 .collect(Collectors.toList());
         return ResponseEntity.ok(dtos);
     }
+
+    @PreAuthorize("hasAnyRole('ROLE_DIRECTOR_DE_PROGRAMA', 'ROLE_DIRECTOR_DE_ESCUELA')")
+    @Operation(summary = "Listar propuestas pendientes de firma", description = "Devuelve todas las propuestas en estado ESPERANDO_FIRMAS para que los directores puedan firmarlas.")
+    @GetMapping("/pending-signatures")
+    public ResponseEntity<List<ProposalDTO>> listProposalsPendingSignature() {
+        String role = SecurityUtil.getCurrentUserRole();
+
+        if (!"ROLE_DIRECTOR_DE_PROGRAMA".equals(role) && !"ROLE_DIRECTOR_DE_ESCUELA".equals(role)) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+        }
+
+        List<Proposal> proposals = proposalService.getProposalsByStatus(ProposalStatus.ESPERANDO_FIRMAS);
+
+        List<ProposalDTO> dtos = proposals.stream()
+                .map(proposalMapper::toDto)
+                .collect(Collectors.toList());
+        return ResponseEntity.ok(dtos);
+    }
+
+    @PutMapping("/{id}/sign")
+    @PreAuthorize("hasAnyRole('ROLE_DIRECTOR_DE_PROGRAMA', 'ROLE_DIRECTOR_DE_ESCUELA')")
+    @Operation(summary = "Firmar o rechazar una propuesta en estado esperando firmas")
+    public ResponseEntity<ProposalDTO> signProposal(
+            @PathVariable Long id,
+            @RequestBody SignatureRequest request
+    ) {
+        UUID userId = SecurityUtil.getCurrentUserId();
+        String role = SecurityUtil.getCurrentUserRole();
+
+        Proposal updated = proposalService.signProposal(id, userId, role, request.isAccept(), request.getObservations());
+        return ResponseEntity.ok(proposalMapper.toDto(updated));
+    }
+
 }
