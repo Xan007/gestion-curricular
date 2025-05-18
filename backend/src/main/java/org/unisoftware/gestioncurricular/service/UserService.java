@@ -86,4 +86,15 @@ public class UserService {
                 role
         );
     }
+
+    public List<UserDTO> searchUsers(AppRole role, String name, String email) {
+        String emailParam = (email == null) ? "" : email;
+        String nameParam = (name == null) ? "" : name;
+
+        List<AuthUser> users = authUserRepository.searchByEmailNameAndRole(emailParam, nameParam, role);
+
+        return users.stream()
+                .map(this::mapToDTO)
+                .collect(Collectors.toList());
+    }
 }
