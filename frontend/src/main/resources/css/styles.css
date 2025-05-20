@@ -147,6 +147,22 @@
         -fx-text-fill: #fff;
 }
 
+.cerrar-btn{
+-fx-background-color: linear-gradient(to right, #e53935, #b71c1c); /* degrade rojo moderno */
+        -fx-text-fill: #fff;
+        -fx-font-size: 18px;
+        -fx-background-radius: 18;
+        -fx-font-weight: bold;
+        -fx-effect: dropshadow(gaussian, #b71c1c, 7, 0.3, 1, 2);
+        -fx-cursor: hand;
+        -fx-transition: all 0.3s;
+}
+.cerrar-btn:hover {
+    -fx-background-color: linear-gradient(to right, #ba000d, #d32f2f);
+            -fx-scale-x: 1.05;
+            -fx-scale-y: 1.05;
+}
+
 /* Títulos */
 .label {
     -fx-font-family: "Segoe UI", Helvetica, Arial, sans-serif;
@@ -337,42 +353,55 @@
 
 /* --- BOTONES DE LAS CARDS DE PROGRAMAS --- */
 .card-btn-red {
-    -fx-background-color: #d32f2f;
-    -fx-text-fill: #fff;
-    -fx-background-radius: 8;
-    -fx-font-weight: bold;
-    -fx-padding: 8 24 8 24;
-    -fx-border-color: #b71c1c;
-    -fx-border-width: 2;
-    -fx-font-size: 15px;
-    -fx-cursor: hand;
-    -fx-transition: all 0.18s;
+    -fx-background-color: linear-gradient(to right, #e53935, #b71c1c); /* degrade rojo moderno */
+        -fx-text-fill: #fff;
+        -fx-font-size: 18px;
+        -fx-background-radius: 18;
+        -fx-font-weight: bold;
+        -fx-effect: dropshadow(gaussian, #b71c1c, 7, 0.3, 1, 2);
+        -fx-cursor: hand;
+        -fx-transition: all 0.3s;
 }
 .card-btn-red:hover {
-    -fx-background-color: #fff;
-    -fx-text-fill: #d32f2f;
-    -fx-border-color: #d32f2f;
-    -fx-scale-x: 1.05;
-    -fx-scale-y: 1.05;
+    -fx-background-color: linear-gradient(to right, #ba000d, #d32f2f);
+        -fx-scale-x: 1.05;
+        -fx-scale-y: 1.05;
 }
 
 .card-btn-white {
     -fx-background-color: #fff;
     -fx-text-fill: #d32f2f;
-    -fx-background-radius: 8;
+    -fx-font-size: 18px;
+    -fx-background-radius: 18;
     -fx-font-weight: bold;
-    -fx-padding: 8 24 8 24;
-    -fx-border-color: #d32f2f;
-    -fx-border-width: 2;
-    -fx-font-size: 15px;
+    -fx-effect: dropshadow(gaussian, #b71c1c, 7, 0.3, 1, 2);
     -fx-cursor: hand;
-    -fx-transition: all 0.18s;
+    -fx-transition: all 0.3s;
 }
 .card-btn-white:hover {
-    -fx-background-color: #d32f2f;
-    -fx-text-fill: #fff;
-    -fx-border-color: #b71c1c;
     -fx-scale-x: 1.05;
     -fx-scale-y: 1.05;
 }
 
+/* --- HOVER PARA LAS CARDS DE LOS CURSOS EN EL SEMÁFORO --- */
+.course-card {
+    -fx-background-color: #ffffff;
+    -fx-background-radius: 14;
+    -fx-padding: 12 10 12 10;
+    -fx-min-width: 170px;
+    -fx-max-width: 260px;
+    -fx-border-color: #d1d5db;
+    -fx-border-width: 1;
+    -fx-effect: dropshadow(three-pass-box, #e0e3e7, 4, 0.10, 0, 2);
+    -fx-cursor: hand;
+    -fx-transition: all 0.22s;
+}
+.course-card:hover {
+    -fx-border-color: #d32f2f;
+    -fx-border-width: 2;
+    -fx-scale-x: 1.03;
+    -fx-scale-y: 1.03;
+    -fx-effect: dropshadow(three-pass-box, #d32f2f88, 8, 0.18, 0, 4);
+}
+
+/* --- BOTONES DE LAS CARDS DE PROGRAMAS (MODIFICADOS) --- */

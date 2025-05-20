@@ -27,8 +27,8 @@
             <HBox spacing="14" alignment="CENTER_RIGHT">
                 <Label text="Rol:" styleClass="field-label" />
                 <ComboBox fx:id="rolesCombo" prefWidth="180.0" styleClass="text-field"/>
-                <Button fx:id="assignRoleBtn" text="Asignar rol" minWidth="120.0" styleClass="button"/>
-                <Button fx:id="removeRolesBtn" text="Quitar roles" minWidth="120.0" styleClass="button"/>
+                <Button fx:id="assignRoleBtn" text="Asignar rol" minWidth="120.0" styleClass="card-btn-red"/>
+                <Button fx:id="removeRolesBtn" text="Quitar roles" minWidth="120.0" styleClass="card-btn-red"/>
             </HBox>
         </VBox>
     </center>
