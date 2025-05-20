@@ -29,9 +29,6 @@ public class Program {
     @Column(name = "competencias")
     private String competencies;
 
-    @Column(name = "resultados_aprendizaje_file_id")
-    private Long learningOutcomesFileId;
-
     @Column(name = "duracion")
     private Integer duration;
 
