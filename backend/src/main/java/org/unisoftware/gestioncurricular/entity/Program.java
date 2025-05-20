@@ -32,6 +32,7 @@ public class Program {
     @Column(name = "duracion")
     private Integer duration;
 
+
     @Column(name = "titulo_otorga")
     private String awardingDegree;
 
