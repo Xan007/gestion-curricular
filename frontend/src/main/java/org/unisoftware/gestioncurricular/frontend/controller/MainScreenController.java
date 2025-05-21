@@ -213,8 +213,6 @@ public class MainScreenController implements Initializable {
         );
         card.setMinWidth(320);
         card.setMaxWidth(320);
-        card.setMinHeight(260);
-        card.setMaxHeight(260);
         card.setSpacing(16);
         card.setAlignment(Pos.TOP_LEFT);
 
@@ -236,6 +234,7 @@ public class MainScreenController implements Initializable {
         goToCursosBtn.getStyleClass().add("card-btn-white");
 
         Button actualizarBtn = null;
+        Button editarBtn = null;
         if (SessionManager.getInstance().hasRole("DIRECTOR_DE_PROGRAMA")) {
             actualizarBtn = new Button("Actualizar plan de estudios");
             actualizarBtn.setWrapText(true);
@@ -243,10 +242,36 @@ public class MainScreenController implements Initializable {
             final Long progId = prog.getId();
             actualizarBtn.setOnAction(e -> handleSubirExcel(progId));
             actualizarBtn.getStyleClass().add("card-btn-white");
-        }
 
+            editarBtn = new Button("Editar Cursos/Info");
+            editarBtn.setWrapText(true);
+            editarBtn.setMaxWidth(Double.MAX_VALUE);
+            editarBtn.getStyleClass().add("card-btn-white");
+            editarBtn.setOnAction(e -> mostrarEdicionProgramaYCursos(prog));
+        }
         card.getChildren().addAll(nameLbl, expandBtn, goToCursosBtn);
         if (actualizarBtn != null) card.getChildren().add(actualizarBtn);
+        if (editarBtn != null) card.getChildren().add(editarBtn);
+
+        // Ajustar altura dinámica según cantidad de botones
+        int botones = card.getChildren().size() - 1; // -1 por el label
+        int minHeight = 80 + (botones * 48) + 24; // 80 para el label, 48 por botón, 24 padding extra
+        card.setMinHeight(minHeight);
+        card.setPrefHeight(minHeight);
+        card.setMaxHeight(minHeight);
+
+        // Si hay muchos botones, permitir scroll interno en la card
+        if (minHeight > 320) {
+            ScrollPane scroll = new ScrollPane(card);
+            scroll.setFitToWidth(true);
+            scroll.setPrefHeight(320);
+            scroll.setMaxHeight(320);
+            VBox wrapper = new VBox(scroll);
+            wrapper.setMinWidth(320);
+            wrapper.setMaxWidth(320);
+            wrapper.setPrefWidth(320);
+            return wrapper;
+        }
         return card;
     }
 
@@ -735,6 +760,114 @@ public class MainScreenController implements Initializable {
                     });
                 }
             }).start();
+        }
+    }
+
+    // Permite al director editar la información del programa y sus cursos
+    private void mostrarEdicionProgramaYCursos(ProgramDTO prog) {
+        try {
+            // Obtener cursos del programa
+            org.unisoftware.gestioncurricular.frontend.service.CourseServiceFront courseService = applicationContext.getBean(org.unisoftware.gestioncurricular.frontend.service.CourseServiceFront.class);
+            List<org.unisoftware.gestioncurricular.frontend.dto.CourseDTO> cursos = courseService.listCoursesByProgramaId(prog.getId());
+
+            VBox modalContent = new VBox(18);
+            modalContent.setStyle("-fx-background-color: #fff; -fx-padding: 32; -fx-background-radius: 14; -fx-effect: dropshadow(three-pass-box, #d32f2f, 12, 0.18, 0, 4); -fx-border-color: #d32f2f; -fx-border-width: 3;");
+            modalContent.setPrefWidth(900);
+            modalContent.setMinWidth(700);
+            modalContent.setAlignment(Pos.TOP_CENTER);
+
+            Label title = new Label("Editar Cursos del Programa");
+            title.setStyle("-fx-font-size: 22px; -fx-font-weight: bold; -fx-text-fill: #d32f2f;");
+            modalContent.getChildren().add(title);
+
+            // Tabla de cursos editable
+            Label cursosLbl = new Label("Cursos del Programa:");
+            cursosLbl.setStyle("-fx-font-size: 17px; -fx-font-weight: bold; -fx-text-fill: #1a2233;");
+            modalContent.getChildren().add(cursosLbl);
+
+            javafx.scene.control.TableView<org.unisoftware.gestioncurricular.frontend.dto.CourseDTO> table = new javafx.scene.control.TableView<>();
+            table.setEditable(true);
+            javafx.collections.ObservableList<org.unisoftware.gestioncurricular.frontend.dto.CourseDTO> data = javafx.collections.FXCollections.observableArrayList(cursos);
+            table.setItems(data);
+
+            javafx.scene.control.TableColumn<org.unisoftware.gestioncurricular.frontend.dto.CourseDTO, String> colNombre = new javafx.scene.control.TableColumn<>("Nombre");
+            colNombre.setCellValueFactory(new javafx.scene.control.cell.PropertyValueFactory<>("name"));
+            colNombre.setCellFactory(tc -> new javafx.scene.control.cell.TextFieldTableCell<>());
+            colNombre.setOnEditCommit(ev -> ev.getRowValue().setName(ev.getNewValue()));
+
+            javafx.scene.control.TableColumn<org.unisoftware.gestioncurricular.frontend.dto.CourseDTO, String> colTipo = new javafx.scene.control.TableColumn<>("Tipo");
+            colTipo.setCellValueFactory(new javafx.scene.control.cell.PropertyValueFactory<>("type"));
+            colTipo.setCellFactory(tc -> new javafx.scene.control.cell.TextFieldTableCell<>());
+            colTipo.setOnEditCommit(ev -> ev.getRowValue().setType(ev.getNewValue()));
+
+            javafx.scene.control.TableColumn<org.unisoftware.gestioncurricular.frontend.dto.CourseDTO, Integer> colCreditos = new javafx.scene.control.TableColumn<>("Créditos");
+            colCreditos.setCellValueFactory(new javafx.scene.control.cell.PropertyValueFactory<>("credits"));
+            colCreditos.setCellFactory(tc -> new javafx.scene.control.cell.TextFieldTableCell<>(new javafx.util.converter.IntegerStringConverter()));
+            colCreditos.setOnEditCommit(ev -> ev.getRowValue().setCredits(ev.getNewValue()));
+
+            javafx.scene.control.TableColumn<org.unisoftware.gestioncurricular.frontend.dto.CourseDTO, String> colCiclo = new javafx.scene.control.TableColumn<>("Ciclo");
+            colCiclo.setCellValueFactory(new javafx.scene.control.cell.PropertyValueFactory<>("cycle"));
+            colCiclo.setCellFactory(tc -> new javafx.scene.control.cell.TextFieldTableCell<>());
+            colCiclo.setOnEditCommit(ev -> ev.getRowValue().setCycle(ev.getNewValue()));
+
+            javafx.scene.control.TableColumn<org.unisoftware.gestioncurricular.frontend.dto.CourseDTO, String> colArea = new javafx.scene.control.TableColumn<>("Área");
+            colArea.setCellValueFactory(new javafx.scene.control.cell.PropertyValueFactory<>("area"));
+            colArea.setCellFactory(tc -> new javafx.scene.control.cell.TextFieldTableCell<>());
+            colArea.setOnEditCommit(ev -> ev.getRowValue().setArea(ev.getNewValue()));
+
+            javafx.scene.control.TableColumn<org.unisoftware.gestioncurricular.frontend.dto.CourseDTO, String> colRequisitos = new javafx.scene.control.TableColumn<>("Requisitos");
+            colRequisitos.setCellValueFactory(new javafx.scene.control.cell.PropertyValueFactory<>("requirements"));
+            colRequisitos.setCellFactory(tc -> new javafx.scene.control.cell.TextFieldTableCell<>());
+            colRequisitos.setOnEditCommit(ev -> ev.getRowValue().setRequirements(ev.getNewValue()));
+
+            table.getColumns().addAll(colNombre, colTipo, colCreditos, colCiclo, colArea, colRequisitos);
+            table.setColumnResizePolicy(javafx.scene.control.TableView.CONSTRAINED_RESIZE_POLICY);
+            table.setPrefHeight(400);
+            modalContent.getChildren().add(table);
+
+            HBox botones = new HBox(18);
+            botones.setAlignment(Pos.CENTER);
+            Button btnGuardar = new Button("Guardar Cambios");
+            Button btnCerrar = new Button("Cerrar");
+            botones.getChildren().addAll(btnGuardar, btnCerrar);
+            modalContent.getChildren().add(botones);
+
+            VBox modalWrapper = new VBox();
+            modalWrapper.setAlignment(Pos.CENTER);
+            modalWrapper.setFillWidth(true);
+            modalWrapper.setPrefWidth(900);
+            modalWrapper.setMinWidth(700);
+            modalWrapper.getChildren().add(modalContent);
+            AnchorPane anchorPane = (AnchorPane) cardContainer.getScene().getRoot();
+            StackPane overlay = new StackPane();
+            overlay.setStyle("-fx-background-color: rgba(30,32,48,0.18);");
+            overlay.setPickOnBounds(true);
+            overlay.setPrefSize(anchorPane.getWidth(), anchorPane.getHeight());
+            overlay.setMinSize(Region.USE_PREF_SIZE, Region.USE_PREF_SIZE);
+            overlay.setMaxSize(Region.USE_PREF_SIZE, Region.USE_PREF_SIZE);
+            overlay.setAlignment(Pos.CENTER);
+            overlay.getChildren().add(modalWrapper);
+            anchorPane.getChildren().add(overlay);
+            AnchorPane.setTopAnchor(overlay, 0.0);
+            AnchorPane.setBottomAnchor(overlay, 0.0);
+            AnchorPane.setLeftAnchor(overlay, 0.0);
+            AnchorPane.setRightAnchor(overlay, 0.0);
+
+            btnCerrar.setOnAction(ev -> anchorPane.getChildren().remove(overlay));
+            btnGuardar.setOnAction(ev -> {
+                try {
+                    for (org.unisoftware.gestioncurricular.frontend.dto.CourseDTO c : data) {
+                        courseService.updateCourse(c);
+                    }
+                    anchorPane.getChildren().remove(overlay);
+                    mostrarAlerta("Éxito", "Cursos actualizados correctamente.", Alert.AlertType.INFORMATION);
+                    mostrarProgramaCard();
+                } catch (Exception ex) {
+                    mostrarAlerta("Error", "No se pudo guardar: " + ex.getMessage(), Alert.AlertType.ERROR);
+                }
+            });
+        } catch (Exception ex) {
+            mostrarAlerta("Error", "No se pudo cargar la edición: " + ex.getMessage(), Alert.AlertType.ERROR);
         }
     }
 }
