@@ -169,18 +169,22 @@ public class MainScreenController implements Initializable {
             HBox paginacion = new HBox(16);
             paginacion.setAlignment(Pos.CENTER);
             Button btnAnterior = new Button("Anterior");
+            btnAnterior.getStyleClass().add("paginacion-btn");
             btnAnterior.setDisable(paginaActual == 0);
             btnAnterior.setOnAction(e -> {
                 paginaActual--;
                 mostrarProgramaCard();
             });
             Button btnSiguiente = new Button("Siguiente");
+            btnSiguiente.getStyleClass().add("paginacion-btn");
             btnSiguiente.setDisable(paginaActual >= totalPaginas - 1);
             btnSiguiente.setOnAction(e -> {
                 paginaActual++;
                 mostrarProgramaCard();
             });
-            paginacion.getChildren().addAll(btnAnterior, new Label("Página " + (paginaActual + 1) + " de " + totalPaginas), btnSiguiente);
+            Label lblPag = new Label("Página " + (paginaActual + 1) + " de " + totalPaginas);
+            lblPag.setStyle("-fx-text-fill: white; -fx-font-weight: bold; -fx-font-size: 15px;");
+            paginacion.getChildren().addAll(btnAnterior, lblPag, btnSiguiente);
             if (totalPaginas > 1) {
                 cardContainer.getChildren().add(paginacion);
             }

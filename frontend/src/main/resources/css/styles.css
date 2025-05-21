@@ -69,11 +69,11 @@
 
 /* HEADER MODERNIZADO, MINIMALISTA */
 .modern-header {
-    -fx-background-color: linear-gradient(to right, #b71c1c, #e53935 80%);
+    -fx-background-color: linear-gradient(to right, #23272b, #111 80%);
     -fx-padding: 0 36px 0 36px;
     -fx-min-height: 80px;
     -fx-alignment: center-left;
-    -fx-effect: dropshadow(gaussian, #b71c1c44, 10, 0.08, 0, 2);
+    -fx-effect: dropshadow(gaussian, #23272b44, 10, 0.08, 0, 2);
     -fx-pref-width: 100vw;
     -fx-max-width: 100vw;
     -fx-min-width: 100vw;
@@ -83,10 +83,11 @@
 .main-title {
     -fx-font-size: 2em;
     -fx-font-weight: 900;
-    -fx-text-fill: #ffffff;
+    -fx-text-fill: #fff;
     -fx-padding: 0 16px 0 0;
     -fx-letter-spacing: 1px;
-    -fx-color: #ffffff;
+    -fx-color: #fff;
+    text-shadow: 1px 1px 4px #00000055;
 }
 
 /* BOTÓN: Administrar Plantel (borde rojo, texto rojo, fondo blanco, hover a fondo rojo y texto blanco) */
@@ -111,8 +112,8 @@
 
 /* BOTÓN: Cerrar Sesión (fondo negro, texto blanco, borde negro, hover a fondo rojo y texto blanco) */
 .btn-logout {
-    -fx-background-color: #111;
-    -fx-text-fill: #fff;
+    -fx-background-color: #ffffff;
+    -fx-text-fill: #000;
     -fx-font-size: 15px;
     -fx-border-radius: 10px;
     -fx-background-radius: 10px;
@@ -123,9 +124,8 @@
     -fx-transition: all 0.18s;
 }
 .btn-logout:hover {
-    -fx-background-color: #ffffff;
-
-    -fx-text-fill: #000;
+    -fx-scale-x: 1.05;
+            -fx-scale-y: 1.05;
 }
 
 .btn-micro {
@@ -387,3 +387,33 @@
     -fx-scale-y: 1.03;
     -fx-effect: dropshadow(three-pass-box, #d32f2f88, 8, 0.18, 0, 4);
 }
+
+/* --- BOTONES DE PAGINACIÓN --- */
+.paginacion-btn {
+    -fx-background-color: #fff;
+    -fx-text-fill: #d32f2f;
+    -fx-font-weight: bold;
+    -fx-font-size: 15px;
+    -fx-background-radius: 8px;
+    -fx-padding: 6 18 6 18;
+    -fx-cursor: hand;
+    -fx-effect: dropshadow(gaussian, #b71c1c44, 4, 0.08, 0, 1);
+    -fx-border-color: #d32f2f;
+    -fx-border-width: 1.5;
+    -fx-border-radius: 8px;
+    -fx-transition: all 0.2s;
+}
+.paginacion-btn:disabled {
+    -fx-background-color: #f5bdbd;
+    -fx-text-fill: #fff;
+    -fx-opacity: 0.7;
+    -fx-cursor: default;
+}
+.paginacion-btn:hover:enabled {
+    -fx-background-color: #ffeaea;
+    -fx-text-fill: #b71c1c;
+    -fx-scale-x: 1.07;
+    -fx-scale-y: 1.07;
+}
+
+

@@ -8,9 +8,9 @@
     <VBox spacing="16" alignment="TOP_CENTER"
           AnchorPane.topAnchor="0.0" AnchorPane.bottomAnchor="0.0"
           AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0">
-        <HBox alignment="CENTER_LEFT" spacing="18" style="-fx-background-color: #fff; -fx-padding: 18 32 18 32; -fx-border-color: #111; -fx-border-width: 0 0 2 0;">
-            <Button text="⟵ Volver" onAction="#handleVolver" styleClass="btn-micro"/>
-            <Label fx:id="programNameLabel" style="-fx-font-size:22px; -fx-font-weight:bold; -fx-text-fill: #1a2233; -fx-padding: 0 0 0 18;"/>
+        <HBox alignment="CENTER_LEFT" spacing="18" styleClass="modern-header">
+            <Button text="⟵ Volver" onAction="#handleVolver" styleClass="btn-logout"/>
+            <Label fx:id="programNameLabel" styleClass="main-title"/>
         </HBox>
         <ScrollPane fitToWidth="true" fitToHeight="true"
                     AnchorPane.topAnchor="0.0" AnchorPane.bottomAnchor="0.0"
