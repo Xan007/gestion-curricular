@@ -22,6 +22,8 @@ import java.util.HashMap;
 import java.util.TreeMap;
 import java.util.ArrayList;
 
+import org.unisoftware.gestioncurricular.frontend.service.CourseServiceFront;
+import org.unisoftware.gestioncurricular.frontend.util.SessionManager;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
@@ -31,21 +33,38 @@ import org.unisoftware.gestioncurricular.frontend.service.ProgramServiceFront;
 
 import java.io.IOException;
 import java.util.List;
+import javafx.scene.control.Alert;
+import org.unisoftware.gestioncurricular.frontend.dto.CourseDTO;
+import java.util.UUID;
+import org.unisoftware.gestioncurricular.frontend.service.UserServiceFront;
+import org.unisoftware.gestioncurricular.frontend.dto.UserInfoDTO;
 
 @Component
 public class ProgramCoursesScreenController {
 
     @FXML private VBox coursesContainer;
     @FXML private Label programNameLabel;
+    @FXML private Button btnAsignarDocente;
 
     @Autowired private ProgramServiceFront programServiceFront;
     @Autowired private ApplicationContext applicationContext;
+    @Autowired private CourseServiceFront courseServiceFront;
+    @Autowired private UserServiceFront userServiceFront;
 
     private Long programaId;
 
     public void initData(Long programaId, String nombrePrograma) {
         this.programaId = programaId;
         programNameLabel.setText("Plan de Estudios de: " + nombrePrograma);
+        // Mostrar botón solo si el usuario es DIRECTOR_DE_PROGRAMA
+        if (SessionManager.getInstance().hasRole("DIRECTOR_DE_PROGRAMA")) {
+            btnAsignarDocente.setVisible(true);
+            btnAsignarDocente.setManaged(true);
+        } else {
+            btnAsignarDocente.setVisible(false);
+            btnAsignarDocente.setManaged(false);
+        }
+        btnAsignarDocente.setOnAction(e -> handleAsignarDocente());
         cargarPlanEstudios();
     }
 
@@ -234,6 +253,75 @@ public class ProgramCoursesScreenController {
         cerrar.setOnAction(ev -> anchorPane.getChildren().remove(overlayFinal));
     }
 
+    private void handleAsignarDocente() {
+        try {
+            // Obtener cursos del programa
+            List<CourseDTO> cursos = courseServiceFront.listCoursesByProgramaId(programaId);
+            if (cursos == null || cursos.isEmpty()) {
+                mostrarAlerta("No hay cursos", "No hay cursos disponibles para asignar docente.", Alert.AlertType.INFORMATION);
+                return;
+            }
+            // Diálogo para seleccionar curso
+            javafx.scene.control.ChoiceDialog<CourseDTO> dialog = new javafx.scene.control.ChoiceDialog<>(cursos.get(0), cursos);
+            dialog.setTitle("Asignar Docente a Curso");
+            dialog.setHeaderText("Seleccione el curso al que desea asignar un docente");
+            dialog.setContentText("Curso:");
+            // --- ESTILO AVANZADO ---
+            dialog.getDialogPane().getStylesheets().add(getClass().getResource("/css/styles.css").toExternalForm());
+            dialog.getDialogPane().getStyleClass().add("dialog-pane-custom");
+            dialog.getDialogPane().lookupButton(javafx.scene.control.ButtonType.OK).getStyleClass().addAll("dialog-ok");
+            dialog.getDialogPane().lookupButton(javafx.scene.control.ButtonType.CANCEL).getStyleClass().addAll("dialog-cancel");
+            // Estilo al ComboBox interno
+            javafx.scene.Node combo = dialog.getDialogPane().lookup(".combo-box");
+            if (combo != null) combo.getStyleClass().add("dialog-combo");
+            // --- FIN ESTILO AVANZADO ---
+            java.util.Optional<CourseDTO> result = dialog.showAndWait();
+            if (result.isPresent()) {
+                CourseDTO cursoSeleccionado = result.get();
+                // Obtener lista de docentes
+                List<UserInfoDTO> docentes = userServiceFront.getDocentes();
+                if (docentes == null || docentes.isEmpty()) {
+                    mostrarAlerta("No hay docentes", "No hay docentes disponibles para asignar.", Alert.AlertType.INFORMATION);
+                    return;
+                }
+                // Diálogo para seleccionar docente por email
+                javafx.scene.control.ChoiceDialog<UserInfoDTO> docenteDialog = new javafx.scene.control.ChoiceDialog<>(docentes.get(0), docentes);
+                docenteDialog.setTitle("Asignar Docente");
+                docenteDialog.setHeaderText("Seleccione el docente a asignar al curso: " + cursoSeleccionado.getName());
+                docenteDialog.setContentText("Docente (email):");
+                // --- ESTILO AVANZADO ---
+                docenteDialog.getDialogPane().getStylesheets().add(getClass().getResource("/css/styles.css").toExternalForm());
+                docenteDialog.getDialogPane().getStyleClass().add("dialog-pane-custom");
+                docenteDialog.getDialogPane().lookupButton(javafx.scene.control.ButtonType.OK).getStyleClass().addAll("dialog-ok");
+                docenteDialog.getDialogPane().lookupButton(javafx.scene.control.ButtonType.CANCEL).getStyleClass().addAll("dialog-cancel");
+                javafx.scene.Node combo2 = docenteDialog.getDialogPane().lookup(".combo-box");
+                if (combo2 != null) combo2.getStyleClass().add("dialog-combo");
+                // --- FIN ESTILO AVANZADO ---
+                java.util.Optional<UserInfoDTO> docenteResult = docenteDialog.showAndWait();
+                if (docenteResult.isPresent()) {
+                    UserInfoDTO docenteSeleccionado = docenteResult.get();
+                    String docenteIdStr = docenteSeleccionado.getId();
+                    try {
+                        courseServiceFront.assignTeacher(cursoSeleccionado.getId(), docenteIdStr);
+                        mostrarAlerta("Éxito", "Docente asignado correctamente.", Alert.AlertType.INFORMATION);
+                    } catch (Exception ex) {
+                        mostrarAlerta("Error", "No se pudo asignar el docente: " + ex.getMessage(), Alert.AlertType.ERROR);
+                    }
+                }
+            }
+        } catch (Exception e) {
+            mostrarAlerta("Error", "No se pudo cargar la lista de cursos o docentes: " + e.getMessage(), Alert.AlertType.ERROR);
+        }
+    }
+
+    private void mostrarAlerta(String titulo, String mensaje, Alert.AlertType tipo) {
+        Alert alerta = new Alert(tipo);
+        alerta.setTitle(titulo);
+        alerta.setHeaderText(null);
+        alerta.setContentText(mensaje);
+        alerta.showAndWait();
+    }
+
     @FXML
     public void handleVolver(ActionEvent event) throws IOException {
         FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/MainScreen.fxml"));
@@ -245,4 +333,3 @@ public class ProgramCoursesScreenController {
         stage.show();
     }
 }
-

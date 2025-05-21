@@ -31,3 +31,5 @@
      <!-- RESTO DEL CONTENIDO -->
      <VBox fx:id="userBox" alignment="TOP_LEFT" layoutX="14.0" layoutY="82.0" prefHeight="25.0" prefWidth="466.0" spacing="5" />
 </AnchorPane>
+
+

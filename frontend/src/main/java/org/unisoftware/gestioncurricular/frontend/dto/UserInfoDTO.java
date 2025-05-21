@@ -77,4 +77,10 @@ public class UserInfoDTO {
     public void setRole(String role) {
         this.role = role;
     }
+
+    @Override
+    public String toString() {
+        return getEmail();
+    }
 }
+

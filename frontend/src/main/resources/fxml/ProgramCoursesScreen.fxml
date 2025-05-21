@@ -11,6 +11,7 @@
         <HBox alignment="CENTER_LEFT" spacing="18" styleClass="modern-header">
             <Button text="⟵ Volver" onAction="#handleVolver" styleClass="btn-logout"/>
             <Label fx:id="programNameLabel" styleClass="main-title"/>
+            <Button fx:id="btnAsignarDocente" text="Asignar Docente" visible="false" managed="false" styleClass="card-btn-white"/>
         </HBox>
         <ScrollPane fitToWidth="true" fitToHeight="true"
                     AnchorPane.topAnchor="0.0" AnchorPane.bottomAnchor="0.0"
@@ -19,4 +20,6 @@
         </ScrollPane>
     </VBox>
 </AnchorPane>
+
+
 

@@ -9,7 +9,7 @@ public class CourseDTO {
     private Integer credits;
     private String relation;
     private Long microcurriculumFileId;
-    private Long teacherId;
+    private String teacherId;
     private Integer semester;
     private String requirements;
 
@@ -38,12 +38,18 @@ public class CourseDTO {
     public Long getMicrocurriculumFileId() { return microcurriculumFileId; }
     public void setMicrocurriculumFileId(Long microcurriculumFileId) { this.microcurriculumFileId = microcurriculumFileId; }
 
-    public Long getTeacherId() { return teacherId; }
-    public void setTeacherId(Long teacherId) { this.teacherId = teacherId; }
+    public String getTeacherId() { return teacherId; }
+    public void setTeacherId(String teacherId) { this.teacherId = teacherId; }
 
     public Integer getSemester() { return semester; }
     public void setSemester(Integer semester) { this.semester = semester; }
 
     public String getRequirements() { return requirements; }
     public void setRequirements(String requirements) { this.requirements = requirements; }
+
+    @Override
+    public String toString() {
+        return (getId() != null ? getId().toString() : "") + " - " + (getName() != null ? getName() : "");
+    }
 }
+

@@ -26,13 +26,37 @@ public class CourseServiceFront {
     }
 
     public List<CourseDTO> listCoursesByProgramaId(Long programaId) throws Exception {
-        String urlStr = BASE_URL + "/por-programa/" + programaId;
+        String urlStr = BASE_URL + "?programId=" + programaId;
         URL url = new URL(urlStr);
         HttpURLConnection conn = (HttpURLConnection) url.openConnection();
         conn.setRequestMethod("GET");
         try (InputStream in = conn.getInputStream()) {
             ObjectMapper mapper = new ObjectMapper();
             return mapper.readValue(in, new TypeReference<List<CourseDTO>>() {});
+        }
+    }
+
+    public CourseDTO assignTeacher(Long courseId, String docenteId) throws Exception {
+        String urlStr = BASE_URL + "/" + courseId + "/asignar-docente?docenteId=" + docenteId;
+        URL url = new URL(urlStr);
+        HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+        conn.setRequestMethod("PUT");
+        conn.setRequestProperty("Content-Type", "application/json");
+        conn.setDoOutput(true);
+        int responseCode = conn.getResponseCode();
+        ObjectMapper mapper = new ObjectMapper();
+        if (responseCode == 200) {
+            try (InputStream in = conn.getInputStream()) {
+                return mapper.readValue(in, CourseDTO.class);
+            }
+        } else {
+            String errorMsg = "";
+            try (InputStream err = conn.getErrorStream()) {
+                if (err != null) {
+                    errorMsg = new String(err.readAllBytes());
+                }
+            }
+            throw new RuntimeException("Error al asignar docente: " + conn.getResponseMessage() + (errorMsg.isEmpty() ? "" : ". Detalle: " + errorMsg));
         }
     }
 }

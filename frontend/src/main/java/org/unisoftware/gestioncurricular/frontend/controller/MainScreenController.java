@@ -88,6 +88,7 @@ public class MainScreenController implements Initializable {
         btnPropuestasComite.setOnAction(e -> mostrarPropuestasMicro("Comité de Programa"));
         btnPropuestasEscuela.setOnAction(e -> mostrarPropuestasMicro("Escuela"));
         btnPropuestasPrograma.setOnAction(e -> mostrarPropuestasMicro("Programa"));
+
     }
 
     @FXML
@@ -141,7 +142,6 @@ public class MainScreenController implements Initializable {
             userBox.getChildren().add(new Label("Error al obtener información de usuario: " + e.getMessage()));
         }
     }
-
 
     private void mostrarProgramaCard() {
         cardContainer.getChildren().clear();

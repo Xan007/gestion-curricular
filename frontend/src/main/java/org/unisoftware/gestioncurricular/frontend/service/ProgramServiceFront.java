@@ -37,5 +37,4 @@ public class ProgramServiceFront {
             ObjectMapper mapper = new ObjectMapper();
             return mapper.readValue(in, new TypeReference<List<StudyPlanEntryDTO>>() {});
         }
-    }
-}
+    }}

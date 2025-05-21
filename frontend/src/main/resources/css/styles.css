@@ -416,4 +416,33 @@
     -fx-scale-y: 1.07;
 }
 
-
+/* --- DIALOGOS DE ASIGNACION --- */
+.dialog-pane-custom {
+    -fx-background-color: #f8f8fc;
+    -fx-border-color: #d32f2f;
+    -fx-border-width: 3;
+    -fx-border-radius: 12;
+    -fx-background-radius: 12;
+    -fx-effect: dropshadow(gaussian, #d32f2f, 8, 0.15, 0, 2);
+}
+.dialog-combo {
+    -fx-background-color: #fff;
+    -fx-border-color: #d32f2f;
+    -fx-border-radius: 8;
+    -fx-background-radius: 8;
+    -fx-font-size: 15px;
+    -fx-padding: 4 8 4 8;
+}
+.dialog-pane-custom .button {
+    -fx-background-radius: 8;
+    -fx-font-weight: bold;
+    -fx-font-size: 15px;
+}
+.dialog-ok {
+    -fx-background-color: #d32f2f;
+    -fx-text-fill: white;
+}
+.dialog-cancel {
+    -fx-background-color: #eee;
+    -fx-text-fill: #222;
+}
