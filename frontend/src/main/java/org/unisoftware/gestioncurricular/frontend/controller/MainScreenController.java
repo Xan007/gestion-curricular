@@ -52,6 +52,10 @@ public class MainScreenController implements Initializable {
     @Autowired private ExcelUploadService excelUploadService;
     @Autowired private ApplicationContext applicationContext;
 
+    private int paginaActual = 0;
+    private static final int PROGRAMAS_POR_PAGINA = 2;
+    private List<ProgramDTO> listaProgramas = null;
+
     @Override
     public void initialize(URL location, ResourceBundle resources) {
         cargarUsuarioYMostrar();
@@ -142,94 +146,94 @@ public class MainScreenController implements Initializable {
     private void mostrarProgramaCard() {
         cardContainer.getChildren().clear();
         try {
-            List<ProgramDTO> lista = programServiceFront.listPrograms();
-
-            if (!lista.isEmpty()) {
-                GridPane grid = new GridPane();
-                grid.setHgap(32);
-                grid.setVgap(32);
-                grid.setAlignment(Pos.TOP_CENTER);
-                int col = 0, row = 0;
-                int maxCols = 2; // Solo dos programas por fila
-                for (ProgramDTO prog : lista) {
-                    VBox card = new VBox(18);
-                    card.setStyle(
-                        "-fx-background-color: linear-gradient(to bottom right, #fff, #f7f7fa 80%, #f1f1f1);" +
-                        "-fx-background-radius: 18;" +
-                        "-fx-padding: 28 24 28 24;" +
-                        "-fx-effect: dropshadow(gaussian, #d32f2f44, 8,0,0,2);" +
-                        "-fx-border-color: #d32f2f; -fx-border-width: 2; -fx-border-radius: 18;"
-                    );
-                    card.setMinWidth(370);
-                    card.setMaxWidth(370);
-                    card.setMinHeight(340);
-                    card.setMaxHeight(340);
-                    card.setSpacing(16);
-                    card.setAlignment(Pos.TOP_LEFT);
-
-                    Label nameLbl = new Label(prog.getName());
-                    nameLbl.setWrapText(true);
-                    nameLbl.setStyle("-fx-font-size: 24px; -fx-font-weight: bold; -fx-text-fill: #d32f2f; -fx-padding: 0 0 8 0;");
-                    nameLbl.setMaxWidth(Double.MAX_VALUE);
-
-                    Button expandBtn = new Button("Ver información");
-                    expandBtn.setWrapText(true);
-                    expandBtn.setMaxWidth(Double.MAX_VALUE);
-                    expandBtn.setOnAction(e -> mostrarDetallePrograma(prog));
-                    expandBtn.getStyleClass().add("card-btn-red");
-
-                    Button goToCursosBtn = new Button("Ver Cursos del Programa");
-                    goToCursosBtn.setWrapText(true);
-                    goToCursosBtn.setMaxWidth(Double.MAX_VALUE);
-                    goToCursosBtn.setOnAction(e -> abrirCursosPrograma(prog.getId(), prog.getName()));
-                    goToCursosBtn.getStyleClass().add("card-btn-white");
-
-                    // Botón solo para DIRECTOR_DE_PROGRAMA
-                    Button actualizarBtn = null;
-                    if (SessionManager.getInstance().hasRole("DIRECTOR_DE_PROGRAMA")) {
-                        actualizarBtn = new Button("Actualizar plan de estudios");
-                        actualizarBtn.setWrapText(true);
-                        actualizarBtn.setMaxWidth(Double.MAX_VALUE);
-                        final Long progId = prog.getId();
-                        actualizarBtn.setOnAction(e -> handleSubirExcel(progId));
-                        actualizarBtn.getStyleClass().add("card-btn-white");
-                    }
-
-                    card.getChildren().addAll(nameLbl, expandBtn, goToCursosBtn);
-                    if (actualizarBtn != null) card.getChildren().add(actualizarBtn);
-                    grid.add(card, col, row);
-                    col++;
-                    if (col >= maxCols) {
-                        col = 0;
-                        row++;
-                    }
-                }
-                // ScrollPane para grid de programas, con drag
-                ScrollPane gridScroll = new ScrollPane(grid);
-                gridScroll.setFitToWidth(true);
-                gridScroll.setFitToHeight(true);
-                gridScroll.setHbarPolicy(ScrollPane.ScrollBarPolicy.AS_NEEDED);
-                gridScroll.setVbarPolicy(ScrollPane.ScrollBarPolicy.AS_NEEDED);
-                gridScroll.setPannable(true); // Permite arrastrar con el mouse
-                // Mejorar experiencia de drag
-                gridScroll.setOnMousePressed(e -> {
-                    gridScroll.setUserData(new double[]{e.getSceneX(), e.getSceneY(), gridScroll.getHvalue(), gridScroll.getVvalue()});
-                });
-                gridScroll.setOnMouseDragged(e -> {
-                    double[] data = (double[]) gridScroll.getUserData();
-                    double deltaX = e.getSceneX() - data[0];
-                    double deltaY = e.getSceneY() - data[1];
-                    // Ajustar la sensibilidad del drag
-                    gridScroll.setHvalue(data[2] - deltaX / 1000);
-                    gridScroll.setVvalue(data[3] - deltaY / 1000);
-                });
-                cardContainer.getChildren().add(gridScroll);
-            } else {
+            if (listaProgramas == null) {
+                listaProgramas = programServiceFront.listPrograms();
+            }
+            if (listaProgramas.isEmpty()) {
                 cardContainer.getChildren().add(new Label("No hay programas disponibles."));
+                return;
+            }
+            int totalPaginas = (int) Math.ceil(listaProgramas.size() / (double) PROGRAMAS_POR_PAGINA);
+            int inicio = paginaActual * PROGRAMAS_POR_PAGINA;
+            int fin = Math.min(inicio + PROGRAMAS_POR_PAGINA, listaProgramas.size());
+            VBox filas = new VBox(32);
+            filas.setAlignment(Pos.TOP_CENTER);
+            HBox fila = new HBox(32);
+            fila.setAlignment(Pos.TOP_CENTER);
+            for (int i = inicio; i < fin; i++) {
+                VBox card = crearCardPrograma(listaProgramas.get(i));
+                fila.getChildren().add(card);
+            }
+            filas.getChildren().add(fila);
+            cardContainer.getChildren().add(filas);
+            HBox paginacion = new HBox(16);
+            paginacion.setAlignment(Pos.CENTER);
+            Button btnAnterior = new Button("Anterior");
+            btnAnterior.setDisable(paginaActual == 0);
+            btnAnterior.setOnAction(e -> {
+                paginaActual--;
+                mostrarProgramaCard();
+            });
+            Button btnSiguiente = new Button("Siguiente");
+            btnSiguiente.setDisable(paginaActual >= totalPaginas - 1);
+            btnSiguiente.setOnAction(e -> {
+                paginaActual++;
+                mostrarProgramaCard();
+            });
+            paginacion.getChildren().addAll(btnAnterior, new Label("Página " + (paginaActual + 1) + " de " + totalPaginas), btnSiguiente);
+            if (totalPaginas > 1) {
+                cardContainer.getChildren().add(paginacion);
             }
         } catch (Exception e) {
             cardContainer.getChildren().add(new Label("Error al cargar los programas: " + e.getMessage()));
         }
+    }
+
+    private VBox crearCardPrograma(ProgramDTO prog) {
+        VBox card = new VBox(18);
+        card.setStyle(
+                "-fx-background-color: linear-gradient(to bottom right, #fff, #f7f7fa 80%, #f1f1f1);"  +
+            "-fx-background-radius: 18;" +
+            "-fx-padding: 28 24 28 24;" +
+            "-fx-effect: dropshadow(gaussian, #d32f2f44, 8,0,0,2);"
+        );
+        card.setMinWidth(320);
+        card.setMaxWidth(320);
+        card.setMinHeight(260);
+        card.setMaxHeight(260);
+        card.setSpacing(16);
+        card.setAlignment(Pos.TOP_LEFT);
+
+        Label nameLbl = new Label(prog.getName());
+        nameLbl.setWrapText(true);
+        nameLbl.setStyle("-fx-font-size: 24px; -fx-font-weight: bold; -fx-text-fill: #d32f2f; -fx-padding: 0 0 8 0;");
+        nameLbl.setMaxWidth(Double.MAX_VALUE);
+
+        Button expandBtn = new Button("Ver información");
+        expandBtn.setWrapText(true);
+        expandBtn.setMaxWidth(Double.MAX_VALUE);
+        expandBtn.setOnAction(e -> mostrarDetallePrograma(prog));
+        expandBtn.getStyleClass().add("card-btn-red");
+
+        Button goToCursosBtn = new Button("Ver Cursos del Programa");
+        goToCursosBtn.setWrapText(true);
+        goToCursosBtn.setMaxWidth(Double.MAX_VALUE);
+        goToCursosBtn.setOnAction(e -> abrirCursosPrograma(prog.getId(), prog.getName()));
+        goToCursosBtn.getStyleClass().add("card-btn-white");
+
+        Button actualizarBtn = null;
+        if (SessionManager.getInstance().hasRole("DIRECTOR_DE_PROGRAMA")) {
+            actualizarBtn = new Button("Actualizar plan de estudios");
+            actualizarBtn.setWrapText(true);
+            actualizarBtn.setMaxWidth(Double.MAX_VALUE);
+            final Long progId = prog.getId();
+            actualizarBtn.setOnAction(e -> handleSubirExcel(progId));
+            actualizarBtn.getStyleClass().add("card-btn-white");
+        }
+
+        card.getChildren().addAll(nameLbl, expandBtn, goToCursosBtn);
+        if (actualizarBtn != null) card.getChildren().add(actualizarBtn);
+        return card;
     }
 
     private void mostrarDetallePrograma(ProgramDTO prog) {

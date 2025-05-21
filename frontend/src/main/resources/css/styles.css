@@ -69,22 +69,24 @@
 
 /* HEADER MODERNIZADO, MINIMALISTA */
 .modern-header {
-    -fx-background-color: #fff;
-    -fx-padding: 18px 32px;
-    -fx-border-width: 0 0 2px 0;
-    -fx-border-color: transparent transparent #111 transparent;
+    -fx-background-color: linear-gradient(to right, #b71c1c, #e53935 80%);
+    -fx-padding: 0 36px 0 36px;
+    -fx-min-height: 80px;
     -fx-alignment: center-left;
-    -fx-min-height: 64px;
-    -fx-effect: dropshadow(gaussian, #0002, 10, 0.07, 0, 2);
+    -fx-effect: dropshadow(gaussian, #b71c1c44, 10, 0.08, 0, 2);
+    -fx-pref-width: 100vw;
+    -fx-max-width: 100vw;
+    -fx-min-width: 100vw;
 }
 
 /* TÍTULO PRINCIPAL */
 .main-title {
     -fx-font-size: 2em;
     -fx-font-weight: 900;
-    -fx-text-fill: #c62828;
+    -fx-text-fill: #ffffff;
     -fx-padding: 0 16px 0 0;
     -fx-letter-spacing: 1px;
+    -fx-color: #ffffff;
 }
 
 /* BOTÓN: Administrar Plantel (borde rojo, texto rojo, fondo blanco, hover a fondo rojo y texto blanco) */
@@ -117,34 +119,28 @@
     -fx-font-weight: bold;
     -fx-padding: 6 22 6 22;
     -fx-cursor: hand;
-    -fx-border-width: 2;
-    -fx-border-color: #111;
     -fx-effect: null;
     -fx-transition: all 0.18s;
 }
 .btn-logout:hover {
-    -fx-background-color: #c62828;
-    -fx-border-color: #c62828;
-    -fx-text-fill: #fff;
+    -fx-background-color: #ffffff;
+
+    -fx-text-fill: #000;
 }
 
 .btn-micro {
     -fx-background-color: #fff;
-        -fx-text-fill: #c62828;
-        -fx-font-size: 15px;
-        -fx-border-radius: 10px;
-        -fx-background-radius: 10px;
+        -fx-text-fill: #d32f2f;
+        -fx-font-size: 18px;
+        -fx-background-radius: 18;
         -fx-font-weight: bold;
-        -fx-padding: 6 22 6 22;
+        -fx-effect: dropshadow(gaussian, #b71c1c, 7, 0.3, 1, 2);
         -fx-cursor: hand;
-        -fx-border-width: 2;
-        -fx-border-color: #c62828;
-        -fx-effect: null;
-        -fx-transition: all 0.18s;
+        -fx-transition: all 0.3s;
 }
 .btn-micro:hover {
-    -fx-background-color: #c62828;
-        -fx-text-fill: #fff;
+    -fx-scale-x: 1.05;
+        -fx-scale-y: 1.05;
 }
 
 .cerrar-btn{
@@ -173,29 +169,17 @@
 .title, .main-title {
     -fx-font-size: 28px;
     -fx-font-weight: bold;
-    -fx-text-fill: #d32f2f;
+    -fx-text-fill: #fff;
 }
 
 /* Tarjetas/contenedores */
 .card, .content-card, .main-card {
-    -fx-background-color: #fff;
+    -fx-background-color: transparent;
     -fx-border-width: 0 0 2 0;
-    -fx-border-color: #d32f2f;
+    -fx-border-color: transparent;
     -fx-background-radius: 10;
     -fx-padding: 20;
     /* -fx-effect: dropshadow(gaussian, #bdbdbd, 8, 0, 0, 2);  <-- Eliminar esta línea */
-}
-
-/* Barras superiores, pie de página, cabecera */
-.header-bar, .footer-bar {
-    -fx-background-color: #222;
-    -fx-padding: 14 10 14 30;
-}
-
-.header-bar .label {
-    -fx-text-fill: #fff;
-    -fx-font-size: 18px;
-    -fx-font-weight: bold;
 }
 
 /* Errores y éxito */
@@ -403,5 +387,3 @@
     -fx-scale-y: 1.03;
     -fx-effect: dropshadow(three-pass-box, #d32f2f88, 8, 0.18, 0, 4);
 }
-
-/* --- BOTONES DE LAS CARDS DE PROGRAMAS (MODIFICADOS) --- */

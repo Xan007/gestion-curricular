@@ -1,37 +1,31 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<?import javafx.scene.control.*?>
-<?import javafx.scene.layout.*?>
-<?import javafx.geometry.*?>
 
-<AnchorPane xmlns:fx="http://javafx.com/fxml"
-            fx:controller="org.unisoftware.gestioncurricular.frontend.controller.MainScreenController"
-            stylesheets="@/css/styles.css">
-    <VBox alignment="TOP_CENTER" spacing="30.0" styleClass="main-card"
-          AnchorPane.topAnchor="0.0" AnchorPane.bottomAnchor="0.0"
-          AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0">
-        <!-- HEADER MODERNO -->
-        <HBox spacing="22" alignment="CENTER_LEFT" styleClass="modern-header"
-              AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0"
-              VBox.vgrow="NEVER">
-            <Label text="Gestión Curricular" styleClass="main-title"/>
-            <Pane HBox.hgrow="ALWAYS"/>
-            <Button fx:id="adminPlantelBtn" text="Administrar Plantel"
-                    visible="false" managed="false" styleClass="btn-admin"/>
-            <Button fx:id="btnPropuestasComite" text="Propuestas Microcurrículo"
-                    visible="false" managed="false" styleClass="btn-micro"/>
-            <Button fx:id="btnPropuestasEscuela" text="Propuestas Microcurrículo"
-                    visible="false" managed="false" styleClass="btn-micro"/>
-            <Button fx:id="btnPropuestasPrograma" text="Propuestas Microcurrículo"
-                    visible="false" managed="false" styleClass="btn-micro"/>
-            <Button text="Cerrar sesión" onAction="#handleLogout"
-                    styleClass="btn-logout"/>
-        </HBox>
-        <!-- RESTO DEL CONTENIDO -->
-        <VBox fx:id="userBox" alignment="TOP_LEFT" spacing="5"/>
-        <ScrollPane fitToWidth="true" fitToHeight="false" hbarPolicy="NEVER" vbarPolicy="AS_NEEDED"
-                    VBox.vgrow="ALWAYS" styleClass="main-card">
-            <VBox fx:id="cardContainer" alignment="TOP_CENTER" spacing="20"
-                  maxWidth="Infinity"/>
-        </ScrollPane>
-    </VBox>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.image.Image?>
+<?import javafx.scene.image.ImageView?>
+<?import javafx.scene.layout.AnchorPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.Pane?>
+<?import javafx.scene.layout.VBox?>
+
+<AnchorPane prefHeight="700.0" prefWidth="900.0" stylesheets="@/css/styles.css" xmlns="http://javafx.com/javafx/23.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.unisoftware.gestioncurricular.frontend.controller.MainScreenController">
+   <ImageView fitHeight="557.0" fitWidth="765.0" layoutX="84.0" layoutY="114.0" pickOnBounds="true" preserveRatio="true">
+      <image>
+         <Image url="@imgs/FondoCard.png" />
+      </image>
+   </ImageView>
+     <!-- HEADER MODERNO -->
+     <HBox alignment="CENTER_LEFT" spacing="22" styleClass="modern-header" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0">
+         <Label styleClass="main-title" text="Gestión Curricular" />
+         <Pane HBox.hgrow="ALWAYS" />
+         <Button fx:id="adminPlantelBtn" managed="false" styleClass="card-btn-white" text="Administrar Plantel" visible="false" />
+         <Button fx:id="btnPropuestasComite" managed="false" styleClass="card-btn-white" text="Propuestas Microcurrículo" visible="false" />
+         <Button fx:id="btnPropuestasEscuela" managed="false" styleClass="card-btn-white" text="Propuestas Microcurrículo" visible="false" />
+         <Button fx:id="btnPropuestasPrograma" managed="false" styleClass="card-btn-white" text="Propuestas Microcurrículo" visible="false" />
+         <Button onAction="#handleLogout" styleClass="btn-logout" text="Cerrar sesión" />
+     </HBox>
+      <VBox fx:id="cardContainer" alignment="TOP_CENTER" layoutX="106.0" layoutY="232.0" maxWidth="Infinity" prefHeight="321.0" prefWidth="638.0" spacing="20" style="-fx-alignment: center;" />
+     <!-- RESTO DEL CONTENIDO -->
+     <VBox fx:id="userBox" alignment="TOP_LEFT" layoutX="14.0" layoutY="82.0" prefHeight="25.0" prefWidth="466.0" spacing="5" />
 </AnchorPane>
