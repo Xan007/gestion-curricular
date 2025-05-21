@@ -25,11 +25,11 @@
          <Button fx:id="btnPropuestasComite" managed="false" styleClass="card-btn-white" text="Propuestas Microcurrículo" visible="false" />
          <Button fx:id="btnPropuestasEscuela" managed="false" styleClass="card-btn-white" text="Propuestas Microcurrículo" visible="false" />
          <Button fx:id="btnPropuestasPrograma" managed="false" styleClass="card-btn-white" text="Propuestas Microcurrículo" visible="false" />
+         <Button fx:id="btnMisCursos" managed="false" styleClass="card-btn-white" text="Manejar mis cursos" visible="false" />
          <Button onAction="#handleLogout" styleClass="btn-logout" text="Cerrar sesión" />
      </HBox>
       <VBox fx:id="cardContainer" alignment="TOP_CENTER" layoutX="105.0" layoutY="262.0" maxWidth="Infinity" prefHeight="321.0" prefWidth="638.0" spacing="20" style="-fx-alignment: center;" />
      <!-- RESTO DEL CONTENIDO -->
      <VBox fx:id="userBox" alignment="TOP_LEFT" layoutX="14.0" layoutY="82.0" prefHeight="25.0" prefWidth="466.0" spacing="5" />
 </AnchorPane>
-
 

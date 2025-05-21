@@ -36,6 +36,17 @@ public class CourseServiceFront {
         }
     }
 
+    public List<CourseDTO> listCoursesByDocenteId(String docenteId) throws Exception {
+        String urlStr = BASE_URL + "/docente/" + docenteId;
+        URL url = new URL(urlStr);
+        HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+        conn.setRequestMethod("GET");
+        try (InputStream in = conn.getInputStream()) {
+            ObjectMapper mapper = new ObjectMapper();
+            return mapper.readValue(in, new TypeReference<List<CourseDTO>>() {});
+        }
+    }
+
     public CourseDTO assignTeacher(Long courseId, String docenteId) throws Exception {
         String urlStr = BASE_URL + "/" + courseId + "/asignar-docente?docenteId=" + docenteId;
         URL url = new URL(urlStr);

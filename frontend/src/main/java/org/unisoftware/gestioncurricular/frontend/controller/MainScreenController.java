@@ -47,6 +47,7 @@ public class MainScreenController implements Initializable {
     @FXML private Button btnPropuestasComite;
     @FXML private Button btnPropuestasEscuela;
     @FXML private Button btnPropuestasPrograma;
+    @FXML private Button btnMisCursos;
 
     @Autowired private ProgramServiceFront programServiceFront;
     @Autowired private ExcelUploadService excelUploadService;
@@ -82,6 +83,15 @@ public class MainScreenController implements Initializable {
         if (SessionManager.getInstance().hasRole("DIRECTOR_DE_PROGRAMA")) {
             btnPropuestasPrograma.setVisible(true);
             btnPropuestasPrograma.setManaged(true);
+        }
+        // Mostrar botón solo si el usuario es DOCENTE
+        if (SessionManager.getInstance().hasRole("DOCENTE")) {
+            btnMisCursos.setVisible(true);
+            btnMisCursos.setManaged(true);
+            btnMisCursos.setOnAction(e -> mostrarMisCursos());
+        } else {
+            btnMisCursos.setVisible(false);
+            btnMisCursos.setManaged(false);
         }
 
         adminPlantelBtn.setOnAction(e -> abrirAdministracionPlantel(e));
@@ -507,6 +517,88 @@ public class MainScreenController implements Initializable {
         cerrar.setOnAction(ev -> anchorPane.getChildren().remove(overlayFinal));
     }
 
+    private void mostrarMisCursos() {
+        try {
+            String docenteId = org.unisoftware.gestioncurricular.frontend.util.SessionManager.getInstance().getUserId();
+            org.unisoftware.gestioncurricular.frontend.service.CourseServiceFront courseService = applicationContext.getBean(org.unisoftware.gestioncurricular.frontend.service.CourseServiceFront.class);
+            List<org.unisoftware.gestioncurricular.frontend.dto.CourseDTO> cursos = courseService.listCoursesByDocenteId(docenteId);
+            VBox modalContent = new VBox(18);
+            modalContent.setStyle("-fx-background-color: #fff; -fx-padding: 32; -fx-background-radius: 14; -fx-effect: dropshadow(three-pass-box, #d32f2f, 12, 0.18, 0, 4); -fx-border-color: #d32f2f; -fx-border-width: 3;");
+            modalContent.setPrefWidth(800);
+            modalContent.setMinWidth(600);
+            modalContent.setAlignment(Pos.CENTER);
+            Label title = new Label("Mis Cursos Asignados");
+            title.setStyle("-fx-font-size: 20px; -fx-font-weight: bold; -fx-text-fill: #d32f2f;");
+            modalContent.getChildren().add(title);
+            if (cursos == null || cursos.isEmpty()) {
+                modalContent.getChildren().add(new Label("No tienes cursos asignados."));
+            } else {
+                HBox cardsHBox = new HBox(24);
+                cardsHBox.setAlignment(Pos.CENTER);
+                for (org.unisoftware.gestioncurricular.frontend.dto.CourseDTO curso : cursos) {
+                    VBox card = new VBox(10);
+                    card.setStyle("-fx-background-color: linear-gradient(to bottom right, #fff, #f7f7fa 80%, #f1f1f1);-fx-background-radius: 18;-fx-padding: 24 18 24 18;-fx-effect: dropshadow(gaussian, #d32f2f44, 8,0,0,2);");
+                    card.setMinWidth(260);
+                    card.setMaxWidth(260);
+                    card.setMinHeight(180);
+                    card.setMaxHeight(220);
+                    card.setAlignment(Pos.TOP_LEFT);
+                    Label nameLbl = new Label(curso.getName());
+                    nameLbl.setWrapText(true);
+                    nameLbl.setStyle("-fx-font-size: 18px; -fx-font-weight: bold; -fx-text-fill: #d32f2f; -fx-padding: 0 0 8 0;");
+                    nameLbl.setMaxWidth(Double.MAX_VALUE);
+                    Label codeLbl = new Label("Código: " + curso.getId());
+                    codeLbl.setStyle("-fx-font-size: 14px; -fx-text-fill: #222;");
+                    Button btnProponer = new Button("Proponer Curriculum");
+                    btnProponer.getStyleClass().add("primary-button");
+                    btnProponer.setOnAction(ev -> subirPropuestaCurriculum(curso));
+                    card.getChildren().addAll(nameLbl, codeLbl, btnProponer);
+                    cardsHBox.getChildren().add(card);
+                }
+                modalContent.getChildren().add(cardsHBox);
+            }
+            Button cerrar = new Button("Cerrar");
+            cerrar.getStyleClass().add("cerrar-btn");
+            modalContent.getChildren().add(cerrar);
+            VBox modalWrapper = new VBox();
+            modalWrapper.setAlignment(Pos.CENTER);
+            modalWrapper.setFillWidth(true);
+            modalWrapper.setPrefWidth(400);
+            modalWrapper.setMinWidth(320);
+            modalWrapper.getChildren().add(modalContent);
+            AnchorPane anchorPane = (AnchorPane) cardContainer.getScene().getRoot();
+            StackPane overlay = new StackPane();
+            overlay.setStyle("-fx-background-color: rgba(30,32,48,0.18);");
+            overlay.setPickOnBounds(true);
+            overlay.setPrefSize(anchorPane.getWidth(), anchorPane.getHeight());
+            overlay.setMinSize(Region.USE_PREF_SIZE, Region.USE_PREF_SIZE);
+            overlay.setMaxSize(Region.USE_PREF_SIZE, Region.USE_PREF_SIZE);
+            overlay.setAlignment(Pos.CENTER);
+            overlay.getChildren().add(modalWrapper);
+            anchorPane.getChildren().add(overlay);
+            AnchorPane.setTopAnchor(overlay, 0.0);
+            AnchorPane.setBottomAnchor(overlay, 0.0);
+            AnchorPane.setLeftAnchor(overlay, 0.0);
+            AnchorPane.setRightAnchor(overlay, 0.0);
+            final StackPane overlayFinal = overlay;
+            cerrar.setOnAction(ev -> anchorPane.getChildren().remove(overlayFinal));
+        } catch (Exception e) {
+            mostrarAlerta("Error", "No se pudo cargar tus cursos: " + e.getMessage(), Alert.AlertType.ERROR);
+        }
+    }
+
+    private List<org.unisoftware.gestioncurricular.frontend.dto.CourseDTO> obtenerCursosDeDocente(String docenteId) throws Exception {
+        org.unisoftware.gestioncurricular.frontend.service.CourseServiceFront courseService = applicationContext.getBean(org.unisoftware.gestioncurricular.frontend.service.CourseServiceFront.class);
+        List<org.unisoftware.gestioncurricular.frontend.dto.CourseDTO> todos = courseService.listCourses();
+        List<org.unisoftware.gestioncurricular.frontend.dto.CourseDTO> asignados = new java.util.ArrayList<>();
+        for (org.unisoftware.gestioncurricular.frontend.dto.CourseDTO c : todos) {
+            if (c.getTeacherId() != null && c.getTeacherId().equals(docenteId)) {
+                asignados.add(c);
+            }
+        }
+        return asignados;
+    }
+
     private void mostrarAlerta(String titulo, String mensaje, Alert.AlertType tipo) {
         Alert alerta = new Alert(tipo);
         alerta.setTitle(titulo);
@@ -536,5 +628,113 @@ public class MainScreenController implements Initializable {
         } catch (IOException e) {
             e.printStackTrace();
 
-        }}}
+        }}
 
+    // Permite al docente seleccionar un archivo y crear una propuesta de microcurrículo
+    private void subirPropuestaCurriculum(org.unisoftware.gestioncurricular.frontend.dto.CourseDTO curso) {
+        FileChooser fileChooser = new FileChooser();
+        fileChooser.setTitle("Selecciona el archivo de microcurrículo");
+        fileChooser.getExtensionFilters().addAll(
+                new FileChooser.ExtensionFilter("Archivos permitidos", "*.pdf", "*.doc", "*.docx", "*.xlsx", "*.xls", "*.csv")
+        );
+        Stage stage = (Stage) cardContainer.getScene().getWindow();
+        File selectedFile = fileChooser.showOpenDialog(stage);
+        if (selectedFile != null) {
+            VBox modalContent = new VBox(18);
+            modalContent.setStyle("-fx-background-color: #fff; -fx-padding: 32; -fx-background-radius: 14; -fx-effect: dropshadow(three-pass-box, #d32f2f, 12, 0.18, 0, 4); -fx-border-color: #d32f2f; -fx-border-width: 3;");
+            modalContent.setPrefWidth(400);
+            modalContent.setMinWidth(320);
+            modalContent.setAlignment(Pos.CENTER);
+            Label esperando = new Label("Subiendo archivo y creando propuesta, por favor espere...");
+            esperando.setStyle("-fx-font-size: 17px; -fx-font-weight: bold; -fx-text-fill: #d32f2f;");
+            modalContent.getChildren().add(esperando);
+
+            VBox modalWrapper = new VBox();
+            modalWrapper.setAlignment(Pos.CENTER);
+            modalWrapper.setFillWidth(true);
+            modalWrapper.setPrefWidth(400);
+            modalWrapper.setMinWidth(320);
+            modalWrapper.getChildren().add(modalContent);
+
+            AnchorPane anchorPane = (AnchorPane) cardContainer.getScene().getRoot();
+            StackPane overlay = new StackPane();
+            overlay.setStyle("-fx-background-color: rgba(30,32,48,0.18);");
+            overlay.setPickOnBounds(true);
+            overlay.setPrefSize(anchorPane.getWidth(), anchorPane.getHeight());
+            overlay.setMinSize(Region.USE_PREF_SIZE, Region.USE_PREF_SIZE);
+            overlay.setMaxSize(Region.USE_PREF_SIZE, Region.USE_PREF_SIZE);
+            overlay.setAlignment(Pos.CENTER);
+            overlay.getChildren().add(modalWrapper);
+            anchorPane.getChildren().add(overlay);
+            AnchorPane.setTopAnchor(overlay, 0.0);
+            AnchorPane.setBottomAnchor(overlay, 0.0);
+            AnchorPane.setLeftAnchor(overlay, 0.0);
+            AnchorPane.setRightAnchor(overlay, 0.0);
+
+            new Thread(() -> {
+                try {
+                    // 1. Subir archivo (asumimos endpoint /files, retorna UUID fileId)
+                    String boundary = "----WebKitFormBoundary" + System.currentTimeMillis();
+                    java.net.URL url = new java.net.URL("http://localhost:8080/files");
+                    java.net.HttpURLConnection conn = (java.net.HttpURLConnection) url.openConnection();
+                    conn.setDoOutput(true);
+                    conn.setRequestMethod("POST");
+                    conn.setRequestProperty("Content-Type", "multipart/form-data; boundary=" + boundary);
+                    java.io.OutputStream output = conn.getOutputStream();
+                    String filePartHeader = "--" + boundary + "\r\n" +
+                            "Content-Disposition: form-data; name=\"file\"; filename=\"" + selectedFile.getName() + "\"\r\n" +
+                            "Content-Type: application/octet-stream\r\n\r\n";
+                    output.write(filePartHeader.getBytes());
+                    java.nio.file.Files.copy(selectedFile.toPath(), output);
+                    output.write("\r\n".getBytes());
+                    output.write(("--" + boundary + "--\r\n").getBytes());
+                    output.flush();
+                    output.close();
+                    int responseCode = conn.getResponseCode();
+                    if (responseCode != 200 && responseCode != 201) {
+                        throw new RuntimeException("Error al subir archivo: " + conn.getResponseMessage());
+                    }
+                    String response;
+                    try (java.io.InputStream in = conn.getInputStream()) {
+                        response = new String(in.readAllBytes());
+                    }
+                    // Se espera que el backend retorne el UUID del archivo en el body (ajusta si es diferente)
+                    // Corrige expresión regular para evitar errores de compilación
+                    String fileId = response.replaceAll("[^a-fA-F0-9-]", "");
+                    if (fileId.isEmpty()) throw new RuntimeException("No se recibió fileId del backend");
+
+                    // 2. Crear propuesta (POST /proposals)
+                    java.net.URL url2 = new java.net.URL("http://localhost:8080/proposals");
+                    java.net.HttpURLConnection conn2 = (java.net.HttpURLConnection) url2.openConnection();
+                    conn2.setDoOutput(true);
+                    conn2.setRequestMethod("POST");
+                    conn2.setRequestProperty("Content-Type", "application/json");
+                    // Construir JSON de ProposalDTO
+                    String docenteId = org.unisoftware.gestioncurricular.frontend.util.SessionManager.getInstance().getUserId();
+                    String json = String.format("{\"title\":\"Propuesta de microcurrículo\",\"courseId\":%d,\"teacherId\":\"%s\",\"fileId\":\"%s\"}",
+                            curso.getId(), docenteId, fileId);
+                    try (java.io.OutputStream os = conn2.getOutputStream()) {
+                        os.write(json.getBytes());
+                    }
+                    int resp2 = conn2.getResponseCode();
+                    if (resp2 != 200 && resp2 != 201) {
+                        String errorMsg = "";
+                        try (java.io.InputStream err = conn2.getErrorStream()) {
+                            if (err != null) errorMsg = new String(err.readAllBytes());
+                        }
+                        throw new RuntimeException("Error al crear propuesta: " + conn2.getResponseMessage() + (errorMsg.isEmpty() ? "" : ". Detalle: " + errorMsg));
+                    }
+                    javafx.application.Platform.runLater(() -> {
+                        anchorPane.getChildren().remove(overlay);
+                        mostrarAlerta("Éxito", "Propuesta enviada correctamente.", Alert.AlertType.INFORMATION);
+                    });
+                } catch (Exception ex) {
+                    javafx.application.Platform.runLater(() -> {
+                        anchorPane.getChildren().remove(overlay);
+                        mostrarAlerta("Error", "No se pudo enviar la propuesta: " + ex.getMessage(), Alert.AlertType.ERROR);
+                    });
+                }
+            }).start();
+        }
+    }
+}

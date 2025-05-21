@@ -22,17 +22,38 @@ public class UserServiceFront {
         // Obtener datos desde el token
         String email = JwtDecodeUtil.getUsername(token);
         String role = JwtDecodeUtil.getRole(token);
-
         System.out.println(role);
+        // Obtener el ID real del usuario autenticado usando el correo y la lista de usuarios
+        String userId = null;
+        try {
+            URL url = new URL("http://localhost:8080/users");
+            HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+            conn.setRequestMethod("GET");
+            try (InputStream in = conn.getInputStream()) {
+                ObjectMapper mapper = new ObjectMapper();
+                List<UserInfoDTO> allUsers = mapper.readValue(in, new TypeReference<List<UserInfoDTO>>() {});
+                for (UserInfoDTO user : allUsers) {
+                    if (user.getEmail() != null && user.getEmail().equalsIgnoreCase(email) &&
+                        user.getRole() != null && user.getRole().toUpperCase().contains("DOCENTE")) {
+                        userId = user.getId();
+                        break;
+                    }
+                }
+            }
+        } catch (Exception ex) {
+            System.err.println("No se pudo obtener el userId por lista de usuarios: " + ex.getMessage());
+        }
 
         // Guardar en sesión
         SessionManager.getInstance().setUserEmail(email);
         SessionManager.getInstance().setUserRole(role);
+        SessionManager.getInstance().setUserId(userId);
 
         // Crear un objeto UserInfoDTO para devolver
         UserInfoDTO userInfoDTO = new UserInfoDTO();
         userInfoDTO.setEmail(email);
         userInfoDTO.setRole(role);
+        userInfoDTO.setId(userId);
 
         return userInfoDTO;
     }

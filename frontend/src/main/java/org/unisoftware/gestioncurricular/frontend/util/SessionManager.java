@@ -15,6 +15,7 @@ public class SessionManager {
     private volatile String userEmail;
     private volatile String userRole;
     private volatile boolean isGuest;
+    private String userId;
 
     private SessionManager() {
         clearSession();
@@ -73,4 +74,13 @@ public class SessionManager {
         this.userRole = null;
         this.isGuest = false;
     }
+
+    public String getUserId() {
+        return userId;
+    }
+
+    public void setUserId(String userId) {
+        this.userId = userId;
+    }
 }
+
