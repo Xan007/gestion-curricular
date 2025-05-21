@@ -249,6 +249,8 @@ public class MainScreenController implements Initializable {
             editarBtn.getStyleClass().add("card-btn-white");
             editarBtn.setOnAction(e -> mostrarEdicionProgramaYCursos(prog));
         }
+
+
         card.getChildren().addAll(nameLbl, expandBtn, goToCursosBtn);
         if (actualizarBtn != null) card.getChildren().add(actualizarBtn);
         if (editarBtn != null) card.getChildren().add(editarBtn);
@@ -829,6 +831,8 @@ public class MainScreenController implements Initializable {
             botones.setAlignment(Pos.CENTER);
             Button btnGuardar = new Button("Guardar Cambios");
             Button btnCerrar = new Button("Cerrar");
+            btnGuardar.getStyleClass().add("card-btn-red");
+            btnCerrar.getStyleClass().add("card-btn-red");
             botones.getChildren().addAll(btnGuardar, btnCerrar);
             modalContent.getChildren().add(botones);
 
@@ -871,3 +875,4 @@ public class MainScreenController implements Initializable {
         }
     }
 }
+
