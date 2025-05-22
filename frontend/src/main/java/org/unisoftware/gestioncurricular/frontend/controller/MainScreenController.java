@@ -890,6 +890,7 @@ public class MainScreenController implements Initializable {
             btnCerrar.setOnAction(ev -> anchorPane.getChildren().remove(overlay));
             btnGuardar.setOnAction(ev -> {
                 try {
+                    commitActiveCell(table); // Forzar commit de la celda en edición
                     boolean huboCambios = false;
                     for (int i = 0; i < data.size(); i++) {
                         org.unisoftware.gestioncurricular.frontend.dto.CourseDTO actual = data.get(i);
@@ -925,5 +926,18 @@ public class MainScreenController implements Initializable {
                 java.util.Objects.equals(a.getCycle(), b.getCycle()) &&
                 java.util.Objects.equals(a.getArea(), b.getArea()) &&
                 java.util.Objects.equals(a.getRequirements(), b.getRequirements());
+    }
+
+    // Método para forzar commit de la celda en edición en cualquier columna
+    private void commitActiveCell(javafx.scene.control.TableView<?> table) {
+        javafx.scene.control.TablePosition<?,?> editingCell = table.getEditingCell();
+        if (editingCell != null) {
+            int row = editingCell.getRow();
+            int col = editingCell.getColumn();
+            // Forzar commit del editor activo
+            javafx.scene.control.TableColumn<?,?> colObj = table.getColumns().get(col);
+            table.getFocusModel().focus(row);
+            table.edit(-1, null); // Esto dispara commitEdit si el editor está abierto
+        }
     }
 }

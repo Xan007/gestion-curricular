@@ -227,6 +227,58 @@ public class ProgramCoursesScreenController {
         modalContent.setMinWidth(320);
         modalContent.setAlignment(Pos.TOP_LEFT);
 
+        // Obtener información actualizada del curso desde el backend
+        try {
+            if (entry.getId() != null && entry.getId().getCourseId() != null) {
+                Long cursoId = entry.getId().getCourseId();
+                // Obtenemos todos los cursos del programa y buscamos el actualizado por ID
+                List<CourseDTO> cursos = courseServiceFront.listCoursesByProgramaId(programaId);
+                for (CourseDTO curso : cursos) {
+                    if (curso.getId().equals(cursoId)) {
+                        // Actualizar los campos con la información más reciente
+                        entry.setName(curso.getName());
+                        entry.setType(curso.getType());
+                        entry.setCredits(curso.getCredits());
+                        entry.setCycle(curso.getCycle());
+                        entry.setArea(curso.getArea());
+
+                        // Asignar los requisitos correctamente - CourseDTO tiene requirements como String
+                        String reqStr = curso.getRequirements();
+                        List<Long> reqList = new ArrayList<>();
+                        if (reqStr != null && !reqStr.isEmpty()) {
+                            try {
+                                // Intentar parsear como JSON array
+                                if (reqStr.startsWith("[") && reqStr.endsWith("]")) {
+                                    String cleanReq = reqStr.substring(1, reqStr.length() - 1).trim();
+                                    if (!cleanReq.isEmpty()) {
+                                        String[] reqArray = cleanReq.split(",");
+                                        for (String req : reqArray) {
+                                            req = req.trim();
+                                            if (!req.isEmpty()) {
+                                                reqList.add(Long.parseLong(req));
+                                            }
+                                        }
+                                    }
+                                } else {
+                                    // O como un solo número
+                                    reqList.add(Long.parseLong(reqStr));
+                                }
+                            } catch (NumberFormatException e) {
+                                System.err.println("Error al convertir requisitos: " + e.getMessage());
+                                // En caso de error, dejar lista vacía
+                            }
+                        }
+                        // Asignar la lista de requisitos convertida
+                        entry.setRequirements(reqList);
+                        break;
+                    }
+                }
+            }
+        } catch (Exception ex) {
+            System.err.println("Error al actualizar información del curso: " + ex.getMessage());
+            // Continuamos con la información que ya teníamos
+        }
+
         Label title = new Label("Detalles del Curso");
         title.setStyle("-fx-font-size: 22px; -fx-font-weight: bold; -fx-text-fill: #1a2233;");
         Label codigo = new Label("Código: " + (entry.getId() != null ? entry.getId().getCourseId() : ""));
