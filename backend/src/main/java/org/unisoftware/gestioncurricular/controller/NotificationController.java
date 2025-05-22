@@ -16,7 +16,7 @@ import java.util.UUID;
 
 @RestController
 @RequestMapping("/api/notifications")
-@Tag(name = "Notifications", description = "Operaciones relacionadas con las notificaciones del usuario")
+@Tag(name = "Notificationes", description = "Operaciones relacionadas con las notificaciones del usuario")
 public class NotificationController {
 
     private final NotificationService notificationService;
@@ -37,7 +37,7 @@ public class NotificationController {
         return ResponseEntity.ok(notifications);
     }
 
-    @Operation(summary = "Mark all notifications as seen for authenticated user")
+    @Operation(summary = "Marca todas las notificaciones como vistos para el usuario autenticado")
     @PostMapping("/mark-as-seen")
     public ResponseEntity<Void> markAllAsSeen() {
         UUID userId = SecurityUtil.getCurrentUserId();
