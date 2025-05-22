@@ -249,7 +249,7 @@
     -fx-font-size: 15px;
 }
 .table-view .table-row-cell:filled:selected, .custom-table .table-row-cell:filled:selected {
-    -fx-background-color: #ffd6d6;
+    -fx-background-color: #ec5959; /* Color de selección más suave */
     -fx-text-fill: #d32f2f;
 }
 .table-view .table-cell, .custom-table .table-cell {

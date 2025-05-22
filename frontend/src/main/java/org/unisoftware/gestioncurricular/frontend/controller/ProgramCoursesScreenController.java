@@ -245,10 +245,9 @@ public class ProgramCoursesScreenController {
                         entry.setCycle(curso.getCycle());
                         entry.setArea(curso.getArea());
 
-                        // Asignar los requisitos correctamente
-                        // CourseDTO tiene requirements como List<Long>
-                        // StudyPlanEntryDTO también usa List<Long> para requirements
-                        entry.setRequirements(curso.getRequirements()); // Asignación directa List<Long> a List<Long>
+                        // NO sobreescribir los requisitos del StudyPlanEntryDTO con los del CourseDTO genérico.
+                        // Los requisitos que se mostrarán son los que 'entry' (StudyPlanEntryDTO) ya tiene del plan de estudios.
+                        // entry.setRequirements(curso.getRequirements()); // Esta línea se comenta o elimina.
                         break;
                     }
                 }

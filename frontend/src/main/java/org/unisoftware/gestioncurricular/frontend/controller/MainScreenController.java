@@ -36,6 +36,7 @@ import java.io.File;
 import java.io.IOException;
 import java.net.URL;
 import java.util.List;
+import java.util.Map;
 import java.util.ResourceBundle;
 
 @Component
@@ -816,10 +817,45 @@ public class MainScreenController implements Initializable {
     // Permite al director editar la información del programa y sus cursos
     private void mostrarEdicionProgramaYCursos(ProgramDTO prog) {
         try {
-            // Obtener cursos del programa
+            // Obtener cursos del programa (CourseDTO generales)
             org.unisoftware.gestioncurricular.frontend.service.CourseServiceFront courseService = applicationContext.getBean(org.unisoftware.gestioncurricular.frontend.service.CourseServiceFront.class);
             List<org.unisoftware.gestioncurricular.frontend.dto.CourseDTO> cursos = courseService.listCoursesByProgramaId(prog.getId());
-            // Copia profunda de los cursos originales para comparar cambios
+
+            // Obtener las entradas del plan de estudios (StudyPlanEntryDTO) para este programa
+            List<org.unisoftware.gestioncurricular.frontend.dto.StudyPlanEntryDTO> planEntries = null;
+            try {
+                planEntries = programServiceFront.getStudyPlan(prog.getId());
+            } catch (Exception e) {
+                System.err.println("Error al cargar el plan de estudios para la edición de requisitos: " + e.getMessage());
+                // Opcional: mostrar alerta al usuario
+            }
+
+            Map<Long, List<Long>> studyPlanRequirementsMap = new java.util.HashMap<>();
+            if (planEntries != null) {
+                for (org.unisoftware.gestioncurricular.frontend.dto.StudyPlanEntryDTO planEntry : planEntries) {
+                    if (planEntry.getId() != null && planEntry.getId().getCourseId() != null) {
+                        studyPlanRequirementsMap.put(
+                            planEntry.getId().getCourseId(),
+                            planEntry.getRequirements() != null ? planEntry.getRequirements() : new java.util.ArrayList<>()
+                        );
+                    }
+                }
+            }
+
+            // Actualizar los requisitos en la lista de CourseDTO con los del StudyPlanEntryDTO
+            for (org.unisoftware.gestioncurricular.frontend.dto.CourseDTO curso : cursos) {
+                List<Long> planSpecificReqs = studyPlanRequirementsMap.get(curso.getId());
+                if (planSpecificReqs != null) {
+                    curso.setRequirements(planSpecificReqs); // Usar requisitos del plan de estudio
+                } else {
+                    // Si el curso no está en el plan de estudio o no tiene requisitos definidos allí,
+                    // se podría dejar sus requisitos generales o limpiarlosa.
+                    // Por ahora, si no está en el plan, se asume que no tiene requisitos específicos del plan.
+                    curso.setRequirements(new java.util.ArrayList<>());
+                }
+            }
+
+            // Copia profunda de los cursos originales (ahora con requisitos del plan) para comparar cambios
             List<org.unisoftware.gestioncurricular.frontend.dto.CourseDTO> cursosOriginales = new java.util.ArrayList<>();
             for (org.unisoftware.gestioncurricular.frontend.dto.CourseDTO c : cursos) {
                 org.unisoftware.gestioncurricular.frontend.dto.CourseDTO copia = new org.unisoftware.gestioncurricular.frontend.dto.CourseDTO();
@@ -877,23 +913,15 @@ public class MainScreenController implements Initializable {
             colArea.setCellFactory(javafx.scene.control.cell.TextFieldTableCell.forTableColumn());
             colArea.setOnEditCommit(ev -> ev.getRowValue().setArea(ev.getNewValue()));
 
+            // Columna de Requisitos (Solo Mostrar)
             javafx.scene.control.TableColumn<org.unisoftware.gestioncurricular.frontend.dto.CourseDTO, String> colRequisitos = new javafx.scene.control.TableColumn<>("Requisitos");
             colRequisitos.setCellValueFactory(cellData -> {
                 List<Long> reqs = cellData.getValue().getRequirements();
                 String reqStr = (reqs == null || reqs.isEmpty()) ? "" : reqs.stream().map(String::valueOf).reduce((a, b) -> a + "," + b).orElse("");
                 return new javafx.beans.property.SimpleStringProperty(reqStr);
             });
-            colRequisitos.setCellFactory(javafx.scene.control.cell.TextFieldTableCell.forTableColumn());
-            colRequisitos.setOnEditCommit(ev -> {
-                String newValue = ev.getNewValue();
-                List<Long> reqList = new java.util.ArrayList<>();
-                if (newValue != null && !newValue.trim().isEmpty()) {
-                    for (String s : newValue.split(",")) {
-                        try { reqList.add(Long.parseLong(s.trim())); } catch (Exception ignored) {}
-                    }
-                }
-                ev.getRowValue().setRequirements(reqList);
-            });
+            // No se establece CellFactory para edición, por lo tanto, es de solo lectura por defecto.
+            // No se establece setOnEditCommit.
 
             table.getColumns().addAll(colNombre, colTipo, colCreditos, colCiclo, colArea, colRequisitos);
             table.setColumnResizePolicy(javafx.scene.control.TableView.CONSTRAINED_RESIZE_POLICY);
