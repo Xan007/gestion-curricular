@@ -250,10 +250,28 @@ public class MainScreenController implements Initializable {
             editarBtn.setOnAction(e -> mostrarEdicionProgramaYCursos(prog));
         }
 
+        // Botones solo para DECANO
+        Button btnSubirCurriculums = null;
+        Button btnSubirResultados = null;
+        if (SessionManager.getInstance().hasRole("DECANO")) {
+            btnSubirCurriculums = new Button("Subir Curriculums");
+            btnSubirCurriculums.setWrapText(true);
+            btnSubirCurriculums.setMaxWidth(Double.MAX_VALUE);
+            btnSubirCurriculums.getStyleClass().add("card-btn-white");
+            // Sin funcionalidad aún
+
+            btnSubirResultados = new Button("Subir Resultados de Aprendizaje");
+            btnSubirResultados.setWrapText(true);
+            btnSubirResultados.setMaxWidth(Double.MAX_VALUE);
+            btnSubirResultados.getStyleClass().add("card-btn-white");
+            // Sin funcionalidad aún
+        }
 
         card.getChildren().addAll(nameLbl, expandBtn, goToCursosBtn);
         if (actualizarBtn != null) card.getChildren().add(actualizarBtn);
         if (editarBtn != null) card.getChildren().add(editarBtn);
+        if (btnSubirCurriculums != null) card.getChildren().add(btnSubirCurriculums);
+        if (btnSubirResultados != null) card.getChildren().add(btnSubirResultados);
 
         // Ajustar altura dinámica según cantidad de botones
         int botones = card.getChildren().size() - 1; // -1 por el label
