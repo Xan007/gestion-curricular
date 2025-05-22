@@ -789,7 +789,19 @@ public class MainScreenController implements Initializable {
             // Obtener cursos del programa
             org.unisoftware.gestioncurricular.frontend.service.CourseServiceFront courseService = applicationContext.getBean(org.unisoftware.gestioncurricular.frontend.service.CourseServiceFront.class);
             List<org.unisoftware.gestioncurricular.frontend.dto.CourseDTO> cursos = courseService.listCoursesByProgramaId(prog.getId());
-
+            // Copia profunda de los cursos originales para comparar cambios
+            List<org.unisoftware.gestioncurricular.frontend.dto.CourseDTO> cursosOriginales = new java.util.ArrayList<>();
+            for (org.unisoftware.gestioncurricular.frontend.dto.CourseDTO c : cursos) {
+                org.unisoftware.gestioncurricular.frontend.dto.CourseDTO copia = new org.unisoftware.gestioncurricular.frontend.dto.CourseDTO();
+                copia.setId(c.getId());
+                copia.setName(c.getName());
+                copia.setType(c.getType());
+                copia.setCredits(c.getCredits());
+                copia.setCycle(c.getCycle());
+                copia.setArea(c.getArea());
+                copia.setRequirements(c.getRequirements());
+                cursosOriginales.add(copia);
+            }
             VBox modalContent = new VBox(18);
             modalContent.setStyle("-fx-background-color: #fff; -fx-padding: 32; -fx-background-radius: 14; -fx-effect: dropshadow(three-pass-box, #d32f2f, 12, 0.18, 0, 4); -fx-border-color: #d32f2f; -fx-border-width: 3;");
             modalContent.setPrefWidth(900);
@@ -878,12 +890,21 @@ public class MainScreenController implements Initializable {
             btnCerrar.setOnAction(ev -> anchorPane.getChildren().remove(overlay));
             btnGuardar.setOnAction(ev -> {
                 try {
-                    for (org.unisoftware.gestioncurricular.frontend.dto.CourseDTO c : data) {
-                        courseService.updateCourse(c);
+                    boolean huboCambios = false;
+                    for (int i = 0; i < data.size(); i++) {
+                        org.unisoftware.gestioncurricular.frontend.dto.CourseDTO actual = data.get(i);
+                        org.unisoftware.gestioncurricular.frontend.dto.CourseDTO original = cursosOriginales.get(i);
+                        if (!equalsCurso(actual, original)) {
+                            courseService.updateCourse(actual);
+                            huboCambios = true;
+                        }
                     }
-                    anchorPane.getChildren().remove(overlay);
-                    mostrarAlerta("Éxito", "Cursos actualizados correctamente.", Alert.AlertType.INFORMATION);
-                    mostrarProgramaCard();
+                    if (huboCambios) {
+                        mostrarAlerta("Éxito", "Cursos actualizados correctamente.", Alert.AlertType.INFORMATION);
+                        mostrarProgramaCard();
+                    } else {
+                        mostrarAlerta("Sin cambios", "No se detectaron cambios para guardar.", Alert.AlertType.INFORMATION);
+                    }
                 } catch (Exception ex) {
                     mostrarAlerta("Error", "No se pudo guardar: " + ex.getMessage(), Alert.AlertType.ERROR);
                 }
@@ -892,5 +913,17 @@ public class MainScreenController implements Initializable {
             mostrarAlerta("Error", "No se pudo cargar la edición: " + ex.getMessage(), Alert.AlertType.ERROR);
         }
     }
-}
 
+    // Método auxiliar para comparar dos CourseDTO
+    private boolean equalsCurso(org.unisoftware.gestioncurricular.frontend.dto.CourseDTO a, org.unisoftware.gestioncurricular.frontend.dto.CourseDTO b) {
+        if (a == b) return true;
+        if (a == null || b == null) return false;
+        return java.util.Objects.equals(a.getId(), b.getId()) &&
+                java.util.Objects.equals(a.getName(), b.getName()) &&
+                java.util.Objects.equals(a.getType(), b.getType()) &&
+                java.util.Objects.equals(a.getCredits(), b.getCredits()) &&
+                java.util.Objects.equals(a.getCycle(), b.getCycle()) &&
+                java.util.Objects.equals(a.getArea(), b.getArea()) &&
+                java.util.Objects.equals(a.getRequirements(), b.getRequirements());
+    }
+}

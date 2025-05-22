@@ -80,6 +80,7 @@ public class CourseServiceFront {
     }
 
     public CourseDTO updateCourse(CourseDTO course) throws Exception {
+        // Solo actualiza el curso seleccionado por su ID y guarda el cambio
         String urlStr = BASE_URL + "/" + course.getId();
         URL url = new URL(urlStr);
         HttpURLConnection conn = (HttpURLConnection) url.openConnection();
@@ -87,16 +88,24 @@ public class CourseServiceFront {
         conn.setRequestProperty("Content-Type", "application/json");
         conn.setRequestProperty("Authorization", "Bearer " + getToken());
         conn.setDoOutput(true);
-        com.fasterxml.jackson.databind.ObjectMapper mapper = new com.fasterxml.jackson.databind.ObjectMapper();
+        ObjectMapper mapper = new ObjectMapper();
         String json = mapper.writeValueAsString(course);
         try (java.io.OutputStream os = conn.getOutputStream()) {
             os.write(json.getBytes());
+            os.flush();
         }
         int responseCode = conn.getResponseCode();
-        if (responseCode == 200) {
+        if (responseCode == 200 || responseCode == 204) {
+            // Si hay respuesta con cuerpo, devolver el curso actualizado
             try (InputStream in = conn.getInputStream()) {
-                return mapper.readValue(in, CourseDTO.class);
+                if (in != null && in.available() > 0) {
+                    return mapper.readValue(in, CourseDTO.class);
+                }
+            } catch (Exception ex) {
+                // Si no hay cuerpo, devolver el mismo objeto enviado
+                return course;
             }
+            return course;
         } else {
             String errorMsg = "";
             try (InputStream err = conn.getErrorStream()) {
