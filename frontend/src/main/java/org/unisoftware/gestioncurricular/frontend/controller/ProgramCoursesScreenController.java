@@ -103,7 +103,10 @@ public class ProgramCoursesScreenController {
 
             // Mapa para guardar la referencia visual de cada curso
             Map<Long, VBox> idCardMap = new HashMap<>();
+            Map<Long, Integer> idSemestreMap = new HashMap<>();
+            Map<Long, Integer> idIndexInSemestre = new HashMap<>();
 
+            int semIdx = 0;
             for (Map.Entry<Integer, List<StudyPlanEntryDTO>> semestre : cursosPorSemestre.entrySet()) {
                 Integer numeroSemestre = semestre.getKey();
                 List<StudyPlanEntryDTO> cursos = semestre.getValue();
@@ -115,6 +118,7 @@ public class ProgramCoursesScreenController {
                 semLabel.setStyle("-fx-font-size: 16px; -fx-font-weight: bold; -fx-padding: 0 0 6 0");
                 columnaSemestre.getChildren().add(semLabel);
 
+                int idx = 0;
                 for (StudyPlanEntryDTO entry : cursos) {
                     VBox card = new VBox(4);
                     card.setAlignment(Pos.TOP_LEFT);
@@ -134,10 +138,14 @@ public class ProgramCoursesScreenController {
                     // Guardar referencia visual
                     if (entry.getId() != null && entry.getId().getCourseId() != null) {
                         idCardMap.put(entry.getId().getCourseId(), card);
+                        idSemestreMap.put(entry.getId().getCourseId(), semIdx);
+                        idIndexInSemestre.put(entry.getId().getCourseId(), idx);
                     }
+                    idx++;
                 }
 
                 filaSemestres.getChildren().add(columnaSemestre);
+                semIdx++;
             }
 
             StackPane stack = new StackPane();
@@ -157,19 +165,44 @@ public class ProgramCoursesScreenController {
                 gc.setStroke(javafx.scene.paint.Color.web("#d32f2f", 0.7));
                 gc.setLineWidth(3);
 
+                // Para evitar cruces, llevamos un registro de los offsets usados entre columnas
+                Map<String, Integer> usedOffsets = new HashMap<>();
+                int offsetStep = 18; // separación vertical entre líneas
+
                 for (StudyPlanEntryDTO entry : plan) {
-                    if (entry.getRequirements() != null) {
+                    if (entry.getRequirements() != null && entry.getId() != null && entry.getId().getCourseId() != null) {
+                        Long depId = entry.getId().getCourseId();
+                        VBox depCard = idCardMap.get(depId);
+                        if (depCard == null) continue;
+                        // Color único por curso (todas las líneas que salen de un mismo curso tienen el mismo color)
+                        int colorHash = Math.abs(depId.hashCode());
+                        String[] colores = {"#d32f2f", "#1976d2", "#388e3c", "#fbc02d", "#7b1fa2", "#0288d1", "#c2185b", "#ffa000", "#388e3c", "#512da8", "#455a64", "#e64a19", "#009688", "#e91e63", "#8bc34a", "#ff5722", "#607d8b"};
+                        String colorLinea = colores[colorHash % colores.length];
+                        gc.setStroke(javafx.scene.paint.Color.web(colorLinea, 0.85));
                         for (Long reqId : entry.getRequirements()) {
                             VBox reqCard = idCardMap.get(reqId);
-                            VBox depCard = idCardMap.get(entry.getId().getCourseId());
-                            if (reqCard != null && depCard != null) {
-                                // Coordenadas globales de los cards
-                                javafx.geometry.Point2D reqScene = reqCard.localToScene(reqCard.getWidth(), reqCard.getHeight() / 2);
-                                javafx.geometry.Point2D depScene = depCard.localToScene(0, depCard.getHeight() / 2);
-                                javafx.geometry.Point2D reqStack = stack.sceneToLocal(reqScene);
-                                javafx.geometry.Point2D depStack = stack.sceneToLocal(depScene);
-                                gc.strokeLine(reqStack.getX(), reqStack.getY(), depStack.getX(),depStack.getY());
-                            }
+                            if (reqCard == null) continue;
+                            Integer semReq = idSemestreMap.get(reqId);
+                            Integer semDep = idSemestreMap.get(depId);
+                            if (semReq == null || semDep == null || semReq.equals(semDep)) continue;
+                            // Calcular puntos de conexión: centro del borde derecho de reqCard y centro del borde izquierdo de depCard
+                            javafx.geometry.Point2D reqScene = reqCard.localToScene(reqCard.getWidth(), reqCard.getHeight() / 2.0);
+                            javafx.geometry.Point2D depScene = depCard.localToScene(0, depCard.getHeight() / 2.0);
+                            javafx.geometry.Point2D reqStack = stack.sceneToLocal(reqScene);
+                            javafx.geometry.Point2D depStack = stack.sceneToLocal(depScene);
+                            double x1 = reqStack.getX();
+                            double y1 = reqStack.getY();
+                            double x2 = depStack.getX();
+                            double y2 = depStack.getY();
+                            // Línea en L: primero horizontal desde reqCard hasta antes de la card destino, luego vertical, y finalmente horizontal hasta el borde de la card destino
+                            double separation = 16; // separación mínima para no tocar las cards
+                            double xL = x2 - separation; // punto antes de la card destino
+                            gc.beginPath();
+                            gc.moveTo(x1, y1); // centro del borde derecho de reqCard
+                            gc.lineTo(xL, y1); // horizontal hasta antes de la card destino
+                            gc.lineTo(xL, y2); // vertical hasta la altura de la card destino
+                            gc.lineTo(x2, y2); // horizontal hasta el centro del borde izquierdo de depCard
+                            gc.stroke();
                         }
                     }
                 }
@@ -333,3 +366,4 @@ public class ProgramCoursesScreenController {
         stage.show();
     }
 }
+
