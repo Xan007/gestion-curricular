@@ -79,16 +79,7 @@
     -fx-min-width: 100vw;
 }
 
-/* TÍTULO PRINCIPAL */
-.main-title {
-    -fx-font-size: 2em;
-    -fx-font-weight: 900;
-    -fx-text-fill: #fff;
-    -fx-padding: 0 16px 0 0;
-    -fx-letter-spacing: 1px;
-    -fx-color: #fff;
-    text-shadow: 1px 1px 4px #00000055;
-}
+
 
 /* BOTÓN: Administrar Plantel (borde rojo, texto rojo, fondo blanco, hover a fondo rojo y texto blanco) */
 .btn-admin {
