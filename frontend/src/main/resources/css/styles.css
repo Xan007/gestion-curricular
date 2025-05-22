@@ -69,7 +69,7 @@
 
 /* HEADER MODERNIZADO, MINIMALISTA */
 .modern-header {
-    -fx-background-color: linear-gradient(to right, #23272b, #111 80%);
+    -fx-background-color: #a83232;
     -fx-padding: 0 36px 0 36px;
     -fx-min-height: 80px;
     -fx-alignment: center-left;

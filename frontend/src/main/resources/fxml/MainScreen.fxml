@@ -11,25 +11,24 @@
 <?import javafx.scene.shape.Rectangle?>
 
 <AnchorPane prefHeight="700.0" prefWidth="900.0" stylesheets="@/css/styles.css" xmlns="http://javafx.com/javafx/23.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.unisoftware.gestioncurricular.frontend.controller.MainScreenController">
-   <Rectangle arcHeight="5.0" arcWidth="5.0" fill="#353536" height="314.0" layoutY="386.0" stroke="#651919" strokeType="INSIDE" strokeWidth="0.0" width="900.0" />
-   <ImageView fitHeight="557.0" fitWidth="765.0" layoutX="84.0" layoutY="129.0" pickOnBounds="true" preserveRatio="true">
-      <image>
-         <Image url="@imgs/FondoCard.png" />
-      </image>
-   </ImageView>
-     <!-- HEADER MODERNO -->
-     <HBox alignment="CENTER_LEFT" spacing="22" styleClass="modern-header" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0">
-         <Label styleClass="main-title" text="Gestión Curricular" />
-         <Pane HBox.hgrow="ALWAYS" />
-         <Button fx:id="adminPlantelBtn" managed="false" styleClass="card-btn-white" text="Administrar Plantel" visible="false" />
-         <Button fx:id="btnPropuestasComite" managed="false" styleClass="card-btn-white" text="Propuestas Microcurrículo" visible="false" />
-         <Button fx:id="btnPropuestasEscuela" managed="false" styleClass="card-btn-white" text="Propuestas Microcurrículo" visible="false" />
-         <Button fx:id="btnPropuestasPrograma" managed="false" styleClass="card-btn-white" text="Propuestas Microcurrículo" visible="false" />
-         <Button fx:id="btnMisCursos" managed="false" styleClass="card-btn-white" text="Manejar mis cursos" visible="false" />
-         <Button onAction="#handleLogout" styleClass="btn-logout" text="Cerrar sesión" />
-     </HBox>
-      <VBox fx:id="cardContainer" alignment="TOP_CENTER" layoutX="105.0" layoutY="262.0" maxWidth="Infinity" prefHeight="321.0" prefWidth="638.0" spacing="20" style="-fx-alignment: center;" />
-     <!-- RESTO DEL CONTENIDO -->
-     <VBox fx:id="userBox" alignment="TOP_LEFT" layoutX="14.0" layoutY="82.0" prefHeight="25.0" prefWidth="466.0" spacing="5" />
+    <Rectangle arcHeight="5.0" arcWidth="5.0" fill="#a83232" height="314.0" layoutY="386.0" stroke="#651919" strokeType="INSIDE" strokeWidth="0.0" width="900.0" />
+    <ImageView fitHeight="557.0" fitWidth="765.0" layoutX="84.0" layoutY="129.0" pickOnBounds="true" preserveRatio="true">
+        <image>
+            <Image url="@imgs/FondoCard.png" />
+        </image>
+    </ImageView>
+    <!-- HEADER MODERNO -->
+    <HBox alignment="CENTER_LEFT" spacing="22" styleClass="modern-header" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0">
+        <Label styleClass="main-title" text="Gestión Curricular" />
+        <Pane HBox.hgrow="ALWAYS" />
+        <Button fx:id="adminPlantelBtn" managed="false" styleClass="card-btn-white" text="Administrar Plantel" visible="false" />
+        <Button fx:id="btnPropuestasComite" managed="false" styleClass="card-btn-white" text="Propuestas Microcurrículo" visible="false" />
+        <Button fx:id="btnPropuestasEscuela" managed="false" styleClass="card-btn-white" text="Propuestas Microcurrículo" visible="false" />
+        <Button fx:id="btnPropuestasPrograma" managed="false" styleClass="card-btn-white" text="Propuestas Microcurrículo" visible="false" />
+        <Button fx:id="btnMisCursos" managed="false" styleClass="card-btn-white" text="Manejar mis cursos" visible="false" />
+        <Button onAction="#handleLogout" styleClass="btn-logout" text="Cerrar sesión" />
+    </HBox>
+    <VBox fx:id="cardContainer" alignment="TOP_CENTER" layoutX="105.0" layoutY="262.0" maxWidth="Infinity" prefHeight="321.0" prefWidth="638.0" spacing="20" style="-fx-alignment: center;" />
+    <!-- RESTO DEL CONTENIDO -->
+    <VBox fx:id="userBox" alignment="TOP_LEFT" layoutX="14.0" layoutY="82.0" prefHeight="25.0" prefWidth="466.0" spacing="5" />
 </AnchorPane>
-
