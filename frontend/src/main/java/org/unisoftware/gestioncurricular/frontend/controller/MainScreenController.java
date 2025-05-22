@@ -4,7 +4,6 @@ import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
-import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Node;
 import javafx.scene.Parent;
@@ -12,21 +11,31 @@ import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.Alert;
+import javafx.scene.control.ScrollPane;
+import javafx.scene.control.TableColumn;
+import javafx.scene.control.TablePosition;
+import javafx.scene.control.TableView;
+import javafx.scene.control.cell.PropertyValueFactory;
+import javafx.scene.control.cell.TextFieldTableCell;
 import javafx.scene.layout.VBox;
 import javafx.scene.layout.HBox;
-import javafx.scene.text.Text;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.Region;
-import javafx.scene.layout.GridPane;
-import javafx.scene.control.ScrollPane;
+import javafx.util.converter.IntegerStringConverter;
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
+import javafx.beans.property.SimpleStringProperty;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.unisoftware.gestioncurricular.frontend.dto.ProgramDTO;
+import org.unisoftware.gestioncurricular.frontend.dto.CourseDTO;
+import org.unisoftware.gestioncurricular.frontend.dto.StudyPlanEntryDTO;
 import org.unisoftware.gestioncurricular.frontend.service.ProgramServiceFront;
+import org.unisoftware.gestioncurricular.frontend.service.CourseServiceFront;
 import org.unisoftware.gestioncurricular.frontend.service.ExcelUploadService;
 import org.unisoftware.gestioncurricular.frontend.util.SessionManager;
 import org.unisoftware.gestioncurricular.frontend.util.JwtDecodeUtil;
@@ -35,8 +44,11 @@ import org.springframework.stereotype.Component;
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.ResourceBundle;
 
 @Component
@@ -234,45 +246,22 @@ public class MainScreenController implements Initializable {
         goToCursosBtn.setOnAction(e -> abrirCursosPrograma(prog.getId(), prog.getName()));
         goToCursosBtn.getStyleClass().add("card-btn-white");
 
-        Button actualizarBtn = null;
-        Button editarBtn = null;
+        Button btnGestionar = null;
         if (SessionManager.getInstance().hasRole("DIRECTOR_DE_PROGRAMA")) {
-            actualizarBtn = new Button("Actualizar plan de estudios");
-            actualizarBtn.setWrapText(true);
-            actualizarBtn.setMaxWidth(Double.MAX_VALUE);
-            final Long progId = prog.getId();
-            actualizarBtn.setOnAction(e -> handleSubirExcel(progId));
-            actualizarBtn.getStyleClass().add("card-btn-white");
-
-            editarBtn = new Button("Editar Cursos/Info");
-            editarBtn.setWrapText(true);
-            editarBtn.setMaxWidth(Double.MAX_VALUE);
-            editarBtn.getStyleClass().add("card-btn-white");
-            editarBtn.setOnAction(e -> mostrarEdicionProgramaYCursos(prog));
+            btnGestionar = new Button("GESTIONAR");
+            btnGestionar.setWrapText(true);
+            btnGestionar.setMaxWidth(Double.MAX_VALUE);
+            btnGestionar.getStyleClass().add("card-btn-red"); // O un estilo apropiado
+            btnGestionar.setOnAction(e -> mostrarGestionPrograma(prog));
         }
 
-        // Botones solo para DECANO
-        Button btnSubirCurriculums = null;
-        Button btnSubirResultados = null;
-        if (SessionManager.getInstance().hasRole("DECANO")) {
-            btnSubirCurriculums = new Button("Subir Curriculums");
-            btnSubirCurriculums.setWrapText(true);
-            btnSubirCurriculums.setMaxWidth(Double.MAX_VALUE);
-            btnSubirCurriculums.getStyleClass().add("card-btn-white");
-            // Sin funcionalidad aún
-
-            btnSubirResultados = new Button("Subir Resultados de Aprendizaje");
-            btnSubirResultados.setWrapText(true);
-            btnSubirResultados.setMaxWidth(Double.MAX_VALUE);
-            btnSubirResultados.getStyleClass().add("card-btn-white");
-            // Sin funcionalidad aún
-        }
+        // Los botones de DECANO para subir curriculums y resultados se eliminan de aquí
+        // y se mueven a la ventana de GESTIONAR del DIRECTOR_DE_PROGRAMA.
 
         card.getChildren().addAll(nameLbl, expandBtn, goToCursosBtn);
-        if (actualizarBtn != null) card.getChildren().add(actualizarBtn);
-        if (editarBtn != null) card.getChildren().add(editarBtn);
-        if (btnSubirCurriculums != null) card.getChildren().add(btnSubirCurriculums);
-        if (btnSubirResultados != null) card.getChildren().add(btnSubirResultados);
+        if (btnGestionar != null) {
+            card.getChildren().add(btnGestionar);
+        }
 
         // Ajustar altura dinámica según cantidad de botones
         int botones = card.getChildren().size() - 1; // -1 por el label
@@ -663,18 +652,6 @@ public class MainScreenController implements Initializable {
         }
     }
 
-    private List<org.unisoftware.gestioncurricular.frontend.dto.CourseDTO> obtenerCursosDeDocente(String docenteId) throws Exception {
-        org.unisoftware.gestioncurricular.frontend.service.CourseServiceFront courseService = applicationContext.getBean(org.unisoftware.gestioncurricular.frontend.service.CourseServiceFront.class);
-        List<org.unisoftware.gestioncurricular.frontend.dto.CourseDTO> todos = courseService.listCourses();
-        List<org.unisoftware.gestioncurricular.frontend.dto.CourseDTO> asignados = new java.util.ArrayList<>();
-        for (org.unisoftware.gestioncurricular.frontend.dto.CourseDTO c : todos) {
-            if (c.getTeacherId() != null && c.getTeacherId().equals(docenteId)) {
-                asignados.add(c);
-            }
-        }
-        return asignados;
-    }
-
     private void mostrarAlerta(String titulo, String mensaje, Alert.AlertType tipo) {
         Alert alerta = new Alert(tipo);
         alerta.setTitle(titulo);
@@ -814,6 +791,90 @@ public class MainScreenController implements Initializable {
         }
     }
 
+    // Nueva ventana modal para GESTIONAR programa (Director de Programa)
+    private void mostrarGestionPrograma(ProgramDTO prog) {
+        VBox modalContent = new VBox(18);
+        modalContent.setStyle(
+                "-fx-background-color: #fff; -fx-padding: 32; -fx-background-radius: 14; " +
+                "-fx-effect: dropshadow(three-pass-box, #d32f2f, 12, 0.18, 0, 4); " +
+                "-fx-border-color: #d32f2f; -fx-border-width: 3;");
+        modalContent.setPrefWidth(400);
+        modalContent.setMinWidth(320);
+        modalContent.setAlignment(Pos.CENTER);
+
+        Label title = new Label("Gestionar Programa: " + prog.getName());
+        title.setWrapText(true);
+        title.setStyle("-fx-font-size: 20px; -fx-font-weight: bold; -fx-text-fill: #d32f2f; -fx-padding: 0 0 10 0;");
+
+        Button btnActualizarPlan = new Button("Actualizar plan de estudios");
+        btnActualizarPlan.setMaxWidth(Double.MAX_VALUE);
+        btnActualizarPlan.getStyleClass().add("card-btn-white");
+        btnActualizarPlan.setOnAction(e -> {
+            // Primero cerrar este modal antes de abrir el de subir excel
+            Node source = (Node) e.getSource();
+            StackPane overlay = (StackPane) source.getScene().getRoot().lookup("#gestionProgramaOverlay");
+            if (overlay != null) {
+                ((AnchorPane) overlay.getParent()).getChildren().remove(overlay);
+            }
+            handleSubirExcel(prog.getId());
+        });
+
+        Button btnEditarCursosInfo = new Button("Editar Cursos/Info del Programa");
+        btnEditarCursosInfo.setMaxWidth(Double.MAX_VALUE);
+        btnEditarCursosInfo.getStyleClass().add("card-btn-white");
+        btnEditarCursosInfo.setOnAction(e -> {
+            // Primero cerrar este modal
+             Node source = (Node) e.getSource();
+            StackPane overlay = (StackPane) source.getScene().getRoot().lookup("#gestionProgramaOverlay");
+            if (overlay != null) {
+                ((AnchorPane) overlay.getParent()).getChildren().remove(overlay);
+            }
+            mostrarEdicionProgramaYCursos(prog);
+        });
+
+        Button btnSubirCurriculums = new Button("Subir Curriculums de Docentes");
+        btnSubirCurriculums.setMaxWidth(Double.MAX_VALUE);
+        btnSubirCurriculums.getStyleClass().add("card-btn-white");
+        // btnSubirCurriculums.setOnAction(e -> { /* Lógica futura */ }); // Sin funcionalidad aún
+
+        Button btnSubirResultados = new Button("Subir Resultados de Aprendizaje del Programa");
+        btnSubirResultados.setMaxWidth(Double.MAX_VALUE);
+        btnSubirResultados.getStyleClass().add("card-btn-white");
+        // btnSubirResultados.setOnAction(e -> { /* Lógica futura */ }); // Sin funcionalidad aún
+
+
+        Button cerrar = new Button("Cerrar");
+        cerrar.getStyleClass().add("cerrar-btn");
+
+        modalContent.getChildren().addAll(title, btnActualizarPlan, btnEditarCursosInfo, btnSubirCurriculums, btnSubirResultados, cerrar);
+
+        VBox modalWrapper = new VBox(modalContent);
+        modalWrapper.setAlignment(Pos.CENTER);
+        modalWrapper.setPrefWidth(400);
+        modalWrapper.setMinWidth(320);
+
+
+        AnchorPane anchorPane = (AnchorPane) cardContainer.getScene().getRoot();
+        StackPane overlay = new StackPane();
+        overlay.setId("gestionProgramaOverlay"); // ID para poder cerrarlo desde los botones internos
+        overlay.setStyle("-fx-background-color: rgba(30,32,48,0.18);");
+        overlay.setPickOnBounds(true);
+        overlay.setPrefSize(anchorPane.getWidth(), anchorPane.getHeight());
+        overlay.setMinSize(Region.USE_PREF_SIZE, Region.USE_PREF_SIZE);
+        overlay.setMaxSize(Region.USE_PREF_SIZE, Region.USE_PREF_SIZE);
+        overlay.setAlignment(Pos.CENTER);
+        overlay.getChildren().add(modalWrapper);
+
+        anchorPane.getChildren().add(overlay);
+        AnchorPane.setTopAnchor(overlay, 0.0);
+        AnchorPane.setBottomAnchor(overlay, 0.0);
+        AnchorPane.setLeftAnchor(overlay, 0.0);
+        AnchorPane.setRightAnchor(overlay, 0.0);
+
+        final StackPane overlayFinal = overlay;
+        cerrar.setOnAction(ev -> anchorPane.getChildren().remove(overlayFinal));
+    }
+
     // Permite al director editar la información del programa y sus cursos
     private void mostrarEdicionProgramaYCursos(ProgramDTO prog) {
         try {
@@ -835,8 +896,8 @@ public class MainScreenController implements Initializable {
                 for (org.unisoftware.gestioncurricular.frontend.dto.StudyPlanEntryDTO planEntry : planEntries) {
                     if (planEntry.getId() != null && planEntry.getId().getCourseId() != null) {
                         studyPlanRequirementsMap.put(
-                            planEntry.getId().getCourseId(),
-                            planEntry.getRequirements() != null ? planEntry.getRequirements() : new java.util.ArrayList<>()
+                                planEntry.getId().getCourseId(),
+                                planEntry.getRequirements() != null ? planEntry.getRequirements() : new java.util.ArrayList<>()
                         );
                     }
                 }
