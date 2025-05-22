@@ -165,21 +165,24 @@ public class ProgramCoursesScreenController {
                 gc.setStroke(javafx.scene.paint.Color.web("#d32f2f", 0.7));
                 gc.setLineWidth(3);
 
-                // Para evitar cruces, llevamos un registro de los offsets usados entre columnas
                 Map<String, Integer> usedOffsets = new HashMap<>();
-                int offsetStep = 18; // separación vertical entre líneas
+                int offsetStep = 18;
 
                 for (StudyPlanEntryDTO entry : plan) {
-                    if (entry.getRequirements() != null && entry.getId() != null && entry.getId().getCourseId() != null) {
+                    // Usa directamente getRequirements() que devuelve List<Long>
+                    List<Long> currentEntryReqList = entry.getRequirements();
+
+                    if (currentEntryReqList != null && !currentEntryReqList.isEmpty() && entry.getId() != null && entry.getId().getCourseId() != null) {
                         Long depId = entry.getId().getCourseId();
                         VBox depCard = idCardMap.get(depId);
                         if (depCard == null) continue;
-                        // Color único por curso (todas las líneas que salen de un mismo curso tienen el mismo color)
+
                         int colorHash = Math.abs(depId.hashCode());
                         String[] colores = {"#d32f2f", "#1976d2", "#388e3c", "#fbc02d", "#7b1fa2", "#0288d1", "#c2185b", "#ffa000", "#388e3c", "#512da8", "#455a64", "#e64a19", "#009688", "#e91e63", "#8bc34a", "#ff5722", "#607d8b"};
                         String colorLinea = colores[colorHash % colores.length];
                         gc.setStroke(javafx.scene.paint.Color.web(colorLinea, 0.85));
-                        for (Long reqId : entry.getRequirements()) {
+
+                        for (Long reqId : currentEntryReqList) {
                             VBox reqCard = idCardMap.get(reqId);
                             if (reqCard == null) continue;
                             Integer semReq = idSemestreMap.get(reqId);
@@ -242,34 +245,10 @@ public class ProgramCoursesScreenController {
                         entry.setCycle(curso.getCycle());
                         entry.setArea(curso.getArea());
 
-                        // Asignar los requisitos correctamente - CourseDTO tiene requirements como String
-                        String reqStr = curso.getRequirements();
-                        List<Long> reqList = new ArrayList<>();
-                        if (reqStr != null && !reqStr.isEmpty()) {
-                            try {
-                                // Intentar parsear como JSON array
-                                if (reqStr.startsWith("[") && reqStr.endsWith("]")) {
-                                    String cleanReq = reqStr.substring(1, reqStr.length() - 1).trim();
-                                    if (!cleanReq.isEmpty()) {
-                                        String[] reqArray = cleanReq.split(",");
-                                        for (String req : reqArray) {
-                                            req = req.trim();
-                                            if (!req.isEmpty()) {
-                                                reqList.add(Long.parseLong(req));
-                                            }
-                                        }
-                                    }
-                                } else {
-                                    // O como un solo número
-                                    reqList.add(Long.parseLong(reqStr));
-                                }
-                            } catch (NumberFormatException e) {
-                                System.err.println("Error al convertir requisitos: " + e.getMessage());
-                                // En caso de error, dejar lista vacía
-                            }
-                        }
-                        // Asignar la lista de requisitos convertida
-                        entry.setRequirements(reqList);
+                        // Asignar los requisitos correctamente
+                        // CourseDTO tiene requirements como List<Long>
+                        // StudyPlanEntryDTO también usa List<Long> para requirements
+                        entry.setRequirements(curso.getRequirements()); // Asignación directa List<Long> a List<Long>
                         break;
                     }
                 }
@@ -289,20 +268,22 @@ public class ProgramCoursesScreenController {
         Label tipo = new Label("Tipo: " + (entry.getType() != null ? entry.getType() : "N/A"));
         Label creditos = new Label("Créditos: " + (entry.getCredits() != null ? entry.getCredits().toString() : "N/A"));
         Label relacion = new Label("Relación: " + (entry.getRelation() != null ? entry.getRelation() : "Ninguna"));
+
+        // Usa directamente getRequirements() que devuelve List<Long>
         List<Long> requisitosList = entry.getRequirements();
-        String requisitosString;
-        if (requisitosList != null && !requisitosList.isEmpty()) {
+
+        String requisitosDisplayString;
+        if (requisitosList != null && !requisitosList.isEmpty()) { // Verificar si es null antes de isEmpty()
             List<String> nombresReq = new ArrayList<>();
             for (Long reqId : requisitosList) {
                 String nombreReq = idNombreCurso.getOrDefault(reqId, reqId.toString());
                 nombresReq.add(nombreReq);
             }
-            requisitosString = String.join(", ", nombresReq);
+            requisitosDisplayString = String.join(", ", nombresReq);
         } else {
-            requisitosString = "Ninguno";
+            requisitosDisplayString = "Ninguno";
         }
-        Label requisitos = new Label("Requisitos: " + requisitosString);
-        requisitos.setWrapText(true);
+        Label requisitos = new Label("Requisitos: " + requisitosDisplayString);
 
         Button cerrar = new Button("Cerrar");
         cerrar.getStyleClass().add("cerrar-btn");

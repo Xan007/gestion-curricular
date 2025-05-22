@@ -854,12 +854,12 @@ public class MainScreenController implements Initializable {
 
             javafx.scene.control.TableColumn<org.unisoftware.gestioncurricular.frontend.dto.CourseDTO, String> colNombre = new javafx.scene.control.TableColumn<>("Nombre");
             colNombre.setCellValueFactory(new javafx.scene.control.cell.PropertyValueFactory<>("name"));
-            colNombre.setCellFactory(tc -> new javafx.scene.control.cell.TextFieldTableCell<>());
+            colNombre.setCellFactory(javafx.scene.control.cell.TextFieldTableCell.forTableColumn());
             colNombre.setOnEditCommit(ev -> ev.getRowValue().setName(ev.getNewValue()));
 
             javafx.scene.control.TableColumn<org.unisoftware.gestioncurricular.frontend.dto.CourseDTO, String> colTipo = new javafx.scene.control.TableColumn<>("Tipo");
             colTipo.setCellValueFactory(new javafx.scene.control.cell.PropertyValueFactory<>("type"));
-            colTipo.setCellFactory(tc -> new javafx.scene.control.cell.TextFieldTableCell<>());
+            colTipo.setCellFactory(javafx.scene.control.cell.TextFieldTableCell.forTableColumn());
             colTipo.setOnEditCommit(ev -> ev.getRowValue().setType(ev.getNewValue()));
 
             javafx.scene.control.TableColumn<org.unisoftware.gestioncurricular.frontend.dto.CourseDTO, Integer> colCreditos = new javafx.scene.control.TableColumn<>("Créditos");
@@ -869,18 +869,31 @@ public class MainScreenController implements Initializable {
 
             javafx.scene.control.TableColumn<org.unisoftware.gestioncurricular.frontend.dto.CourseDTO, String> colCiclo = new javafx.scene.control.TableColumn<>("Ciclo");
             colCiclo.setCellValueFactory(new javafx.scene.control.cell.PropertyValueFactory<>("cycle"));
-            colCiclo.setCellFactory(tc -> new javafx.scene.control.cell.TextFieldTableCell<>());
+            colCiclo.setCellFactory(javafx.scene.control.cell.TextFieldTableCell.forTableColumn());
             colCiclo.setOnEditCommit(ev -> ev.getRowValue().setCycle(ev.getNewValue()));
 
             javafx.scene.control.TableColumn<org.unisoftware.gestioncurricular.frontend.dto.CourseDTO, String> colArea = new javafx.scene.control.TableColumn<>("Área");
             colArea.setCellValueFactory(new javafx.scene.control.cell.PropertyValueFactory<>("area"));
-            colArea.setCellFactory(tc -> new javafx.scene.control.cell.TextFieldTableCell<>());
+            colArea.setCellFactory(javafx.scene.control.cell.TextFieldTableCell.forTableColumn());
             colArea.setOnEditCommit(ev -> ev.getRowValue().setArea(ev.getNewValue()));
 
             javafx.scene.control.TableColumn<org.unisoftware.gestioncurricular.frontend.dto.CourseDTO, String> colRequisitos = new javafx.scene.control.TableColumn<>("Requisitos");
-            colRequisitos.setCellValueFactory(new javafx.scene.control.cell.PropertyValueFactory<>("requirements"));
-            colRequisitos.setCellFactory(tc -> new javafx.scene.control.cell.TextFieldTableCell<>());
-            colRequisitos.setOnEditCommit(ev -> ev.getRowValue().setRequirements(ev.getNewValue()));
+            colRequisitos.setCellValueFactory(cellData -> {
+                List<Long> reqs = cellData.getValue().getRequirements();
+                String reqStr = (reqs == null || reqs.isEmpty()) ? "" : reqs.stream().map(String::valueOf).reduce((a, b) -> a + "," + b).orElse("");
+                return new javafx.beans.property.SimpleStringProperty(reqStr);
+            });
+            colRequisitos.setCellFactory(javafx.scene.control.cell.TextFieldTableCell.forTableColumn());
+            colRequisitos.setOnEditCommit(ev -> {
+                String newValue = ev.getNewValue();
+                List<Long> reqList = new java.util.ArrayList<>();
+                if (newValue != null && !newValue.trim().isEmpty()) {
+                    for (String s : newValue.split(",")) {
+                        try { reqList.add(Long.parseLong(s.trim())); } catch (Exception ignored) {}
+                    }
+                }
+                ev.getRowValue().setRequirements(reqList);
+            });
 
             table.getColumns().addAll(colNombre, colTipo, colCreditos, colCiclo, colArea, colRequisitos);
             table.setColumnResizePolicy(javafx.scene.control.TableView.CONSTRAINED_RESIZE_POLICY);

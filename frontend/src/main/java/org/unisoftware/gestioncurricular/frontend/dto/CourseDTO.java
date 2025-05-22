@@ -1,5 +1,7 @@
 package org.unisoftware.gestioncurricular.frontend.dto;
 
+import java.util.List;
+
 public class CourseDTO {
     private Long id;
     private String name;
@@ -11,7 +13,7 @@ public class CourseDTO {
     private Long microcurriculumFileId;
     private String teacherId;
     private Integer semester;
-    private String requirements;
+    private List<Long> requirements;
 
     // Getters y setters
     public Long getId() { return id; }
@@ -44,8 +46,8 @@ public class CourseDTO {
     public Integer getSemester() { return semester; }
     public void setSemester(Integer semester) { this.semester = semester; }
 
-    public String getRequirements() { return requirements; }
-    public void setRequirements(String requirements) { this.requirements = requirements; }
+    public List<Long> getRequirements() { return requirements; }
+    public void setRequirements(List<Long> requirements) { this.requirements = requirements; }
 
     @Override
     public String toString() {
