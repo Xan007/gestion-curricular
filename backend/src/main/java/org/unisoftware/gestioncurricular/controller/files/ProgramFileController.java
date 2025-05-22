@@ -25,9 +25,9 @@ public class ProgramFileController {
 
     @Operation(
             summary = "Generar URL para subir curriculum de un programa",
-            description = "Requiere rol DECANO"
+            description = "Requiere rol DIRECTOR_DE_PROGRAMA"
     )
-    @PreAuthorize("hasRole('DECANO')")
+    @PreAuthorize("hasRole('DIRECTOR_DE_PROGRAMA')")
     @GetMapping("/curriculums/upload-url")
     public ResponseEntity<String> generateCurriculumUploadUrl(
             @Parameter(description = "ID del programa") @PathVariable Long programId,
@@ -78,9 +78,9 @@ public class ProgramFileController {
 
     @Operation(
             summary = "Generar URL para subir resultados de aprendizaje de un programa",
-            description = "Requiere rol DECANO"
+            description = "Requiere rol DIRECTOR_DE_PROGRAMA"
     )
-    @PreAuthorize("hasRole('DECANO')")
+    @PreAuthorize("hasRole('DIRECTOR_DE_PROGRAMA')")
     @GetMapping("/results/upload-url")
     public ResponseEntity<String> generateResultsUploadUrl(
             @PathVariable Long programId,
@@ -127,9 +127,9 @@ public class ProgramFileController {
 
     @Operation(
             summary = "Editar atributos de un curriculum (fecha, isMain)",
-            description = "Requiere rol DECANO"
+            description = "Requiere rol DIRECTOR_DE_PROGRAMA"
     )
-    @PreAuthorize("hasRole('DECANO')")
+    @PreAuthorize("hasRole('DIRECTOR_DE_PROGRAMA')")
     @PutMapping("/curriculums/{curriculumId}")
     public ResponseEntity<Void> editCurriculumFile(
             @PathVariable Long programId,
@@ -142,9 +142,9 @@ public class ProgramFileController {
 
     @Operation(
             summary = "Editar atributos de un resultado de aprendizaje (fecha, isMain)",
-            description = "Requiere rol DECANO"
+            description = "Requiere rol DIRECTOR_DE_PROGRAMA"
     )
-    @PreAuthorize("hasRole('DECANO')")
+    @PreAuthorize("hasRole('DIRECTOR_DE_PROGRAMA')")
     @PutMapping("/resultados/{resultadosId}")
     public ResponseEntity<Void> updateResultadosFile(
             @PathVariable Long programId,

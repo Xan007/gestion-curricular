@@ -86,7 +86,7 @@ public class CourseController {
         }
     }
 
-    @PreAuthorize("hasRole('DECANO')")
+    @PreAuthorize("hasRole('DIRECTOR_DE_PROGRAMA')")
     @PutMapping("/{courseId}")
     @Operation(
             summary = "Actualizar curso",
