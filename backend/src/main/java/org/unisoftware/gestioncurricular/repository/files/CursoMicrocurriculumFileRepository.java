@@ -7,4 +7,7 @@ import java.util.List;
 import java.util.Optional;
 
 public interface CursoMicrocurriculumFileRepository extends JpaRepository<CursoMicrocurriculumFile, Long> {
+    Optional<CursoMicrocurriculumFile> findByCourseIdAndIsMainTrue(Long courseId);
+
+    List<CursoMicrocurriculumFile> findByCourseId(Long courseId);
 }
