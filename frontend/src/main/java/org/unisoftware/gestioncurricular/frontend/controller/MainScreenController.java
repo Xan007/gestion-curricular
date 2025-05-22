@@ -516,7 +516,7 @@ public class MainScreenController implements Initializable {
                 } catch (Exception ex) {
                     javafx.application.Platform.runLater(() -> {
                         anchorPane.getChildren().remove(overlay);
-                        mostrarAlerta("Error", "No se pudo subir el archivo: " + ex.getMessage(), Alert.AlertType.ERROR);
+                        mostrarAlerta("Error", "No se pudo subir el archivo: " + "No cumple con el formato requerido", Alert.AlertType.ERROR);
                     });
                 }
             }).start();
