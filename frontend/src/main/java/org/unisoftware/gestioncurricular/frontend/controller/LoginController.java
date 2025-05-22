@@ -96,7 +96,7 @@ public class LoginController {
             navigateToMainScreen(event);
 
         } catch (Exception e) {
-            messageLabel.setText("Error al iniciar sesión: Credenciales incorrectas");
+            messageLabel.setText("Error: Credenciales incorrectas");
             messageLabel.getStyleClass().add("error-message");
             e.printStackTrace();
         }
