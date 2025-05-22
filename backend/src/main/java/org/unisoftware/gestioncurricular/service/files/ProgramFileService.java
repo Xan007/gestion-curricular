@@ -4,12 +4,11 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.unisoftware.gestioncurricular.config.BucketsConfig;
 import org.unisoftware.gestioncurricular.config.SupabaseProperties;
-import org.unisoftware.gestioncurricular.dto.ProgramFileDTO;
-import org.unisoftware.gestioncurricular.dto.UpdateProgramFileDTO;
+import org.unisoftware.gestioncurricular.dto.files.ProgramFileDTO;
+import org.unisoftware.gestioncurricular.dto.files.UpdateProgramFileDTO;
 import org.unisoftware.gestioncurricular.entity.Program;
 import org.unisoftware.gestioncurricular.entity.files.ProgramaCurriculumFile;
 import org.unisoftware.gestioncurricular.entity.files.ProgramaResultadosFile;
-import org.unisoftware.gestioncurricular.entity.files.StorageObject;
 import org.unisoftware.gestioncurricular.repository.ProgramRepository;
 import org.unisoftware.gestioncurricular.repository.files.ProgramaCurriculumFileRepository;
 import org.unisoftware.gestioncurricular.repository.files.ProgramaResultadosFileRepository;
@@ -155,7 +154,7 @@ public class ProgramFileService {
         return files.stream()
                 .map(file -> {
                     String url = buildCurriculumUrl(file);
-                    return url != null ? new ProgramFileDTO(file.getId(), url) : null;
+                    return url != null ? new ProgramFileDTO(file.getId(), url, file.getUploadedAt(), file.getDate()) : null;
                 })
                 .filter(Objects::nonNull)
                 .collect(Collectors.toList());
@@ -174,7 +173,7 @@ public class ProgramFileService {
 
         return files.stream()
                 .map(file -> storageObjectRepository.findById(file.getFileId())
-                        .map(obj -> new ProgramFileDTO(file.getId(), urlBuilder.buildUrl(BucketsConfig.PUBLIC_BUCKET, obj.getName())))
+                        .map(obj -> new ProgramFileDTO(file.getId(), urlBuilder.buildUrl(BucketsConfig.PUBLIC_BUCKET, obj.getName()), file.getUploadedAt(), file.getDate()))
                         .orElse(null))
                 .filter(Objects::nonNull)
                 .collect(Collectors.toList());

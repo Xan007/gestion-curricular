@@ -7,8 +7,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
-import org.unisoftware.gestioncurricular.dto.ProgramFileDTO;
-import org.unisoftware.gestioncurricular.dto.UpdateProgramFileDTO;
+import org.unisoftware.gestioncurricular.dto.files.ProgramFileDTO;
+import org.unisoftware.gestioncurricular.dto.files.UpdateProgramFileDTO;
 import org.unisoftware.gestioncurricular.service.files.ProgramFileService;
 
 import java.time.LocalDate;

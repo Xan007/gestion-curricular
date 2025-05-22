@@ -5,6 +5,8 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
+import jakarta.persistence.EntityManager;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.unisoftware.gestioncurricular.dto.CourseDTO;
@@ -22,6 +24,8 @@ public class CourseService {
     private final CourseRepository courseRepository;
     private final CourseMapper courseMapper;
     private final CourseProgramRepository courseProgramRepository;
+    @Autowired
+    private EntityManager em;
 
     public CourseService(CourseRepository courseRepository,
                          CourseMapper courseMapper, CourseProgramRepository courseProgramRepository) {
@@ -86,6 +90,9 @@ public class CourseService {
         courseMapper.updateCourseFromDto(dto, course);
         // No cambiamos createdAt para preservar la fecha original
         course = courseRepository.save(course);
+
+        em.createNativeQuery("REFRESH MATERIALIZED VIEW study_plan_mv").executeUpdate();
+
         return courseMapper.toDto(course);
     }
 
@@ -102,6 +109,13 @@ public class CourseService {
     public List<CourseDTO> getCoursesByDocenteId(UUID docenteId) {
         List<Course> courses = courseRepository.findByTeacherId(docenteId);
         return courses.stream().map(courseMapper::toDto).toList();
+    }
+
+    @Transactional(readOnly = true)
+    public boolean isDocenteOwnerOfCourse(Long courseId, UUID docenteId) {
+        return courseRepository.findById(courseId)
+                .map(course -> docenteId != null && docenteId.equals(course.getTeacherId()))
+                .orElse(false);
     }
 
 }

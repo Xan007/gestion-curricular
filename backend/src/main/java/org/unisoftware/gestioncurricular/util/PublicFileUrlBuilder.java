@@ -19,24 +19,22 @@ public class PublicFileUrlBuilder {
     }
 
     public String buildProgramCurriculumUrl(Long programId, String filename) {
-        String path = String.format("programs/%d/curriculums/%s", programId, filename);
+        String path = String.format("programas/%d/curriculums/%s", programId, filename);
         return buildUrl(BucketsConfig.PUBLIC_BUCKET, path);
     }
 
     public String buildProgramResultadosUrl(Long programId, String filename) {
-        String path = String.format("programs/%d/resultados/%s", programId, filename);
-        return buildUrl(BucketsConfig.PUBLIC_BUCKET, path);
-    }
-
-    public String buildProgramMicrocurriculumUrl(Long programId, String filename) {
-        String path = String.format("programs/%d/microcurriculums/%s", programId, filename);
+        String path = String.format("programas/%d/resultados/%s", programId, filename);
         return buildUrl(BucketsConfig.PUBLIC_BUCKET, path);
     }
 
     public String buildCourseMicrocurriculumUrl(Long courseId, String filename) {
-        String path = String.format("courses/%d/microcurriculums/%s", courseId, filename);
+        String path = String.format("cursos/%d/microcurriculums/%s", courseId, filename);
         return buildUrl(BucketsConfig.PUBLIC_BUCKET, path);
     }
 
-    // Puedes extender más métodos aquí según el contexto
+    public String buildApoyoUrl(Long courseId, String filename) {
+        String path = String.format("cursos/%d/apoyos/%s", courseId, filename);
+        return buildUrl(BucketsConfig.PUBLIC_BUCKET, path);
+    }
 }
