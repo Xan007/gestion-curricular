@@ -26,7 +26,7 @@ public class UserServiceFront {
         // Obtener el ID real del usuario autenticado usando el correo y la lista de usuarios
         String userId = null;
         try {
-            URL url = new URL("http://localhost:8080/users");
+            URL url = new URL("http://localhost:8080/users?role=DOCENTE");
             HttpURLConnection conn = (HttpURLConnection) url.openConnection();
             conn.setRequestMethod("GET");
             try (InputStream in = conn.getInputStream()) {

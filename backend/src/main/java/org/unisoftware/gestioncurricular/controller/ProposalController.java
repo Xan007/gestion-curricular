@@ -11,6 +11,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.unisoftware.gestioncurricular.dto.ProposalDTO;
 import org.unisoftware.gestioncurricular.dto.ProposalReviewRequest;
+import org.unisoftware.gestioncurricular.dto.ProposalUploadRequest;
 import org.unisoftware.gestioncurricular.dto.SignatureRequest;
 import org.unisoftware.gestioncurricular.entity.Proposal;
 import org.unisoftware.gestioncurricular.mapper.ProposalMapper;
@@ -37,9 +38,11 @@ public class ProposalController {
 
     @Operation(summary = "Crear una nueva propuesta", description = "Crea una nueva propuesta académica.")
     @PostMapping
-    public ResponseEntity<Void> createProposal(@RequestBody ProposalDTO dto) {
-
-        return ResponseEntity.status(HttpStatus.NOT_IMPLEMENTED).build();
+    @PreAuthorize("hasRole('DOCENTE')")
+    public ResponseEntity<ProposalDTO> createProposal(@RequestBody ProposalUploadRequest request) {
+        UUID userId = SecurityUtil.getCurrentUserId();
+        Proposal proposal = proposalService.createProposal(request, userId);
+        return ResponseEntity.ok(proposalMapper.toDto(proposal));
     }
 
     @PutMapping("/{id}/revisar")

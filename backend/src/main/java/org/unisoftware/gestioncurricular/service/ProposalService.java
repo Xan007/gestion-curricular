@@ -2,7 +2,10 @@ package org.unisoftware.gestioncurricular.service;
 
 import org.springframework.data.jpa.domain.Specification;
 import org.unisoftware.gestioncurricular.dto.ProposalReviewRequest;
+import org.unisoftware.gestioncurricular.dto.ProposalUploadRequest;
+import org.unisoftware.gestioncurricular.entity.Course;
 import org.unisoftware.gestioncurricular.entity.Proposal;
+import org.unisoftware.gestioncurricular.repository.CourseRepository;
 import org.unisoftware.gestioncurricular.repository.ProposalRepository;
 import org.springframework.stereotype.Service;
 import org.unisoftware.gestioncurricular.util.enums.ProposalStatus;
@@ -22,10 +25,12 @@ public class ProposalService {
 
     private final ProposalRepository proposalRepository;
     private final NotificationService notificationService;
+    private final CourseRepository courseRepository;
 
-    public ProposalService(ProposalRepository proposalRepository, NotificationService notificationService) {
+    public ProposalService(ProposalRepository proposalRepository, NotificationService notificationService, CourseRepository courseRepository) {
         this.proposalRepository = proposalRepository;
         this.notificationService = notificationService;
+        this.courseRepository = courseRepository;
     }
 
     public List<Proposal> getAllProposals() {
@@ -54,8 +59,10 @@ public class ProposalService {
 
                 if (action == ProposalReviewRequest.Action.ACCEPT) {
                     proposal.setStatus(ProposalStatus.EN_REVISION_COMITE);
+                    proposal.setCanEdit(false);
                 } else if (action == ProposalReviewRequest.Action.REJECT) {
                     proposal.setStatus(ProposalStatus.AJUSTES_SOLICITADOS);
+                    proposal.setCanEdit(true);
                 } else {
                     throw new IllegalArgumentException("Acción no válida para el director");
                 }
@@ -212,5 +219,22 @@ public class ProposalService {
         };
 
         return proposalRepository.findAll(spec);
+    }
+
+    public Proposal createProposal(ProposalUploadRequest request, UUID teacherId) {
+        Course course = courseRepository.findById(request.getCourseId())
+                .orElseThrow(() -> new IllegalArgumentException("Curso no encontrado: " + request.getCourseId()));
+
+        Proposal proposal = new Proposal();
+        proposal.setTitle(request.getTitle());
+        proposal.setCourse(course);
+        proposal.setTeacherId(teacherId);
+
+        proposal.setStatus(ProposalStatus.EN_REVISION_DIRECTOR);
+        proposal.setCreatedAt(Instant.now());
+        proposal.setLastUpdatedAt(Instant.now());
+        proposal.setCanEdit(true);
+
+        return proposalRepository.save(proposal);
     }
 }
