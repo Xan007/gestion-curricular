@@ -13,6 +13,11 @@ public class PublicFileUrlBuilder {
         this.supabaseProperties = supabaseProperties;
     }
 
+    public String buildUploadUrl(String bucket, String path) {
+        return String.format("%s/storage/v1/object/%s/%s",
+                supabaseProperties.getUrl(), bucket, path);
+    }
+
     public String buildUrl(String bucket, String path) {
         return String.format("%s/storage/v1/object/public/%s/%s",
                 supabaseProperties.getUrl(), bucket, path);

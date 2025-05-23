@@ -41,8 +41,7 @@ public class ProposalFileService {
         String filename = String.format("propuesta_%d.pdf", proposalId);
         String path = String.format("propuestas/%d/%s", proposal.getCourse().getId(), filename);
 
-        String url = String.format("%s/storage/v1/object/public/%s/%s",
-                supabaseProperties.getUrl(), BucketsConfig.PUBLIC_BUCKET, path);
+        String url = urlBuilder.buildUploadUrl(BucketsConfig.PUBLIC_BUCKET, path);
 
         ProposalFileDTO dto = new ProposalFileDTO();
         dto.setId(proposal.getFile() != null ? proposal.getFile().getId() : null);

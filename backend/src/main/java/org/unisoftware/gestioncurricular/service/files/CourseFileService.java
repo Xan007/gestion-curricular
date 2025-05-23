@@ -2,6 +2,7 @@ package org.unisoftware.gestioncurricular.service.files;
 
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import org.springframework.scheduling.support.SimpleTriggerContext;
 import org.springframework.stereotype.Service;
 import org.unisoftware.gestioncurricular.config.BucketsConfig;
 import org.unisoftware.gestioncurricular.dto.files.CourseMicroFileDTO;
@@ -35,7 +36,8 @@ public class CourseFileService {
     private final StorageObjectRepository storageObjectRepository;
 
     public String generateApoyoUploadUrl(Long courseId, String filename) {
-        return urlBuilder.buildApoyoUrl(courseId, filename);
+        String path = String.format("cursos/%d/apoyos/%s", courseId, filename);
+        return urlBuilder.buildUploadUrl(BucketsConfig.PUBLIC_BUCKET, path);
     }
 
     @Transactional
@@ -57,21 +59,30 @@ public class CourseFileService {
                 .orElseGet(() -> apoyosFileRepository.findAllByCourseId(courseId));
 
         return archivos.stream()
-                .map(file -> storageObjectRepository.findById(file.getFileId())
-                        .map(obj -> new CourseSupportFileDTO(
+                .map(file -> new CourseSupportFileDTO(
                                 file.getId(),
-                                urlBuilder.buildUrl(BucketsConfig.PUBLIC_BUCKET, obj.getName()),
+                                buildApoyoUrl(file),
                                 file.getUploadedAt(),
                                 file.getTipo()
                         ))
-                        .orElse(null))
-                .filter(Objects::nonNull)
                 .collect(Collectors.toList());
     }
 
     public String generateMicrocurriculumUploadUrl(Long courseId, LocalDate date) {
-        String filename = "microcurriculum_" + date.format(DateTimeFormatter.ofPattern("yyyy_MM_dd"));
-        return urlBuilder.buildCourseMicrocurriculumUrl(courseId, filename);
+        String filename = String.format("cursos/%d/microcurriculums/" + "microcurriculum_%s", courseId, date.format(DateTimeFormatter.ofPattern("yyyy_MM_dd")) + ".pdf");
+        return urlBuilder.buildUploadUrl(BucketsConfig.PUBLIC_BUCKET, filename);
+    }
+
+    private String buildMicrocurriculumUrl(CursoMicrocurriculumFile file) {
+        return storageObjectRepository.findById(file.getFileId())
+                .map(obj -> urlBuilder.buildUrl(BucketsConfig.PUBLIC_BUCKET, obj.getName()))
+                .orElse(null);
+    }
+
+    private String buildApoyoUrl(CursoApoyosFile file) {
+        return storageObjectRepository.findById(file.getFileId())
+                .map(obj -> urlBuilder.buildUrl(BucketsConfig.PUBLIC_BUCKET, obj.getName()))
+                .orElse(null);
     }
 
     @Transactional
@@ -104,16 +115,14 @@ public class CourseFileService {
 
         return files.stream()
                 .sorted(comparator)
-                .map(file -> storageObjectRepository.findById(file.getFileId())
-                        .map(obj -> new CourseMicroFileDTO(
+                .map(file ->
+                        new CourseMicroFileDTO(
                                 file.getId(),
-                                urlBuilder.buildUrl(BucketsConfig.PUBLIC_BUCKET, obj.getName()),
+                                buildMicrocurriculumUrl(file),
                                 file.getUploadedAt(),
                                 file.getDate(),
                                 file.isMain()
                         ))
-                        .orElse(null))
-                .filter(Objects::nonNull)
                 .collect(Collectors.toList());
     }
 
@@ -123,9 +132,7 @@ public class CourseFileService {
         CursoMicrocurriculumFile file = microRepository.findByCourseIdAndIsMainTrue(courseId).orElse(null);
         if (file == null) return null;
 
-        return storageObjectRepository.findById(file.getFileId())
-                .map(obj -> urlBuilder.buildUrl(BucketsConfig.PUBLIC_BUCKET, obj.getName()))
-                .orElse(null);
+        return buildMicrocurriculumUrl(file);
     }
 
     @Transactional

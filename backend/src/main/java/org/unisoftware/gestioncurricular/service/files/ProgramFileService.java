@@ -52,8 +52,8 @@
                     .orElseThrow(() -> new IllegalArgumentException("Program not found"));
 
             String formattedDate = formatDateForFileName(date);
-            String path = String.format("curriculum_%s.pdf", formattedDate);
-            return urlBuilder.buildProgramCurriculumUrl(programId, path);
+            String path = String.format("programas/%d/curriculums/curriculum_%s.pdf", program.getId(), formattedDate);
+            return urlBuilder.buildUploadUrl(BucketsConfig.PUBLIC_BUCKET, path);
         }
 
         private String formatDateForFileName(LocalDate date) {
@@ -91,8 +91,8 @@
                     .orElseThrow(() -> new IllegalArgumentException("Program not found"));
 
             String formattedDate = formatDateForFileName(date);
-            String path = String.format("resultados_%s.pdf", formattedDate);
-            return urlBuilder.buildProgramResultadosUrl(programId, path);
+            String path = String.format("programas/%d/resultados/resultados_%s.pdf", program.getId(), formattedDate);
+            return urlBuilder.buildUploadUrl(BucketsConfig.PUBLIC_BUCKET, path);
         }
 
         public Optional<String> getMainResultadoUrl(Long programId) {
