@@ -17,18 +17,6 @@ public class Program {
     @Column(name = "nombre")
     private String name;
 
-    @Column(name = "perfil_profesional")
-    private String professionalProfile;
-
-    @Column(name = "perfil_ocupacional")
-    private String occupationalProfile;
-
-    @Column(name = "perfil_ingreso")
-    private String admissionProfile;
-
-    @Column(name = "competencias")
-    private String competencies;
-
     @Column(name = "duracion")
     private Integer duration;
 

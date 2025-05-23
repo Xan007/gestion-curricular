@@ -12,11 +12,6 @@ import lombok.Setter;
 public class ProgramDTO {
     private Long id;
     private String name;
-    private String professionalProfile;
-    private String occupationalProfile;
-    private String admissionProfile;
-    private String competencies;
-    private Long learningOutcomesFileId;
     private Integer duration;
     private String awardingDegree;
 }
