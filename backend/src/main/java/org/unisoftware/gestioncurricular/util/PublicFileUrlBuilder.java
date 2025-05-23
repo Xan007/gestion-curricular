@@ -37,4 +37,9 @@ public class PublicFileUrlBuilder {
         String path = String.format("cursos/%d/apoyos/%s", courseId, filename);
         return buildUrl(BucketsConfig.PUBLIC_BUCKET, path);
     }
+
+    public String buildProposalUrl(Long proposalId, String filename) {
+        String path = String.format("propuestas/%d/%s", proposalId, filename);
+        return buildUrl(BucketsConfig.PUBLIC_BUCKET, path);
+    }
 }

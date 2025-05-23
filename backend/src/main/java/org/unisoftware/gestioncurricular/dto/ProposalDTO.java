@@ -4,6 +4,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.Setter;
+import org.unisoftware.gestioncurricular.dto.files.ProposalFileDTO;
 import org.unisoftware.gestioncurricular.util.enums.ProposalStatus;
 
 import java.time.Instant;
@@ -30,8 +31,8 @@ public class ProposalDTO {
     @Schema(description = "ID del docente que crea la propuesta")
     private UUID teacherId;
 
-    @Schema(description = "ID del archivo subido en storage.objects")
-    private UUID fileId;
+    /*@Schema(description = "ID del archivo subido en storage.objects")
+    private UUID fileId;*/
 
     @Schema(description = "Estado actual de la propuesta")
     private ProposalStatus status;
@@ -44,4 +45,16 @@ public class ProposalDTO {
 
     @Schema(description = "Fecha y hora de la última actualización")
     private Instant lastUpdatedAt;
+
+    @Schema(description = "Indica si la propuesta ha sido firmada por el director del programa")
+    private boolean signedByDirectorPrograma;
+
+    @Schema(description = "Indica si la propuesta ha sido firmada por el director de escuela")
+    private boolean signedByDirectorEscuela;
+
+    @Schema(description = "Indica si el docente puede editar la propuesta")
+    private boolean canEdit = true;
+
+    @Schema(description = "ID del archivo de la propuesta")
+    private ProposalFileDTO file;
 }

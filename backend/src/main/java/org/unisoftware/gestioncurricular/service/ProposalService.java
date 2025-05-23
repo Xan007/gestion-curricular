@@ -193,7 +193,7 @@ public class ProposalService {
             List<Predicate> predicates = new ArrayList<>();
 
             if (cursoId != null) {
-                predicates.add(cb.equal(root.get("courseId"), cursoId));
+                predicates.add(cb.equal(root.get("course").get("id"), cursoId));
             }
 
             if (docenteId != null) {
