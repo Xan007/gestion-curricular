@@ -39,6 +39,7 @@ import org.unisoftware.gestioncurricular.frontend.service.CourseServiceFront;
 import org.unisoftware.gestioncurricular.frontend.service.ExcelUploadService;
 import org.unisoftware.gestioncurricular.frontend.util.SessionManager;
 import org.unisoftware.gestioncurricular.frontend.util.JwtDecodeUtil;
+import org.unisoftware.gestioncurricular.frontend.service.ProgramFileServiceFront;
 import org.springframework.stereotype.Component;
 
 import java.io.File;
@@ -65,6 +66,7 @@ public class MainScreenController implements Initializable {
     @Autowired private ProgramServiceFront programServiceFront;
     @Autowired private ExcelUploadService excelUploadService;
     @Autowired private ApplicationContext applicationContext;
+    @Autowired private ProgramFileServiceFront programFileServiceFront;
 
     private int paginaActual = 0;
     private static final int PROGRAMAS_POR_PAGINA = 2;
@@ -458,19 +460,26 @@ public class MainScreenController implements Initializable {
 
     private void handleSubirExcel(Long programId) {
         // Mostrar alerta de confirmación para descargar plantilla
-        Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
+        Alert alert = new Alert(Alert.AlertType.CONFIRMATION); // Usamos CONFIRMATION por el icono, pero los botones se reemplazarán.
         alert.setTitle("Descargar plantilla");
         alert.setHeaderText("¿Desea descargar una plantilla del formato de plan de estudios?");
         alert.setContentText("Puede usar la plantilla para cargar el plan de estudios correctamente.");
 
-        Button yesButton = (Button) alert.getDialogPane().lookupButton(javafx.scene.control.ButtonType.OK);
-        yesButton.setText("Sí, descargar");
-        Button noButton = (Button) alert.getDialogPane().lookupButton(javafx.scene.control.ButtonType.CANCEL);
-        noButton.setText("No, solo subir");
+        // Definir ButtonTypes personalizados
+        javafx.scene.control.ButtonType buttonTypeSiDescargar = new javafx.scene.control.ButtonType("Sí, descargar", javafx.scene.control.ButtonBar.ButtonData.YES);
+        javafx.scene.control.ButtonType buttonTypeNoSoloSubir = new javafx.scene.control.ButtonType("No, solo subir", javafx.scene.control.ButtonBar.ButtonData.NO);
+
+        // Establecer estos botones en la alerta, reemplazando los predeterminados
+        alert.getButtonTypes().setAll(buttonTypeSiDescargar, buttonTypeNoSoloSubir);
 
         // Mostrar y esperar respuesta
-        alert.showAndWait().ifPresent(response -> {
-            if (response == javafx.scene.control.ButtonType.OK) {
+        java.util.Optional<javafx.scene.control.ButtonType> optResponse = alert.showAndWait();
+
+        if (optResponse.isPresent()) { // Si se presionó un botón (y no se cerró con 'X')
+            javafx.scene.control.ButtonType response = optResponse.get();
+            boolean proceedToUpload = false;
+
+            if (response == buttonTypeSiDescargar) { // Usuario seleccionó "Sí, descargar"
                 // Descargar plantilla
                 String plantillaUrl = "https://fexiivjyzplakakkiyqm.supabase.co/storage/v1/object/public/documentos-publicos/ejemplos/Plantilla%20Plan%20De%20Estudios.xlsx";
                 try {
@@ -484,63 +493,71 @@ public class MainScreenController implements Initializable {
                     errorAlert.setContentText(e.getMessage());
                     errorAlert.showAndWait();
                 }
+                proceedToUpload = true; // Continuar a la subida después de intentar descargar
+            } else if (response == buttonTypeNoSoloSubir) { // Usuario seleccionó "No, solo subir"
+                proceedToUpload = true; // Continuar directamente a la subida
             }
-            // Continuar con el flujo de subida de archivo
-            FileChooser fileChooser = new FileChooser();
-            fileChooser.setTitle("Selecciona el archivo Excel del plan de estudios");
-            fileChooser.getExtensionFilters().add(
-                    new FileChooser.ExtensionFilter("Archivos Excel", "*.xlsx", "*.xls", "*.csv"));
-            Stage stage = (Stage) cardContainer.getScene().getWindow();
-            File selectedFile = fileChooser.showOpenDialog(stage);
-            if (selectedFile != null) {
-                // Mostrar ventana de espera tipo modal igual a la de información de programa
-                VBox modalContent = new VBox(18);
-                modalContent.setStyle("-fx-background-color: #fff; -fx-padding: 32; -fx-background-radius: 14; -fx-effect: dropshadow(three-pass-box, #d32f2f, 12, 0.18, 0, 4); -fx-border-color: #d32f2f; -fx-border-width: 3;");
-                modalContent.setPrefWidth(400);
-                modalContent.setMinWidth(320);
-                modalContent.setAlignment(Pos.CENTER);
-                Label esperando = new Label("Subiendo archivo, por favor espere...");
-                esperando.setStyle("-fx-font-size: 17px; -fx-font-weight: bold; -fx-text-fill: #d32f2f;");
-                modalContent.getChildren().add(esperando);
 
-                VBox modalWrapper = new VBox();
-                modalWrapper.setAlignment(Pos.CENTER);
-                modalWrapper.setFillWidth(true);
-                modalWrapper.setPrefWidth(400);
-                modalWrapper.setMinWidth(320);
-                modalWrapper.getChildren().add(modalContent);
+            if (proceedToUpload) {
+                // Continuar con el flujo de subida de archivo
+                FileChooser fileChooser = new FileChooser();
+                fileChooser.setTitle("Selecciona el archivo Excel del plan de estudios");
+                fileChooser.getExtensionFilters().add(
+                        new FileChooser.ExtensionFilter("Archivos Excel", "*.xlsx", "*.xls", "*.csv"));
+                Stage stage = (Stage) cardContainer.getScene().getWindow();
+                File selectedFile = fileChooser.showOpenDialog(stage);
+                if (selectedFile != null) {
+                    // Mostrar ventana de espera tipo modal igual a la de información de programa
+                    VBox modalContent = new VBox(18);
+                    modalContent.setStyle("-fx-background-color: #fff; -fx-padding: 32; -fx-background-radius: 14; -fx-effect: dropshadow(three-pass-box, #d32f2f, 12, 0.18, 0, 4); -fx-border-color: #d32f2f; -fx-border-width: 3;");
+                    modalContent.setPrefWidth(400);
+                    modalContent.setMinWidth(320);
+                    modalContent.setAlignment(Pos.CENTER);
+                    Label esperando = new Label("Subiendo archivo, por favor espere...");
+                    esperando.setStyle("-fx-font-size: 17px; -fx-font-weight: bold; -fx-text-fill: #d32f2f;");
+                    modalContent.getChildren().add(esperando);
 
-                AnchorPane anchorPane = (AnchorPane) cardContainer.getScene().getRoot();
-                StackPane overlay = new StackPane();
-                overlay.setStyle("-fx-background-color: rgba(30,32,48,0.18);");
-                overlay.setPickOnBounds(true);
-                overlay.setPrefSize(anchorPane.getWidth(), anchorPane.getHeight());
-                overlay.setMinSize(Region.USE_PREF_SIZE, Region.USE_PREF_SIZE);
-                overlay.setMaxSize(Region.USE_PREF_SIZE, Region.USE_PREF_SIZE);
-                overlay.setAlignment(Pos.CENTER);
-                overlay.getChildren().add(modalWrapper);
-                anchorPane.getChildren().add(overlay);
-                AnchorPane.setTopAnchor(overlay, 0.0);
-                AnchorPane.setBottomAnchor(overlay, 0.0);
-                AnchorPane.setLeftAnchor(overlay, 0.0);
-                AnchorPane.setRightAnchor(overlay, 0.0);
-                // Subir archivo en un hilo aparte para no congelar la UI
-                new Thread(() -> {
-                    try {
-                        excelUploadService.uploadPlan(programId, selectedFile);
-                        javafx.application.Platform.runLater(() -> {
-                            anchorPane.getChildren().remove(overlay);
-                            mostrarAlerta("Éxito", "Archivo subido correctamente.", Alert.AlertType.INFORMATION);
-                        });
-                    } catch (Exception ex) {
-                        javafx.application.Platform.runLater(() -> {
-                            anchorPane.getChildren().remove(overlay);
-                            mostrarAlerta("Error", "No se pudo subir el archivo: " + "No cumple con el formato requerido", Alert.AlertType.ERROR);
-                        });
-                    }
-                }).start();
+                    VBox modalWrapper = new VBox();
+                    modalWrapper.setAlignment(Pos.CENTER);
+                    modalWrapper.setFillWidth(true);
+                    modalWrapper.setPrefWidth(400);
+                    modalWrapper.setMinWidth(320);
+                    modalWrapper.getChildren().add(modalContent);
+
+                    AnchorPane anchorPane = (AnchorPane) cardContainer.getScene().getRoot();
+                    StackPane overlay = new StackPane();
+                    overlay.setStyle("-fx-background-color: rgba(30,32,48,0.18);");
+                    overlay.setPickOnBounds(true);
+                    overlay.setPrefSize(anchorPane.getWidth(), anchorPane.getHeight());
+                    overlay.setMinSize(Region.USE_PREF_SIZE, Region.USE_PREF_SIZE);
+                    overlay.setMaxSize(Region.USE_PREF_SIZE, Region.USE_PREF_SIZE);
+                    overlay.setAlignment(Pos.CENTER);
+                    overlay.getChildren().add(modalWrapper);
+                    anchorPane.getChildren().add(overlay);
+                    AnchorPane.setTopAnchor(overlay, 0.0);
+                    AnchorPane.setBottomAnchor(overlay, 0.0);
+                    AnchorPane.setLeftAnchor(overlay, 0.0);
+                    AnchorPane.setRightAnchor(overlay, 0.0);
+                    // Subir archivo en un hilo aparte para no congelar la UI
+                    new Thread(() -> {
+                        try {
+                            excelUploadService.uploadPlan(programId, selectedFile);
+                            javafx.application.Platform.runLater(() -> {
+                                anchorPane.getChildren().remove(overlay);
+                                mostrarAlerta("Éxito", "Archivo subido correctamente.", Alert.AlertType.INFORMATION);
+                            });
+                        } catch (Exception ex) {
+                            javafx.application.Platform.runLater(() -> {
+                                anchorPane.getChildren().remove(overlay);
+                                mostrarAlerta("Error", "No se pudo subir el archivo: " + "No cumple con el formato requerido", Alert.AlertType.ERROR);
+                            });
+                        }
+                    }).start();
+                }
             }
-        });
+        }
+        // Si optResponse no está presente (es decir, la alerta se cerró con 'X'), no se hace nada más,
+        // cancelando efectivamente el proceso de subida.
     }
 
     private void mostrarPropuestasMicro(String tipo) {
@@ -819,7 +836,7 @@ public class MainScreenController implements Initializable {
             handleSubirExcel(prog.getId());
         });
 
-        Button btnEditarCursosInfo = new Button("Editar Cursos/Info del Programa");
+        Button btnEditarCursosInfo = new Button("Editar Cursos del Programa");
         btnEditarCursosInfo.setMaxWidth(Double.MAX_VALUE);
         btnEditarCursosInfo.getStyleClass().add("card-btn-white");
         btnEditarCursosInfo.setOnAction(e -> {
@@ -832,15 +849,15 @@ public class MainScreenController implements Initializable {
             mostrarEdicionProgramaYCursos(prog);
         });
 
-        Button btnSubirCurriculums = new Button("Subir Curriculums de Docentes");
+        Button btnSubirCurriculums = new Button("Subir Curriculums");
         btnSubirCurriculums.setMaxWidth(Double.MAX_VALUE);
         btnSubirCurriculums.getStyleClass().add("card-btn-white");
-        // btnSubirCurriculums.setOnAction(e -> { /* Lógica futura */ }); // Sin funcionalidad aún
+        btnSubirCurriculums.setOnAction(e -> handleSubirCurriculums(prog.getId()));
 
         Button btnSubirResultados = new Button("Subir Resultados de Aprendizaje del Programa");
         btnSubirResultados.setMaxWidth(Double.MAX_VALUE);
         btnSubirResultados.getStyleClass().add("card-btn-white");
-        // btnSubirResultados.setOnAction(e -> { /* Lógica futura */ }); // Sin funcionalidad aún
+        btnSubirResultados.setOnAction(e -> handleSubirResultados(prog.getId()));
 
 
         Button cerrar = new Button("Cerrar");
@@ -1070,6 +1087,115 @@ public class MainScreenController implements Initializable {
             javafx.scene.control.TableColumn<?,?> colObj = table.getColumns().get(col);
             table.getFocusModel().focus(row);
             table.edit(-1, null); // Esto dispara commitEdit si el editor está abierto
+        }
+    }
+
+    // --- NUEVOS MÉTODOS DE SUBIDA DE ARCHIVOS ---
+    private void handleSubirCurriculums(Long programId) {
+        FileChooser fileChooser = new FileChooser();
+        fileChooser.setTitle("Selecciona el archivo de curriculums de docentes");
+        fileChooser.getExtensionFilters().addAll(
+                new FileChooser.ExtensionFilter("Archivos permitidos", "*.pdf", "*.doc", "*.docx", "*.xlsx", "*.xls", "*.csv")
+        );
+        Stage stage = (Stage) cardContainer.getScene().getWindow();
+        File selectedFile = fileChooser.showOpenDialog(stage);
+        if (selectedFile != null) {
+            VBox modalContent = new VBox(18);
+            modalContent.setStyle("-fx-background-color: #fff; -fx-padding: 32; -fx-background-radius: 14; -fx-effect: dropshadow(three-pass-box, #d32f2f, 12, 0.18, 0, 4); -fx-border-color: #d32f2f; -fx-border-width: 3;");
+            modalContent.setPrefWidth(400);
+            modalContent.setMinWidth(320);
+            modalContent.setAlignment(Pos.CENTER);
+            Label esperando = new Label("Subiendo archivo, por favor espere...");
+            esperando.setStyle("-fx-font-size: 17px; -fx-font-weight: bold; -fx-text-fill: #d32f2f;");
+            modalContent.getChildren().add(esperando);
+            VBox modalWrapper = new VBox();
+            modalWrapper.setAlignment(Pos.CENTER);
+            modalWrapper.setFillWidth(true);
+            modalWrapper.setPrefWidth(400);
+            modalWrapper.setMinWidth(320);
+            modalWrapper.getChildren().add(modalContent);
+            AnchorPane anchorPane = (AnchorPane) cardContainer.getScene().getRoot();
+            StackPane overlay = new StackPane();
+            overlay.setStyle("-fx-background-color: rgba(30,32,48,0.18);");
+            overlay.setPickOnBounds(true);
+            overlay.setPrefSize(anchorPane.getWidth(), anchorPane.getHeight());
+            overlay.setMinSize(Region.USE_PREF_SIZE, Region.USE_PREF_SIZE);
+            overlay.setMaxSize(Region.USE_PREF_SIZE, Region.USE_PREF_SIZE);
+            overlay.setAlignment(Pos.CENTER);
+            overlay.getChildren().add(modalWrapper);
+            anchorPane.getChildren().add(overlay);
+            AnchorPane.setTopAnchor(overlay, 0.0);
+            AnchorPane.setBottomAnchor(overlay, 0.0);
+            AnchorPane.setLeftAnchor(overlay, 0.0);
+            AnchorPane.setRightAnchor(overlay, 0.0);
+            new Thread(() -> {
+                try {
+                    programFileServiceFront.uploadCurriculum(programId, selectedFile, null);
+                    javafx.application.Platform.runLater(() -> {
+                        anchorPane.getChildren().remove(overlay);
+                        mostrarAlerta("Éxito", "Archivo de curriculums subido correctamente.", Alert.AlertType.INFORMATION);
+                    });
+                } catch (Exception ex) {
+                    javafx.application.Platform.runLater(() -> {
+                        anchorPane.getChildren().remove(overlay);
+                        mostrarAlerta("Error", "No se pudo subir el archivo: " + ex.getMessage(), Alert.AlertType.ERROR);
+                    });
+                }
+            }).start();
+        }
+    }
+
+    private void handleSubirResultados(Long programId) {
+        FileChooser fileChooser = new FileChooser();
+        fileChooser.setTitle("Selecciona el archivo de resultados de aprendizaje");
+        fileChooser.getExtensionFilters().addAll(
+                new FileChooser.ExtensionFilter("Archivos permitidos", "*.pdf", "*.doc", "*.docx", "*.xlsx", "*.xls", "*.csv")
+        );
+        Stage stage = (Stage) cardContainer.getScene().getWindow();
+        File selectedFile = fileChooser.showOpenDialog(stage);
+        if (selectedFile != null) {
+            VBox modalContent = new VBox(18);
+            modalContent.setStyle("-fx-background-color: #fff; -fx-padding: 32; -fx-background-radius: 14; -fx-effect: dropshadow(three-pass-box, #d32f2f, 12, 0.18, 0, 4); -fx-border-color: #d32f2f; -fx-border-width: 3;");
+            modalContent.setPrefWidth(400);
+            modalContent.setMinWidth(320);
+            modalContent.setAlignment(Pos.CENTER);
+            Label esperando = new Label("Subiendo archivo, por favor espere...");
+            esperando.setStyle("-fx-font-size: 17px; -fx-font-weight: bold; -fx-text-fill: #d32f2f;");
+            modalContent.getChildren().add(esperando);
+            VBox modalWrapper = new VBox();
+            modalWrapper.setAlignment(Pos.CENTER);
+            modalWrapper.setFillWidth(true);
+            modalWrapper.setPrefWidth(400);
+            modalWrapper.setMinWidth(320);
+            modalWrapper.getChildren().add(modalContent);
+            AnchorPane anchorPane = (AnchorPane) cardContainer.getScene().getRoot();
+            StackPane overlay = new StackPane();
+            overlay.setStyle("-fx-background-color: rgba(30,32,48,0.18);");
+            overlay.setPickOnBounds(true);
+            overlay.setPrefSize(anchorPane.getWidth(), anchorPane.getHeight());
+            overlay.setMinSize(Region.USE_PREF_SIZE, Region.USE_PREF_SIZE);
+            overlay.setMaxSize(Region.USE_PREF_SIZE, Region.USE_PREF_SIZE);
+            overlay.setAlignment(Pos.CENTER);
+            overlay.getChildren().add(modalWrapper);
+            anchorPane.getChildren().add(overlay);
+            AnchorPane.setTopAnchor(overlay, 0.0);
+            AnchorPane.setBottomAnchor(overlay, 0.0);
+            AnchorPane.setLeftAnchor(overlay, 0.0);
+            AnchorPane.setRightAnchor(overlay, 0.0);
+            new Thread(() -> {
+                try {
+                    programFileServiceFront.uploadResultados(programId, selectedFile, null);
+                    javafx.application.Platform.runLater(() -> {
+                        anchorPane.getChildren().remove(overlay);
+                        mostrarAlerta("Éxito", "Archivo de resultados subido correctamente.", Alert.AlertType.INFORMATION);
+                    });
+                } catch (Exception ex) {
+                    javafx.application.Platform.runLater(() -> {
+                        anchorPane.getChildren().remove(overlay);
+                        mostrarAlerta("Error", "No se pudo subir el archivo: " + ex.getMessage(), Alert.AlertType.ERROR);
+                    });
+                }
+            }).start();
         }
     }
 }
