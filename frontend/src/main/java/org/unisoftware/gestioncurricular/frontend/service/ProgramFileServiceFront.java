@@ -48,16 +48,23 @@ public class ProgramFileServiceFront {
     }
 
     private void uploadFileToUrl(String url, File file) throws IOException {
+        // Subida directa a Supabase Storage usando PUT y headers de service-role-key
         HttpHeaders headers = new HttpHeaders();
         String mimeType = Files.probeContentType(file.toPath());
         headers.setContentType(MediaType.parseMediaType(mimeType != null ? mimeType : "application/octet-stream"));
-        // No se agregan headers apikey ni Authorization, solo el Content-Type
+        // Obtener la service-role-key de Supabase desde variable de entorno o config
+        String supabaseKey = System.getenv("SUPABASE_SERVICE_ROLE_KEY");
+        if (supabaseKey == null || supabaseKey.isBlank()) {
+            throw new RuntimeException("No se encontró la SUPABASE_SERVICE_ROLE_KEY en variables de entorno");
+        }
+        headers.set("apikey", supabaseKey);
+        headers.set("Authorization", "Bearer " + supabaseKey);
         byte[] fileBytes;
         try (FileInputStream fis = new FileInputStream(file)) {
             fileBytes = fis.readAllBytes();
         }
         HttpEntity<byte[]> requestEntity = new HttpEntity<>(fileBytes, headers);
-        ResponseEntity<String> response = restTemplate.exchange(url, org.springframework.http.HttpMethod.POST, requestEntity, String.class);
+        ResponseEntity<String> response = restTemplate.exchange(url, org.springframework.http.HttpMethod.PUT, requestEntity, String.class);
         if (!response.getStatusCode().is2xxSuccessful()) {
             throw new RuntimeException("Error al subir archivo: " + response.getBody());
         }

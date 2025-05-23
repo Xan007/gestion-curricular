@@ -28,6 +28,7 @@ import javafx.util.converter.IntegerStringConverter;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.beans.property.SimpleStringProperty;
+import javafx.scene.web.WebView;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
@@ -40,11 +41,14 @@ import org.unisoftware.gestioncurricular.frontend.service.ExcelUploadService;
 import org.unisoftware.gestioncurricular.frontend.util.SessionManager;
 import org.unisoftware.gestioncurricular.frontend.util.JwtDecodeUtil;
 import org.unisoftware.gestioncurricular.frontend.service.ProgramFileServiceFront;
+import org.unisoftware.gestioncurricular.frontend.service.ProgramFileViewServiceFront;
 import org.springframework.stereotype.Component;
 
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -67,6 +71,7 @@ public class MainScreenController implements Initializable {
     @Autowired private ExcelUploadService excelUploadService;
     @Autowired private ApplicationContext applicationContext;
     @Autowired private ProgramFileServiceFront programFileServiceFront;
+    @Autowired private ProgramFileViewServiceFront programFileViewServiceFront;
 
     private int paginaActual = 0;
     private static final int PROGRAMAS_POR_PAGINA = 2;
@@ -316,41 +321,21 @@ public class MainScreenController implements Initializable {
         grado.setMinWidth(0);
         grado.setPrefWidth(550);
 
-        Label perfilProfLabel = new Label("Perfil profesional:");
-        perfilProfLabel.setStyle("-fx-font-weight: bold; -fx-font-size: 15px;");
-        Label perfilProf = new Label(prog.getProfessionalProfile() != null ? prog.getProfessionalProfile() : "");
-        perfilProf.setWrapText(true);
-        perfilProf.setStyle("-fx-font-size: 15px; -fx-padding: 0 0 10 0;");
-        perfilProf.setMaxWidth(550);
-        perfilProf.setMinWidth(0);
-        perfilProf.setPrefWidth(550);
+        Label AcademicLevelLabel = new Label("Nivel Academico:");
+        AcademicLevelLabel.setStyle("-fx-font-weight: bold; -fx-font-size: 15px;");
+        Label AcademicLevel = new Label(prog.getAcademicLevel() != null ? prog.getAcademicLevel() : "");
+        AcademicLevel.setStyle("-fx-font-size: 15px; -fx-padding: 0 0 10 0;");
+        AcademicLevel.setMaxWidth(550);
+        AcademicLevel.setMinWidth(0);
+        AcademicLevel.setPrefWidth(550);
 
-        Label perfilOcupLabel = new Label("Perfil ocupacional:");
-        perfilOcupLabel.setStyle("-fx-font-weight: bold; -fx-font-size: 15px;");
-        Label perfilOcup = new Label(prog.getOccupationalProfile() != null ? prog.getOccupationalProfile() : "");
-        perfilOcup.setWrapText(true);
-        perfilOcup.setStyle("-fx-font-size: 15px; -fx-padding: 0 0 10 0;");
-        perfilOcup.setMaxWidth(550);
-        perfilOcup.setMinWidth(0);
-        perfilOcup.setPrefWidth(550);
-
-        Label perfilIngresoLabel = new Label("Perfil de ingreso:");
-        perfilIngresoLabel.setStyle("-fx-font-weight: bold; -fx-font-size: 15px;");
-        Label perfilIngreso = new Label(prog.getAdmissionProfile() != null ? prog.getAdmissionProfile() : "");
-        perfilIngreso.setWrapText(true);
-        perfilIngreso.setStyle("-fx-font-size: 15px; -fx-padding: 0 0 10 0;");
-        perfilIngreso.setMaxWidth(550);
-        perfilIngreso.setMinWidth(0);
-        perfilIngreso.setPrefWidth(550);
-
-        Label competenciasLabel = new Label("Competencias:");
-        competenciasLabel.setStyle("-fx-font-weight: bold; -fx-font-size: 15px;");
-        Label competencias = new Label(prog.getCompetencies() != null ? prog.getCompetencies() : "");
-        competencias.setWrapText(true);
-        competencias.setStyle("-fx-font-size: 15px; -fx-padding: 0 0 10 0;");
-        competencias.setMaxWidth(550);
-        competencias.setMinWidth(0);
-        competencias.setPrefWidth(550);
+        Label ModalityLabel = new Label("Modalidad:");
+        ModalityLabel.setStyle("-fx-font-weight: bold; -fx-font-size: 15px;");
+        Label Modality = new Label(prog.getModality() != null ? prog.getModality() : "");
+        Modality.setStyle("-fx-font-size: 15px; -fx-padding: 0 0 10 0;");
+        Modality.setMaxWidth(550);
+        Modality.setMinWidth(0);
+        Modality.setPrefWidth(550);
 
         Label duracionLabel = new Label("Duración (semestres):");
         duracionLabel.setStyle("-fx-font-weight: bold; -fx-font-size: 15px;");
@@ -360,14 +345,15 @@ public class MainScreenController implements Initializable {
         duracion.setMinWidth(0);
         duracion.setPrefWidth(550);
 
-        Label resultadosLabel = new Label("Resultados Aprendizaje FileID:");
-        resultadosLabel.setStyle("-fx-font-weight: bold; -fx-font-size: 15px;");
-        Label resultados = new Label(prog.getLearningOutcomesFileId() != null ? prog.getLearningOutcomesFileId().toString() : "");
-        resultados.setStyle("-fx-font-size: 15px; -fx-padding: 0 0 10 0;");
-        resultados.setMaxWidth(550);
-        resultados.setMinWidth(0);
-        resultados.setPrefWidth(550);
-        resultados.setWrapText(true);
+        HBox archivosBox = new HBox(18);
+        archivosBox.setAlignment(Pos.CENTER_LEFT);
+        Button btnVerResultados = new Button("Resultados de Aprendizaje");
+        btnVerResultados.getStyleClass().add("card-btn-white");
+        btnVerResultados.setOnAction(e -> abrirPdfEnNavegador(() -> programFileViewServiceFront.getResultadosUrl(prog.getId())));
+        Button btnVerCurriculums = new Button("Ver Curriculums");
+        btnVerCurriculums.getStyleClass().add("card-btn-white");
+        btnVerCurriculums.setOnAction(e -> abrirPdfEnNavegador(() -> programFileViewServiceFront.getCurriculumsUrl(prog.getId())));
+        archivosBox.getChildren().addAll(btnVerResultados, btnVerCurriculums);
 
         Button cerrar = new Button("Cerrar");
         cerrar.getStyleClass().add("cerrar-btn");
@@ -376,12 +362,10 @@ public class MainScreenController implements Initializable {
             title,
             nombreLabel, nombre,
             gradoLabel, grado,
-            perfilProfLabel, perfilProf,
-            perfilOcupLabel, perfilOcup,
-            perfilIngresoLabel, perfilIngreso,
-            competenciasLabel, competencias,
             duracionLabel, duracion,
-            resultadosLabel, resultados,
+                ModalityLabel, Modality,
+                AcademicLevelLabel, AcademicLevel,
+            archivosBox, // <--- Asegúrate que archivosBox se agrega aquí
             cerrar
         );
 
@@ -439,6 +423,59 @@ public class MainScreenController implements Initializable {
 
         final StackPane overlayFinal = overlay;
         cerrar.setOnAction(ev -> anchorPane.getChildren().remove(overlayFinal));
+    }
+
+    private void abrirPdfEnNavegador(java.util.function.Supplier<String> urlSupplier) {
+        new Thread(() -> {
+            try {
+                String originalPdfUrl = urlSupplier.get();
+                if (originalPdfUrl != null && !originalPdfUrl.isBlank()) {
+                    System.out.println("URL original del PDF: " + originalPdfUrl);
+
+                    // Codificar la URL del PDF para usarla como parámetro
+                    String encodedPdfUrl = URLEncoder.encode(originalPdfUrl, StandardCharsets.UTF_8.toString());
+                    String googleDocsViewerUrl = "https://docs.google.com/gview?url=" + encodedPdfUrl + "&embedded=true";
+
+                    System.out.println("Intentando cargar PDF con Google Docs Viewer: " + googleDocsViewerUrl);
+
+                    javafx.application.Platform.runLater(() -> {
+                        Stage pdfStage = new Stage();
+                        WebView webView = new WebView();
+
+                        webView.getEngine().getLoadWorker().exceptionProperty().addListener((obs, oldEx, newEx) -> {
+                            if (newEx != null) {
+                                System.err.println("Error al cargar URL en WebView (Google Docs Viewer): " + newEx.getMessage());
+                                newEx.printStackTrace();
+                                // Intentar abrir en navegador externo como fallback si Google Viewer falla
+                                try {
+                                    System.out.println("Fallback: Intentando abrir URL original en navegador externo: " + originalPdfUrl);
+                                    java.awt.Desktop.getDesktop().browse(new java.net.URI(originalPdfUrl));
+                                    mostrarAlerta("Visor no disponible", "Se abrirá el PDF en tu navegador web.", Alert.AlertType.INFORMATION);
+                                } catch (Exception fallbackEx) {
+                                    System.err.println("Error en fallback al navegador externo: " + fallbackEx.getMessage());
+                                    mostrarAlerta("Error", "No se pudo cargar el PDF en el visor ni en el navegador: " + newEx.getMessage(), Alert.AlertType.ERROR);
+                                }
+                                pdfStage.close(); // Cerrar la ventana del WebView si falla
+                            }
+                        });
+
+                        webView.getEngine().load(googleDocsViewerUrl);
+                        VBox root = new VBox(webView);
+                        VBox.setVgrow(webView, javafx.scene.layout.Priority.ALWAYS); // Hacer que el WebView ocupe todo el espacio
+                        Scene scene = new Scene(root, 800, 700);
+                        pdfStage.setTitle("Visor de Documento");
+                        pdfStage.setScene(scene);
+                        pdfStage.show();
+                    });
+                } else {
+                    javafx.application.Platform.runLater(() -> mostrarAlerta("Información", "No hay archivo para mostrar.", Alert.AlertType.INFORMATION));
+                }
+            } catch (Exception ex) {
+                System.err.println("Error general al intentar abrir PDF: " + ex.getMessage());
+                ex.printStackTrace();
+                javafx.application.Platform.runLater(() -> mostrarAlerta("Error", "No se pudo abrir el PDF: " + ex.getMessage(), Alert.AlertType.ERROR));
+            }
+        }).start();
     }
 
     private void abrirCursosPrograma(Long programaId, String nombrePrograma) {
@@ -1199,3 +1236,5 @@ public class MainScreenController implements Initializable {
         }
     }
 }
+
+
