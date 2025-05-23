@@ -355,6 +355,22 @@ public class MainScreenController implements Initializable {
         btnVerCurriculums.setOnAction(e -> abrirPdfEnNavegador(() -> programFileViewServiceFront.getCurriculumsUrl(prog.getId())));
         archivosBox.getChildren().addAll(btnVerResultados, btnVerCurriculums);
 
+        Button btnDescargarArchivos = new Button("Descargar Archivos (Resultados y Curriculums)");
+        btnDescargarArchivos.getStyleClass().add("card-btn-red"); // Estilo similar a GESTIONAR
+        btnDescargarArchivos.setMaxWidth(Double.MAX_VALUE);
+        btnDescargarArchivos.setOnAction(e -> {
+            descargarArchivoDesdeUrl(() -> programFileViewServiceFront.getResultadosUrl(prog.getId()), "resultados_aprendizaje.pdf");
+            descargarArchivoDesdeUrl(() -> programFileViewServiceFront.getCurriculumsUrl(prog.getId()), "curriculums_docentes.pdf");
+        });
+
+        if (SessionManager.getInstance().hasRole("DIRECTOR_DE_PROGRAMA")) {
+            btnDescargarArchivos.setVisible(true);
+            btnDescargarArchivos.setManaged(true);
+        } else {
+            btnDescargarArchivos.setVisible(false);
+            btnDescargarArchivos.setManaged(false);
+        }
+
         Button cerrar = new Button("Cerrar");
         cerrar.getStyleClass().add("cerrar-btn");
 
@@ -366,6 +382,7 @@ public class MainScreenController implements Initializable {
                 ModalityLabel, Modality,
                 AcademicLevelLabel, AcademicLevel,
             archivosBox, // <--- Asegúrate que archivosBox se agrega aquí
+            btnDescargarArchivos, // Botón añadido aquí
             cerrar
         );
 
@@ -474,6 +491,25 @@ public class MainScreenController implements Initializable {
                 System.err.println("Error general al intentar abrir PDF: " + ex.getMessage());
                 ex.printStackTrace();
                 javafx.application.Platform.runLater(() -> mostrarAlerta("Error", "No se pudo abrir el PDF: " + ex.getMessage(), Alert.AlertType.ERROR));
+            }
+        }).start();
+    }
+
+    private void descargarArchivoDesdeUrl(java.util.function.Supplier<String> urlSupplier, String defaultFileName) {
+        new Thread(() -> {
+            try {
+                String url = urlSupplier.get();
+                if (url != null && !url.isBlank()) {
+                    System.out.println("Intentando descargar archivo desde URL: " + url);
+                    // Simular descarga abriendo en navegador. El navegador gestionará la descarga si los headers son correctos.
+                    java.awt.Desktop.getDesktop().browse(new java.net.URI(url));
+                } else {
+                    javafx.application.Platform.runLater(() -> mostrarAlerta("Información", "No hay URL para descargar el archivo: " + defaultFileName, Alert.AlertType.INFORMATION));
+                }
+            } catch (Exception ex) {
+                System.err.println("Error al intentar descargar archivo (" + defaultFileName + "): " + ex.getMessage());
+                ex.printStackTrace();
+                javafx.application.Platform.runLater(() -> mostrarAlerta("Error de Descarga", "No se pudo iniciar la descarga para " + defaultFileName + ": " + ex.getMessage(), Alert.AlertType.ERROR));
             }
         }).start();
     }
@@ -1236,5 +1272,4 @@ public class MainScreenController implements Initializable {
         }
     }
 }
-
 
