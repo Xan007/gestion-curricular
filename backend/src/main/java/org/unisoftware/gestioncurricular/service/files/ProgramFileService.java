@@ -52,8 +52,8 @@
                     .orElseThrow(() -> new IllegalArgumentException("Program not found"));
 
             String formattedDate = formatDateForFileName(date);
-            String path = String.format("programs/%d/curriculums/curriculum_%s.pdf", program.getId(), formattedDate);
-            return supabaseProperties.getUrl() + "/" + path;
+            String path = String.format("curriculum_%s.pdf", formattedDate);
+            return urlBuilder.buildProgramCurriculumUrl(programId, path);
         }
 
         private String formatDateForFileName(LocalDate date) {
@@ -80,13 +80,19 @@
                     .orElse(null);
         }
 
+        private String buildResultadosUrl(ProgramaResultadosFile file) {
+            return storageObjectRepository.findById(file.getFileId())
+                    .map(obj -> urlBuilder.buildUrl(BucketsConfig.PUBLIC_BUCKET, obj.getName()))
+                    .orElse(null);
+        }
+
         public String generateResultadosUploadUrl(Long programId, LocalDate date) {
             Program program = programRepository.findById(programId)
                     .orElseThrow(() -> new IllegalArgumentException("Program not found"));
 
             String formattedDate = formatDateForFileName(date);
-            String path = String.format("programs/%d/resultados/resultados_%s.pdf", program.getId(), formattedDate);
-            return supabaseProperties.getUrl() + "/" + path;
+            String path = String.format("resultados_%s.pdf", formattedDate);
+            return urlBuilder.buildProgramResultadosUrl(programId, path);
         }
 
         public Optional<String> getMainResultadoUrl(Long programId) {
@@ -173,7 +179,7 @@
 
             return files.stream()
                     .map(file -> storageObjectRepository.findById(file.getFileId())
-                            .map(obj -> new ProgramFileDTO(file.getId(), urlBuilder.buildUrl(BucketsConfig.PUBLIC_BUCKET, obj.getName()), file.getUploadedAt(), file.getDate()))
+                            .map(obj -> new ProgramFileDTO(file.getId(), buildResultadosUrl(file), file.getUploadedAt(), file.getDate()))
                             .orElse(null))
                     .filter(Objects::nonNull)
                     .collect(Collectors.toList());
