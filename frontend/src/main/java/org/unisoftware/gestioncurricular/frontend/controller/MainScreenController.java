@@ -213,7 +213,7 @@ public class MainScreenController implements Initializable {
                 mostrarProgramaCard();
             });
             Label lblPag = new Label("Página " + (paginaActual + 1) + " de " + totalPaginas);
-            lblPag.setStyle("-fx-text-fill: white; -fx-font-weight: bold; -fx-font-size: 15px;");
+            lblPag.setStyle("-fx-text-fill: black; -fx-font-weight: bold; -fx-font-size: 15px;");
             paginacion.getChildren().addAll(btnAnterior, lblPag, btnSiguiente);
             if (totalPaginas > 1) {
                 cardContainer.getChildren().add(paginacion);
