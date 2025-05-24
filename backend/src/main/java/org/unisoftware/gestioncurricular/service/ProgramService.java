@@ -168,4 +168,14 @@ public class ProgramService {
                 .map(programMapper::toDto)
                 .collect(Collectors.toList());
     }
+
+    @Transactional(readOnly = true)
+    public List<Integer> getStudyPlanYears(Long programId) {
+        // Verificar que el programa existe
+        programRepository.findById(programId)
+                .orElseThrow(() -> new IllegalArgumentException("Program not found: " + programId));
+
+        // Obtener todos los años únicos para este programa
+        return courseProgramRepository.findDistinctYearsByProgramIdOrderByYearDesc(programId);
+    }
 }

@@ -30,4 +30,6 @@ public interface CourseProgramRepository
 
     List<CourseProgram> findById_ProgramIdAndId_Year(Long programId, Integer year);
 
+    @Query("SELECT DISTINCT cp.id.year FROM CourseProgram cp WHERE cp.id.programId = :programId ORDER BY cp.id.year DESC")
+    List<Integer> findDistinctYearsByProgramIdOrderByYearDesc(@Param("programId") Long programId);
 }

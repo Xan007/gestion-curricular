@@ -154,6 +154,39 @@ public class ProgramController {
         return ResponseEntity.ok(plan);
     }
 
+    @GetMapping("/{programId}/plan-estudio/years")
+    @Operation(
+            summary = "Obtener años disponibles de planes de estudio",
+            description = "Obtiene todos los años para los cuales existen planes de estudio registrados para un programa específico.",
+            responses = {
+                    @io.swagger.v3.oas.annotations.responses.ApiResponse(
+                            responseCode = "200",
+                            description = "Lista de años disponibles obtenida exitosamente.",
+                            content = @io.swagger.v3.oas.annotations.media.Content(
+                                    mediaType = "application/json",
+                                    schema = @io.swagger.v3.oas.annotations.media.Schema(
+                                            type = "array",
+                                            example = "[2023, 2024, 2025]"
+                                    )
+                            )
+                    ),
+                    @io.swagger.v3.oas.annotations.responses.ApiResponse(
+                            responseCode = "404",
+                            description = "Programa no encontrado."
+                    )
+            }
+    )
+    public ResponseEntity<List<Integer>> getStudyPlanYears(
+            @Parameter(description = "ID del programa", required = true)
+            @PathVariable Long programId) {
+        try {
+            List<Integer> years = programService.getStudyPlanYears(programId);
+            return ResponseEntity.ok(years);
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.notFound().build();
+        }
+    }
+
     @GetMapping("/buscar")
     @Operation(summary = "Buscar programa por nombre", description = "Busca un programa por su nombre.")
     public ResponseEntity<ProgramDTO> findProgramByName(
