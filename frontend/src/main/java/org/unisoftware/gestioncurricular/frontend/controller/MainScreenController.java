@@ -354,6 +354,17 @@ public class MainScreenController implements Initializable {
         btnVerCurriculums.setOnAction(e -> abrirPdfEnNavegador(() -> programFileViewServiceFront.getCurriculumsUrl(prog.getId())));
         archivosBox.getChildren().addAll(btnVerResultados, btnVerCurriculums);
 
+        // Botones históricos individuales (ya no están en HBox)
+        Button btnVerResultadosHistoricos = new Button("Resultados de Aprendizaje Históricos");
+        btnVerResultadosHistoricos.getStyleClass().add("card-btn-white");
+        btnVerResultadosHistoricos.setMaxWidth(Double.MAX_VALUE); // Para que ocupe todo el ancho disponible
+        btnVerResultadosHistoricos.setOnAction(e -> mostrarArchivosHistoricos("Resultados de Aprendizaje Históricos", () -> programFileViewServiceFront.getHistoricalResultadosUrls(prog.getId())));
+
+        Button btnVerCurriculumsHistoricos = new Button("Currículums Históricos");
+        btnVerCurriculumsHistoricos.getStyleClass().add("card-btn-white");
+        btnVerCurriculumsHistoricos.setMaxWidth(Double.MAX_VALUE); // Para que ocupe todo el ancho disponible
+        btnVerCurriculumsHistoricos.setOnAction(e -> mostrarArchivosHistoricos("Currículums Históricos", () -> programFileViewServiceFront.getHistoricalCurriculumsUrls(prog.getId())));
+
         Button btnDescargarArchivos = new Button("Descargar Archivos (Resultados y Curriculums)");
         btnDescargarArchivos.getStyleClass().add("card-btn-red"); // Estilo similar a GESTIONAR
         btnDescargarArchivos.setMaxWidth(Double.MAX_VALUE);
@@ -381,6 +392,7 @@ public class MainScreenController implements Initializable {
                 ModalityLabel, Modality,
                 AcademicLevelLabel, AcademicLevel,
             archivosBox, // <--- Asegúrate que archivosBox se agrega aquí
+                btnVerResultadosHistoricos,btnVerCurriculumsHistoricos, // <--- Nuevo HBox para históricos
             btnDescargarArchivos, // Botón añadido aquí
             cerrar
         );
@@ -1469,110 +1481,128 @@ public class MainScreenController implements Initializable {
 
     // --- NUEVOS MÉTODOS DE SUBIDA DE ARCHIVOS ---
     private void handleSubirCurriculums(Long programId) {
-        FileChooser fileChooser = new FileChooser();
-        fileChooser.setTitle("Selecciona el archivo de curriculums de docentes");
-        fileChooser.getExtensionFilters().addAll(
-                new FileChooser.ExtensionFilter("Archivos permitidos", "*.pdf", "*.doc", "*.docx", "*.xlsx", "*.xls", "*.csv")
-        );
-        Stage stage = (Stage) cardContainer.getScene().getWindow();
-        File selectedFile = fileChooser.showOpenDialog(stage);
-        if (selectedFile != null) {
-            VBox modalContent = new VBox(18);
-            modalContent.setStyle("-fx-background-color: #fff; -fx-padding: 32; -fx-background-radius: 14; -fx-effect: dropshadow(three-pass-box, #d32f2f, 12, 0.18, 0, 4); -fx-border-color: #d32f2f; -fx-border-width: 3;");
-            modalContent.setPrefWidth(400);
-            modalContent.setMinWidth(320);
-            modalContent.setAlignment(Pos.CENTER);
-            Label esperando = new Label("Subiendo archivo, por favor espere...");
-            esperando.setStyle("-fx-font-size: 17px; -fx-font-weight: bold; -fx-text-fill: #d32f2f;");
-            modalContent.getChildren().add(esperando);
-            VBox modalWrapper = new VBox();
-            modalWrapper.setAlignment(Pos.CENTER);
-            modalWrapper.setFillWidth(true);
-            modalWrapper.setPrefWidth(400);
-            modalWrapper.setMinWidth(320);
-            modalWrapper.getChildren().add(modalContent);
-            AnchorPane anchorPane = (AnchorPane) cardContainer.getScene().getRoot();
-            StackPane overlay = new StackPane();
-            overlay.setStyle("-fx-background-color: rgba(30,32,48,0.18);");
-            overlay.setPickOnBounds(true);
-            overlay.setPrefSize(anchorPane.getWidth(), anchorPane.getHeight());
-            overlay.setMinSize(Region.USE_PREF_SIZE, Region.USE_PREF_SIZE);
-            overlay.setMaxSize(Region.USE_PREF_SIZE, Region.USE_PREF_SIZE);
-            overlay.setAlignment(Pos.CENTER);
-            overlay.getChildren().add(modalWrapper);
-            anchorPane.getChildren().add(overlay);
-            AnchorPane.setTopAnchor(overlay, 0.0);
-            AnchorPane.setBottomAnchor(overlay, 0.0);
-            AnchorPane.setLeftAnchor(overlay, 0.0);
-            AnchorPane.setRightAnchor(overlay, 0.0);
-            new Thread(() -> {
-                try {
-                    programFileServiceFront.uploadCurriculum(programId, selectedFile, null);
-                    javafx.application.Platform.runLater(() -> {
-                        anchorPane.getChildren().remove(overlay);
-                        mostrarAlerta("Éxito", "Archivo de curriculums subido correctamente.", Alert.AlertType.INFORMATION);
-                    });
-                } catch (Exception ex) {
-                    javafx.application.Platform.runLater(() -> {
-                        anchorPane.getChildren().remove(overlay);
-                        mostrarAlerta("Error", "No se pudo subir el archivo: " + ex.getMessage(), Alert.AlertType.ERROR);
-                    });
-                }
-            }).start();
+        TextInputDialog dialog = new TextInputDialog("yyyy-MM-dd");
+        dialog.setTitle("Fecha del Documento");
+        dialog.setHeaderText("Ingrese la fecha para el archivo de currículums.");
+        dialog.setContentText("Fecha (yyyy-MM-dd o yyyy):");
+
+        java.util.Optional<String> result = dialog.showAndWait();
+        if (result.isPresent() && !result.get().isBlank()){
+            String dateStr = result.get();
+            FileChooser fileChooser = new FileChooser();
+            fileChooser.setTitle("Selecciona el archivo de currículums de docentes");
+            fileChooser.getExtensionFilters().addAll(
+                    new FileChooser.ExtensionFilter("Archivos permitidos", "*.pdf", "*.doc", "*.docx", "*.xlsx", "*.xls", "*.csv")
+            );
+            Stage stage = (Stage) cardContainer.getScene().getWindow();
+            File selectedFile = fileChooser.showOpenDialog(stage);
+            if (selectedFile != null) {
+                VBox modalContent = new VBox(18);
+                modalContent.setStyle("-fx-background-color: #fff; -fx-padding: 32; -fx-background-radius: 14; -fx-effect: dropshadow(three-pass-box, #d32f2f, 12, 0.18, 0, 4); -fx-border-color: #d32f2f; -fx-border-width: 3;");
+                modalContent.setPrefWidth(400);
+                modalContent.setMinWidth(320);
+                modalContent.setAlignment(Pos.CENTER);
+                Label esperando = new Label("Subiendo archivo, por favor espere...");
+                esperando.setStyle("-fx-font-size: 17px; -fx-font-weight: bold; -fx-text-fill: #d32f2f;");
+                modalContent.getChildren().add(esperando);
+                VBox modalWrapper = new VBox();
+                modalWrapper.setAlignment(Pos.CENTER);
+                modalWrapper.setFillWidth(true);
+                modalWrapper.setPrefWidth(400);
+                modalWrapper.setMinWidth(320);
+                modalWrapper.getChildren().add(modalContent);
+                AnchorPane anchorPane = (AnchorPane) cardContainer.getScene().getRoot();
+                StackPane overlay = new StackPane();
+                overlay.setStyle("-fx-background-color: rgba(30,32,48,0.18);");
+                overlay.setPickOnBounds(true);
+                overlay.setPrefSize(anchorPane.getWidth(), anchorPane.getHeight());
+                overlay.setMinSize(Region.USE_PREF_SIZE, Region.USE_PREF_SIZE);
+                overlay.setMaxSize(Region.USE_PREF_SIZE, Region.USE_PREF_SIZE);
+                overlay.setAlignment(Pos.CENTER);
+                overlay.getChildren().add(modalWrapper);
+                anchorPane.getChildren().add(overlay);
+                AnchorPane.setTopAnchor(overlay, 0.0);
+                AnchorPane.setBottomAnchor(overlay, 0.0);
+                AnchorPane.setLeftAnchor(overlay, 0.0);
+                AnchorPane.setRightAnchor(overlay, 0.0);
+                new Thread(() -> {
+                    try {
+                        programFileServiceFront.uploadCurriculum(programId, selectedFile, dateStr);
+                        javafx.application.Platform.runLater(() -> {
+                            anchorPane.getChildren().remove(overlay);
+                            mostrarAlerta("Éxito", "Archivo de curriculums subido correctamente.", Alert.AlertType.INFORMATION);
+                        });
+                    } catch (Exception ex) {
+                        javafx.application.Platform.runLater(() -> {
+                            anchorPane.getChildren().remove(overlay);
+                            mostrarAlerta("Error", "No se pudo subir el archivo: " + ex.getMessage(), Alert.AlertType.ERROR);
+                        });
+                    }
+                }).start();
+            }
         }
     }
 
     private void handleSubirResultados(Long programId) {
-        FileChooser fileChooser = new FileChooser();
-        fileChooser.setTitle("Selecciona el archivo de resultados de aprendizaje");
-        fileChooser.getExtensionFilters().addAll(
-                new FileChooser.ExtensionFilter("Archivos permitidos", "*.pdf", "*.doc", "*.docx", "*.xlsx", "*.xls", "*.csv")
-        );
-        Stage stage = (Stage) cardContainer.getScene().getWindow();
-        File selectedFile = fileChooser.showOpenDialog(stage);
-        if (selectedFile != null) {
-            VBox modalContent = new VBox(18);
-            modalContent.setStyle("-fx-background-color: #fff; -fx-padding: 32; -fx-background-radius: 14; -fx-effect: dropshadow(three-pass-box, #d32f2f, 12, 0.18, 0, 4); -fx-border-color: #d32f2f; -fx-border-width: 3;");
-            modalContent.setPrefWidth(400);
-            modalContent.setMinWidth(320);
-            modalContent.setAlignment(Pos.CENTER);
-            Label esperando = new Label("Subiendo archivo, por favor espere...");
-            esperando.setStyle("-fx-font-size: 17px; -fx-font-weight: bold; -fx-text-fill: #d32f2f;");
-            modalContent.getChildren().add(esperando);
-            VBox modalWrapper = new VBox();
-            modalWrapper.setAlignment(Pos.CENTER);
-            modalWrapper.setFillWidth(true);
-            modalWrapper.setPrefWidth(400);
-            modalWrapper.setMinWidth(320);
-            modalWrapper.getChildren().add(modalContent);
-            AnchorPane anchorPane = (AnchorPane) cardContainer.getScene().getRoot();
-            StackPane overlay = new StackPane();
-            overlay.setStyle("-fx-background-color: rgba(30,32,48,0.18);");
-            overlay.setPickOnBounds(true);
-            overlay.setPrefSize(anchorPane.getWidth(), anchorPane.getHeight());
-            overlay.setMinSize(Region.USE_PREF_SIZE, Region.USE_PREF_SIZE);
-            overlay.setMaxSize(Region.USE_PREF_SIZE, Region.USE_PREF_SIZE);
-            overlay.setAlignment(Pos.CENTER);
-            overlay.getChildren().add(modalWrapper);
-            anchorPane.getChildren().add(overlay);
-            AnchorPane.setTopAnchor(overlay, 0.0);
-            AnchorPane.setBottomAnchor(overlay, 0.0);
-            AnchorPane.setLeftAnchor(overlay, 0.0);
-            AnchorPane.setRightAnchor(overlay, 0.0);
-            new Thread(() -> {
-                try {
-                    programFileServiceFront.uploadResultados(programId, selectedFile, null);
-                    javafx.application.Platform.runLater(() -> {
-                        anchorPane.getChildren().remove(overlay);
-                        mostrarAlerta("Éxito", "Archivo de resultados subido correctamente.", Alert.AlertType.INFORMATION);
-                    });
-                } catch (Exception ex) {
-                    javafx.application.Platform.runLater(() -> {
-                        anchorPane.getChildren().remove(overlay);
-                        mostrarAlerta("Error", "No se pudo subir el archivo: " + ex.getMessage(), Alert.AlertType.ERROR);
-                    });
-                }
-            }).start();
+        TextInputDialog dialog = new TextInputDialog("yyyy-MM-dd");
+        dialog.setTitle("Fecha del Documento");
+        dialog.setHeaderText("Ingrese la fecha para el archivo de resultados de aprendizaje.");
+        dialog.setContentText("Fecha (yyyy-MM-dd o yyyy):");
+
+        java.util.Optional<String> result = dialog.showAndWait();
+        if (result.isPresent() && !result.get().isBlank()){
+            String dateStr = result.get();
+            FileChooser fileChooser = new FileChooser();
+            fileChooser.setTitle("Selecciona el archivo de resultados de aprendizaje");
+            fileChooser.getExtensionFilters().addAll(
+                    new FileChooser.ExtensionFilter("Archivos permitidos", "*.pdf", "*.doc", "*.docx", "*.xlsx", "*.xls", "*.csv")
+            );
+            Stage stage = (Stage) cardContainer.getScene().getWindow();
+            File selectedFile = fileChooser.showOpenDialog(stage);
+            if (selectedFile != null) {
+                VBox modalContent = new VBox(18);
+                modalContent.setStyle("-fx-background-color: #fff; -fx-padding: 32; -fx-background-radius: 14; -fx-effect: dropshadow(three-pass-box, #d32f2f, 12, 0.18, 0, 4); -fx-border-color: #d32f2f; -fx-border-width: 3;");
+                modalContent.setPrefWidth(400);
+                modalContent.setMinWidth(320);
+                modalContent.setAlignment(Pos.CENTER);
+                Label esperando = new Label("Subiendo archivo, por favor espere...");
+                esperando.setStyle("-fx-font-size: 17px; -fx-font-weight: bold; -fx-text-fill: #d32f2f;");
+                modalContent.getChildren().add(esperando);
+                VBox modalWrapper = new VBox();
+                modalWrapper.setAlignment(Pos.CENTER);
+                modalWrapper.setFillWidth(true);
+                modalWrapper.setPrefWidth(400);
+                modalWrapper.setMinWidth(320);
+                modalWrapper.getChildren().add(modalContent);
+                AnchorPane anchorPane = (AnchorPane) cardContainer.getScene().getRoot();
+                StackPane overlay = new StackPane();
+                overlay.setStyle("-fx-background-color: rgba(30,32,48,0.18);");
+                overlay.setPickOnBounds(true);
+                overlay.setPrefSize(anchorPane.getWidth(), anchorPane.getHeight());
+                overlay.setMinSize(Region.USE_PREF_SIZE, Region.USE_PREF_SIZE);
+                overlay.setMaxSize(Region.USE_PREF_SIZE, Region.USE_PREF_SIZE);
+                overlay.setAlignment(Pos.CENTER);
+                overlay.getChildren().add(modalWrapper);
+                anchorPane.getChildren().add(overlay);
+                AnchorPane.setTopAnchor(overlay, 0.0);
+                AnchorPane.setBottomAnchor(overlay, 0.0);
+                AnchorPane.setLeftAnchor(overlay, 0.0);
+                AnchorPane.setRightAnchor(overlay, 0.0);
+                new Thread(() -> {
+                    try {
+                        programFileServiceFront.uploadResultados(programId, selectedFile, dateStr);
+                        javafx.application.Platform.runLater(() -> {
+                            anchorPane.getChildren().remove(overlay);
+                            mostrarAlerta("Éxito", "Archivo de resultados subido correctamente.", Alert.AlertType.INFORMATION);
+                        });
+                    } catch (Exception ex) {
+                        javafx.application.Platform.runLater(() -> {
+                            anchorPane.getChildren().remove(overlay);
+                            mostrarAlerta("Error", "No se pudo subir el archivo: " + ex.getMessage(), Alert.AlertType.ERROR);
+                        });
+                    }
+                }).start();
+            }
         }
     }
 
@@ -1612,5 +1642,101 @@ public class MainScreenController implements Initializable {
 
         return formattedObservations.toString();
     }
+
+    private void mostrarArchivosHistoricos(String tituloVentana, java.util.function.Supplier<List<String>> urlsSupplier) {
+        new Thread(() -> {
+            try {
+                List<String> todasLasUrls = urlsSupplier.get();
+                if (todasLasUrls == null || todasLasUrls.isEmpty()) {
+                    javafx.application.Platform.runLater(() -> mostrarAlerta("Información", "No hay archivos históricos para mostrar.", Alert.AlertType.INFORMATION));
+                    return;
+                }
+
+                Map<Integer, List<String>> urlsPorAnio = new java.util.TreeMap<>(java.util.Collections.reverseOrder()); // TreeMap para ordenar años
+                for (String url : todasLasUrls) {
+                    String nombreArchivo = obtenerNombreArchivoDeUrl(url);
+                    Integer anio = extraerAnioDeNombreArchivo(nombreArchivo);
+                    if (anio != null) {
+                        urlsPorAnio.computeIfAbsent(anio, k -> new ArrayList<>()).add(url);
+                    }
+                }
+
+                List<Integer> aniosDisponibles = new ArrayList<>(urlsPorAnio.keySet());
+                if (aniosDisponibles.isEmpty()) {
+                    javafx.application.Platform.runLater(() -> mostrarAlerta("Información", "No se encontraron archivos históricos con un año identificable en el nombre.", Alert.AlertType.INFORMATION));
+                    return;
+                }
+
+                javafx.application.Platform.runLater(() -> {
+                    ChoiceDialog<Integer> dialogAnio = new ChoiceDialog<>(aniosDisponibles.get(0), aniosDisponibles);
+                    dialogAnio.setTitle("Seleccionar Año");
+                    dialogAnio.setHeaderText("Seleccione el año para ver los " + tituloVentana.toLowerCase() + ":");
+                    dialogAnio.setContentText("Año:");
+
+                    java.util.Optional<Integer> anioSeleccionadoOpt = dialogAnio.showAndWait();
+                    if (anioSeleccionadoOpt.isPresent()) {
+                        Integer anioSeleccionado = anioSeleccionadoOpt.get();
+                        List<String> urlsFiltradas = urlsPorAnio.get(anioSeleccionado);
+
+                        if (urlsFiltradas != null && !urlsFiltradas.isEmpty()) {
+                            Stage stage = new Stage();
+                            VBox root = new VBox(10);
+                            root.setPadding(new javafx.geometry.Insets(10));
+                            root.setAlignment(Pos.CENTER_LEFT);
+                            Label titleLabel = new Label(tituloVentana + " - Año " + anioSeleccionado);
+                            titleLabel.setStyle("-fx-font-size: 18px; -fx-font-weight: bold;");
+                            root.getChildren().add(titleLabel);
+
+                            for (String url : urlsFiltradas) {
+                                Button btnUrl = new Button(obtenerNombreArchivoDeUrl(url));
+                                btnUrl.setOnAction(e -> abrirPdfEnNavegador(() -> url));
+                                root.getChildren().add(btnUrl);
+                            }
+                            ScrollPane scrollPane = new ScrollPane(root);
+                            scrollPane.setFitToWidth(true);
+                            Scene scene = new Scene(scrollPane, 450, 350);
+                            stage.setTitle(tituloVentana + " - " + anioSeleccionado);
+                            stage.setScene(scene);
+                            stage.show();
+                        } else {
+                            mostrarAlerta("Información", "No hay archivos para el año " + anioSeleccionado + ".", Alert.AlertType.INFORMATION);
+                        }
+                    }
+                });
+
+            } catch (Exception ex) {
+                System.err.println("Error al mostrar archivos históricos: " + ex.getMessage());
+                ex.printStackTrace();
+                javafx.application.Platform.runLater(() -> mostrarAlerta("Error", "No se pudo mostrar los archivos históricos: " + ex.getMessage(), Alert.AlertType.ERROR));
+            }
+        }).start();
+    }
+
+    private String obtenerNombreArchivoDeUrl(String url) {
+        try {
+            String path = new java.net.URI(url).getPath();
+            return new File(path).getName();
+        } catch (Exception e) {
+            return url; // Devuelve la URL completa si no se puede parsear el nombre
+        }
+    }
+
+    private Integer extraerAnioDeNombreArchivo(String nombreArchivo) {
+        if (nombreArchivo == null) return null;
+        // Regex para encontrar un año de 4 dígitos (ej. 2023, 1998)
+        // Intenta encontrar años como XXXX o _XXXX o -XXXX o (XXXX)
+        java.util.regex.Pattern pattern = java.util.regex.Pattern.compile(".*([12][0-9]{3}).*");
+        java.util.regex.Matcher matcher = pattern.matcher(nombreArchivo);
+        if (matcher.find()) {
+            try {
+                return Integer.parseInt(matcher.group(1));
+            } catch (NumberFormatException e) {
+                // No es un número válido, aunque la regex coincidió
+                return null;
+            }
+        }
+        return null;
+    }
+
 }
 
