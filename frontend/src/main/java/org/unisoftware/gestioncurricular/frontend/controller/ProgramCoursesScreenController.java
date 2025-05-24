@@ -392,7 +392,7 @@ public class ProgramCoursesScreenController {
 
     private void handleSubirArchivoApoyo(Long courseId) {
         // 1. Pedir tipo de apoyo
-        List<String> tiposApoyo = Arrays.asList("SYLLABUS", "GUIA_CATEDRA", "MATERIAL_COMPLEMENTARIO", "EVALUACION", "OTRO");
+        List<String> tiposApoyo = Arrays.asList("GUIA_DE_LABORATORIO", "GUIA_TEORICA", "OTRO");
         ChoiceDialog<String> dialogTipo = new ChoiceDialog<>(tiposApoyo.get(0), tiposApoyo);
         dialogTipo.setTitle("Tipo de Archivo de Apoyo");
         dialogTipo.setHeaderText("Seleccione el tipo de archivo de apoyo que desea subir.");
