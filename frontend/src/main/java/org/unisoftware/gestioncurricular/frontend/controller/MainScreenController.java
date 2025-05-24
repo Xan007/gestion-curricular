@@ -959,7 +959,16 @@ public class MainScreenController implements Initializable {
                     card.getChildren().addAll(nameLbl, codeLbl, btnProponer);
                     cardsHBox.getChildren().add(card);
                 }
-                modalContent.getChildren().add(cardsHBox);
+                // ScrollPane horizontal para los cursos
+                ScrollPane scrollPane = new ScrollPane(cardsHBox);
+                scrollPane.setFitToHeight(true);
+                scrollPane.setFitToWidth(false);
+                scrollPane.setHbarPolicy(ScrollPane.ScrollBarPolicy.AS_NEEDED);
+                scrollPane.setVbarPolicy(ScrollPane.ScrollBarPolicy.NEVER);
+                scrollPane.setPrefViewportHeight(260);
+                scrollPane.setPrefViewportWidth(700);
+                scrollPane.setStyle("-fx-background-color: transparent;");
+                modalContent.getChildren().add(scrollPane);
             }
             Button cerrar = new Button("Cerrar");
             cerrar.getStyleClass().add("cerrar-btn");
