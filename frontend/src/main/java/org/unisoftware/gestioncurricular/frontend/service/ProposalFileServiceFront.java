@@ -69,5 +69,26 @@ public class ProposalFileServiceFront {
             throw new IOException("Error al subir archivo a URL prefirmada ('" + presignedUrl + "'): " + responseCode + " " + conn.getResponseMessage() + ". Cuerpo: " + errorBody);
         }
     }
-}
 
+    public ProposalFileDTO getDisplayUrlDTO(Long courseId, Long proposalId, String token) throws IOException {
+        URL url = new URL(BASE_URL + "/proposals/" + courseId + "/files/" + proposalId);
+        HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+        conn.setRequestMethod("GET");
+        if (token != null && !token.isEmpty()) {
+            conn.setRequestProperty("Authorization", "Bearer " + token);
+        }
+        conn.setRequestProperty("Accept", "application/json");
+
+        int responseCode = conn.getResponseCode();
+        if (responseCode == HttpURLConnection.HTTP_OK) {
+            String responseBody = new String(conn.getInputStream().readAllBytes(), StandardCharsets.UTF_8);
+            return objectMapper.readValue(responseBody, ProposalFileDTO.class);
+        } else {
+            String errorBody = "";
+            if (conn.getErrorStream() != null) {
+                errorBody = new String(conn.getErrorStream().readAllBytes(), StandardCharsets.UTF_8);
+            }
+            throw new IOException("Error al obtener URL de visualización del archivo: " + responseCode + " " + conn.getResponseMessage() + ". Cuerpo: " + errorBody);
+        }
+    }
+}

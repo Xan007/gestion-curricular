@@ -691,29 +691,56 @@ public class MainScreenController implements Initializable {
                 String titulo = (String) propuesta.get("title");
                 String estado = (String) propuesta.get("status");
                 String observaciones = (String) propuesta.get("observations");
-                Map file = (Map) propuesta.get("file");
-                Long id = ((Number) propuesta.get("id")).longValue();
+                Map<String, Object> fileInfoMap = (Map<String, Object>) propuesta.get("file"); // Contiene información preliminar del archivo
+                Long proposalId = ((Number) propuesta.get("id")).longValue();
                 Long courseId = ((Number) propuesta.get("courseId")).longValue();
+
                 Label lblTitulo = new Label("Título: " + titulo);
                 lblTitulo.setStyle("-fx-font-size: 16px; -fx-font-weight: bold; -fx-text-fill: #d32f2f;");
                 Label lblEstado = new Label("Estado: " + estado);
                 Label lblObs = new Label("Observaciones: " + (observaciones != null ? observaciones : "Sin observaciones"));
+
                 Button btnVerArchivo = new Button("Ver Archivo");
-                btnVerArchivo.setOnAction(e -> abrirPdfEnNavegador(() -> (file != null ? (String) file.get("url") : null)));
+
+                if (fileInfoMap != null) { // Asumimos que si fileInfoMap no es null, hay un archivo potencial
+                    btnVerArchivo.setDisable(false);
+                    btnVerArchivo.setOnAction(e -> {
+                        new Thread(() -> { // Ejecutar en un hilo separado para no bloquear la UI
+                            try {
+                                // Se utiliza el 'token' del ámbito de mostrarPropuestasMicro
+                                ProposalFileDTO fileDto = proposalFileServiceFront.getDisplayUrlDTO(courseId, proposalId, token);
+
+                                if (fileDto != null && fileDto.getUrl() != null && !fileDto.getUrl().isBlank()) {
+                                    final String finalUrl = fileDto.getUrl();
+                                    javafx.application.Platform.runLater(() -> abrirPdfEnNavegador(() -> finalUrl));
+                                } else {
+                                    javafx.application.Platform.runLater(() -> mostrarAlerta("Información", "No se encontró URL para el archivo de la propuesta.", Alert.AlertType.INFORMATION));
+                                }
+                            } catch (Exception ex) {
+                                System.err.println("Error al obtener URL del archivo de propuesta: " + ex.getMessage());
+                                ex.printStackTrace(); // Para depuración
+                                javafx.application.Platform.runLater(() -> mostrarAlerta("Error", "No se pudo obtener la URL del archivo: " + ex.getMessage(), Alert.AlertType.ERROR));
+                            }
+                        }).start();
+                    });
+                } else {
+                    btnVerArchivo.setDisable(true);
+                    btnVerArchivo.setTooltip(new Tooltip("No hay archivo adjunto para esta propuesta o falta información."));
+                }
                 card.getChildren().addAll(lblTitulo, lblEstado, lblObs, btnVerArchivo);
 
                 // Lógica de acciones según estado y rol
                 if ("DIRECTOR_DE_PROGRAMA".equals(role) && "EN_REVISION_DIRECTOR".equals(estado)) {
                     Button btnAprobar = new Button("Aprobar");
                     Button btnRechazar = new Button("Solicitar Ajustes");
-                    btnAprobar.setOnAction(e -> revisarPropuesta(id, true));
-                    btnRechazar.setOnAction(e -> revisarPropuesta(id, false));
+                    btnAprobar.setOnAction(e -> revisarPropuesta(proposalId, true));
+                    btnRechazar.setOnAction(e -> revisarPropuesta(proposalId, false));
                     card.getChildren().addAll(btnAprobar, btnRechazar);
                 } else if ("COMITE_DE_PROGRAMA".equals(role) && "EN_REVISION_COMITE".equals(estado)) {
                     Button btnAprobar = new Button("Aprobar");
                     Button btnRechazar = new Button("Rechazar");
-                    btnAprobar.setOnAction(e -> revisarPropuesta(id, true));
-                    btnRechazar.setOnAction(e -> revisarPropuesta(id, false));
+                    btnAprobar.setOnAction(e -> revisarPropuesta(proposalId, true));
+                    btnRechazar.setOnAction(e -> revisarPropuesta(proposalId, false));
                     card.getChildren().addAll(btnAprobar, btnRechazar);
                 } else if (("DIRECTOR_DE_PROGRAMA".equals(role) || "DIRECTOR_DE_ESCUELA".equals(role)) && "ESPERANDO_FIRMAS".equals(estado)) {
                     boolean yaFirmoDirectorPrograma = Boolean.TRUE.equals(propuesta.get("signedByDirectorPrograma"));
@@ -729,8 +756,8 @@ public class MainScreenController implements Initializable {
                     if (mostrarBotonesFirma) {
                         Button btnFirmar = new Button("Firmar Propuesta");
                         Button btnRechazarFirma = new Button("Rechazar Firma");
-                        btnFirmar.setOnAction(e -> firmarPropuesta(id, true));
-                        btnRechazarFirma.setOnAction(e -> firmarPropuesta(id, false));
+                        btnFirmar.setOnAction(e -> firmarPropuesta(proposalId, true));
+                        btnRechazarFirma.setOnAction(e -> firmarPropuesta(proposalId, false));
                         card.getChildren().addAll(btnFirmar, btnRechazarFirma);
                     } else {
                         if (("DIRECTOR_DE_PROGRAMA".equals(role) && yaFirmoDirectorPrograma) ||
@@ -748,7 +775,7 @@ public class MainScreenController implements Initializable {
                 // Esta condición se mantiene, ya que es el resultado final deseado.
                 if (Boolean.TRUE.equals(firmadoDirProg) && Boolean.TRUE.equals(firmadoDirEsc) && "ACEPTADA".equals(estado)) {
                     Button btnSubirMicro = new Button("Subir como Microcurrículo");
-                    btnSubirMicro.setOnAction(e -> subirMicrocurriculoDesdePropuesta(courseId, file != null ? (String) file.get("url") : null));
+                    btnSubirMicro.setOnAction(e -> subirMicrocurriculoDesdePropuesta(courseId, fileInfoMap != null ? (String) fileInfoMap.get("url") : null));
                     card.getChildren().add(btnSubirMicro);
                 }
                 listaPropuestas.getChildren().add(card);
@@ -1552,5 +1579,4 @@ public class MainScreenController implements Initializable {
         }
     }
 }
-
 
