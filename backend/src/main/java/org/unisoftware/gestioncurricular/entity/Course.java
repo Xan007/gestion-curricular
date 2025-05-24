@@ -24,7 +24,7 @@ public class Course {
     private Long id;
 
     @Column(name = "created_at")
-    private LocalDateTime createdAt;
+    private LocalDateTime createdAt = LocalDateTime.now();
 
     @Column(name = "name")
     private String name;

@@ -15,6 +15,8 @@ import org.unisoftware.gestioncurricular.util.studyPlanParser.PlanRow;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 
+import java.nio.file.Path;
+import java.time.Year;
 import java.util.List;
 
 @RestController
@@ -36,9 +38,11 @@ public class ProgramController {
     @PostMapping("/{programId}/upload-plan")
     @Operation(
             summary = "Subir plan de estudios",
-            description = "Permite subir un archivo con el plan de estudios de un programa académico. **Requiere un token de autorización y el rol 'DIRECTOR_DE_PROGRAMA'.**",
+            description = "Permite subir un archivo con el plan de estudios completo de un programa académico. " +
+                    "El archivo debe contener las columnas: SNIES, Curso, Tipo, Ciclo, Área, Créditos, Relación, Semestre, Requisito(s). " +
+                    "**Requiere un token de autorización y el rol 'DIRECTOR_DE_PROGRAMA'.**",
             requestBody = @io.swagger.v3.oas.annotations.parameters.RequestBody(
-                    description = "Archivo con el plan de estudios del programa",
+                    description = "Archivo con el plan de estudios del programa (CSV o Excel)",
                     required = true,
                     content = @io.swagger.v3.oas.annotations.media.Content(
                             mediaType = "multipart/form-data",
@@ -54,6 +58,10 @@ public class ProgramController {
                             description = "Plan de estudios cargado exitosamente."
                     ),
                     @io.swagger.v3.oas.annotations.responses.ApiResponse(
+                            responseCode = "400",
+                            description = "Error en los datos del archivo o formato incorrecto."
+                    ),
+                    @io.swagger.v3.oas.annotations.responses.ApiResponse(
                             responseCode = "403",
                             description = "Prohibido. El usuario no tiene los permisos necesarios para acceder a este recurso."
                     )
@@ -62,6 +70,8 @@ public class ProgramController {
     public ResponseEntity<String> uploadPlan(
             @Parameter(description = "ID del programa", required = true)
             @PathVariable Long programId,
+            @Parameter(description = "Año del plan de estudios (opcional, por defecto el año actual)")
+            @RequestParam(value = "year", required = false) Long year,
             @RequestParam("file") MultipartFile file
     ) {
         try {
@@ -70,21 +80,33 @@ public class ProgramController {
                         .body("No se ha enviado ningún archivo.");
             }
 
-            String filename = file.getOriginalFilename().toLowerCase();
+            String filename = file.getOriginalFilename();
+            if (filename == null) {
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                        .body("El archivo no tiene un nombre válido.");
+            }
+
             StudyPlanParser parser = studyPlanParsers.stream()
-                    .filter(p -> p.supports(filename))
+                    .filter(p -> p.supports(filename.toLowerCase()))
                     .findFirst()
-                    .orElseThrow(() -> new IllegalArgumentException("Unsupported file type: " + filename));
+                    .orElseThrow(() -> new IllegalArgumentException(
+                            "Tipo de archivo no soportado: " + filename +
+                                    ". Formatos soportados: CSV (.csv), Excel (.xlsx, .xls)"));
 
             List<PlanRow> planRows = parser.parse(file);
-            programService.processStudyPlan(programId, planRows);
 
-            return ResponseEntity.ok("Plan de estudios cargado exitosamente.");
+            if (planRows.isEmpty()) {
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                        .body("El archivo está vacío o no contiene datos válidos.");
+            }
 
+            int parsedYear = (year != null) ? year.intValue() : Year.now().getValue();
+            programService.processStudyPlan(programId, planRows, parsedYear);
+
+            return ResponseEntity.ok("Plan de estudios cargado exitosamente para el año " + parsedYear + ".");
         } catch (Exception e) {
-            System.out.println(e.getMessage());
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                    .body("Error al cargar el plan de estudios: " + e.getMessage());
+                    .body("Error al procesar el archivo: " + e.getMessage());
         }
     }
 
@@ -120,11 +142,15 @@ public class ProgramController {
     }
 
     @GetMapping("/{programId}/plan-estudio")
-    @Operation(summary = "Obtener plan de estudios", description = "Obtiene el plan de estudios de un programa por su ID.")
+    @Operation(summary = "Obtener plan de estudios", description = "Obtiene el plan de estudios de un programa por su ID y año. Si no se especifica el año, se devuelve el último plan registrado.")
     public ResponseEntity<List<StudyPlanEntry>> getStudyPlan(
             @Parameter(description = "ID del programa", required = true)
-            @PathVariable Long programId) {
-        List<StudyPlanEntry> plan = programService.getStudyPlan(programId);
+            @PathVariable Long programId,
+
+            @Parameter(description = "Año del plan de estudios (opcional). Si no se proporciona, se usará el más reciente.")
+            @RequestParam(required = false) Integer year
+    ) {
+        List<StudyPlanEntry> plan = programService.getStudyPlan(programId, year != null ? year.longValue() : null);
         return ResponseEntity.ok(plan);
     }
 

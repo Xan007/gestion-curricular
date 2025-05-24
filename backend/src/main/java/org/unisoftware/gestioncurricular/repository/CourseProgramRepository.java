@@ -2,6 +2,7 @@ package org.unisoftware.gestioncurricular.repository;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.unisoftware.gestioncurricular.entity.CourseProgram;
 import org.unisoftware.gestioncurricular.entity.CourseProgramId;
 
@@ -21,4 +22,12 @@ public interface CourseProgramRepository
     WHERE cp.id.programId = :programId
 """)
     List<CourseProgram> findByProgramIdWithCourse(Long programId);
+
+    void deleteById_ProgramIdAndId_Year(Long programId, Integer year);
+
+    @Query("SELECT MAX(cp.id.year) FROM CourseProgram cp WHERE cp.id.programId = :programId")
+    Integer findLatestYearByProgramId(@Param("programId") Long programId);
+
+    List<CourseProgram> findById_ProgramIdAndId_Year(Long programId, Integer year);
+
 }

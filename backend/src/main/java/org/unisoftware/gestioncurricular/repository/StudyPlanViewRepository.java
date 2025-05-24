@@ -11,6 +11,8 @@ public interface StudyPlanViewRepository
 
     List<StudyPlanEntry>
     findById_ProgramIdOrderBySemesterAscId_CourseIdAsc(Long programId);
+
+    List<StudyPlanEntry> findById_ProgramIdAndId_YearOrderBySemesterAscId_CourseIdAsc(Long programId, Integer year);
 }
 
 

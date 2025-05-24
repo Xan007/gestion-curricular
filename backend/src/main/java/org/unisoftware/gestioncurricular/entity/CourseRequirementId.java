@@ -20,7 +20,10 @@ public class CourseRequirementId implements Serializable {
     private Long programId;
 
     @Column(name = "requisito_curso_id")
-    private Long prerequisiteCourseId; // ¡Ahora sí va aquí!
+    private Long prerequisiteCourseId;
+
+    @Column(name = "year")
+    private Integer year;
 
     @Override
     public boolean equals(Object o) {
@@ -29,12 +32,13 @@ public class CourseRequirementId implements Serializable {
         CourseRequirementId that = (CourseRequirementId) o;
         return Objects.equals(courseId, that.courseId) &&
                 Objects.equals(programId, that.programId) &&
-                Objects.equals(prerequisiteCourseId, that.prerequisiteCourseId);
+                Objects.equals(prerequisiteCourseId, that.prerequisiteCourseId)
+                && Objects.equals(year, that.year);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(courseId, programId, prerequisiteCourseId);
+        return Objects.hash(courseId, programId, prerequisiteCourseId, year);
     }
 }
 

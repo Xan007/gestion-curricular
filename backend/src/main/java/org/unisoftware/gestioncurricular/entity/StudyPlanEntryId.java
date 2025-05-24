@@ -13,4 +13,6 @@ public class StudyPlanEntryId implements Serializable {
     private Long programId;
     @Column(name="course_id")
     private Long courseId;
+    @Column(name="year")
+    private Integer year;
 }

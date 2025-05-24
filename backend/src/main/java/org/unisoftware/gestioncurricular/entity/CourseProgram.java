@@ -11,18 +11,16 @@ import lombok.Setter;
 public class CourseProgram {
 
     @EmbeddedId
-    private CourseProgramId id = new CourseProgramId();
-
-    @Column(name = "semestre")
-    private Integer semester;
+    private CourseProgramId id;
 
     @ManyToOne
-    @MapsId("courseId")
-    @JoinColumn(name = "curso_id")
+    @JoinColumn(name = "curso_id", insertable = false, updatable = false)
     private Course course;
 
     @ManyToOne
-    @MapsId("programId")
-    @JoinColumn(name = "programa_id")
+    @JoinColumn(name = "programa_id", insertable = false, updatable = false)
     private Program program;
+
+    @Column(name = "semestre")
+    private Integer semester;
 }
