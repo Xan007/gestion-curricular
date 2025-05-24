@@ -325,6 +325,35 @@ public class ProgramCoursesScreenController {
         });
         botonesVisualizarArchivos.getChildren().addAll(btnVerApoyos, btnVerMicro);
 
+        // Botón único para descargar archivos (solo para DOCENTE)
+        HBox botonesDescargarArchivosDocente = new HBox(10);
+        botonesDescargarArchivosDocente.setAlignment(Pos.CENTER_LEFT);
+        if (SessionManager.getInstance().hasRole("DOCENTE")) {
+            Button btnDescargarArchivosUnico = new Button("Descargar Archivos");
+            btnDescargarArchivosUnico.getStyleClass().add("card-btn-red");
+            btnDescargarArchivosUnico.setOnAction(e -> {
+                if (entry.getId() != null && entry.getId().getCourseId() != null) {
+                    final Long courseId = entry.getId().getCourseId();
+
+                    // Descargar Archivos de Apoyo (el primero que encuentre)
+                    descargarArchivoDesdeUrl(() -> {
+                        Map<String, String> apoyos = courseFileServiceFront.getApoyosUrlsPorTipo(courseId);
+                        if (apoyos != null && !apoyos.isEmpty()) {
+                            // Devuelve la URL del primer archivo de apoyo encontrado
+                            return apoyos.values().iterator().next();
+                        }
+                        // Si no hay archivos de apoyo, descargarArchivoDesdeUrl mostrará una alerta
+                        return null;
+                    }, "archivos_apoyo_curso.pdf"); // Nombre por defecto si no hay URL
+
+                    // Descargar Microcurrículo
+                    descargarArchivoDesdeUrl(() -> courseFileServiceFront.getMicrocurriculoUrl(courseId), "microcurriculo_curso.pdf");
+                } else {
+                    mostrarAlerta("Error", "No se pudo obtener el ID del curso para la descarga.", Alert.AlertType.ERROR);
+                }
+            });
+            botonesDescargarArchivosDocente.getChildren().add(btnDescargarArchivosUnico);
+        }
 
         // Botones para subir archivos (solo para Director de Programa)
         HBox botonesArchivos = new HBox(10);
@@ -355,6 +384,9 @@ public class ProgramCoursesScreenController {
 
         modalContent.getChildren().addAll(title, codigo, nombre, area, ciclo, tipo, creditos, relacion, requisitos);
         modalContent.getChildren().add(botonesVisualizarArchivos); // Añadir botones de visualización
+        if (!botonesDescargarArchivosDocente.getChildren().isEmpty()) {
+            modalContent.getChildren().add(botonesDescargarArchivosDocente);
+        }
         if (!botonesArchivos.getChildren().isEmpty()) {
             modalContent.getChildren().add(botonesArchivos);
         }
@@ -710,6 +742,25 @@ public class ProgramCoursesScreenController {
         }).start();
     }
 
+    private void descargarArchivoDesdeUrl(java.util.function.Supplier<String> urlSupplier, String defaultFileName) {
+        new Thread(() -> {
+            try {
+                String url = urlSupplier.get();
+                if (url != null && !url.isBlank()) {
+                    System.out.println("Intentando descargar archivo desde URL: " + url);
+                    // Simular descarga abriendo en navegador. El navegador gestionará la descarga si los headers son correctos.
+                    java.awt.Desktop.getDesktop().browse(new java.net.URI(url));
+                } else {
+                    javafx.application.Platform.runLater(() -> mostrarAlerta("Información", "No hay URL para descargar el archivo: " + defaultFileName, Alert.AlertType.INFORMATION));
+                }
+            } catch (Exception ex) {
+                System.err.println("Error al intentar descargar archivo (" + defaultFileName + "): " + ex.getMessage());
+                ex.printStackTrace();
+                javafx.application.Platform.runLater(() -> mostrarAlerta("Error de Descarga", "No se pudo iniciar la descarga para " + defaultFileName + ": " + ex.getMessage(), Alert.AlertType.ERROR));
+            }
+        }).start();
+    }
+
     @FXML
     public void handleVolver(ActionEvent event) throws IOException {
         FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/MainScreen.fxml"));
@@ -721,3 +772,4 @@ public class ProgramCoursesScreenController {
         stage.show();
     }
 }
+
