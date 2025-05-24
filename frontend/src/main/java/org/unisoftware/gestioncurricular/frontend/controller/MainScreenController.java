@@ -633,6 +633,12 @@ public class MainScreenController implements Initializable {
     }
 
     private void mostrarPropuestasMicro(String tipo) {
+        AnchorPane anchorPane = (AnchorPane) cardContainer.getScene().getRoot();
+        // Eliminar overlay anterior si existe
+        StackPane oldOverlay = (StackPane) anchorPane.lookup("#propuestasOverlay");
+        if (oldOverlay != null) {
+            anchorPane.getChildren().remove(oldOverlay);
+        }
         VBox modalContent = new VBox(18);
         modalContent.setStyle("-fx-background-color: #fff; -fx-padding: 32; -fx-background-radius: 14; -fx-effect: dropshadow(three-pass-box, #d32f2f, 12, 0.18, 0, 4); -fx-border-color: #d32f2f; -fx-border-width: 3;");
         modalContent.setPrefWidth(800);
@@ -792,8 +798,8 @@ public class MainScreenController implements Initializable {
         modalWrapper.setPrefWidth(800);
         modalWrapper.setMinWidth(600);
         modalWrapper.getChildren().add(modalContent);
-        AnchorPane anchorPane = (AnchorPane) cardContainer.getScene().getRoot();
         StackPane overlay = new StackPane();
+        overlay.setId("propuestasOverlay"); // ID para identificar y eliminar overlays viejos
         overlay.setStyle("-fx-background-color: rgba(30,32,48,0.18);");
         overlay.setPickOnBounds(true);
         overlay.setPrefSize(anchorPane.getWidth(), anchorPane.getHeight());
@@ -1584,3 +1590,4 @@ public class MainScreenController implements Initializable {
         return formattedObservations.toString();
     }
 }
+
