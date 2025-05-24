@@ -389,8 +389,8 @@ public class ProgramCoursesScreenController {
                     String presignedUrl = uploadInfo.getUploadUrl();
                     String fileId = uploadInfo.getFileId();
 
-                    if (presignedUrl == null || fileId == null) {
-                        throw new IOException("No se pudo obtener la URL prefirmada o el fileId del backend.");
+                    if (presignedUrl == null) {
+                        throw new IOException("No se pudo obtener la URL prefirmada del backend.");
                     }
 
                     // 4. Subir archivo a la URL prefirmada
@@ -398,13 +398,19 @@ public class ProgramCoursesScreenController {
                     contentType = (contentType == null) ? "application/octet-stream" : contentType;
                     courseFileServiceFront.uploadFileToPresignedUrl(presignedUrl, selectedFile, contentType, token);
 
-                    // 5. Registrar el archivo de apoyo en el backend
-                    courseFileServiceFront.registerApoyoAcademico(courseId, fileId, tipoSeleccionado, token);
-
-                    javafx.application.Platform.runLater(() -> {
-                        removerOverlayCarga(overlay);
-                        mostrarAlerta("Éxito", "Archivo de apoyo \"" + selectedFile.getName() + "\" subido y registrado como " + tipoSeleccionado + " correctamente.", Alert.AlertType.INFORMATION);
-                    });
+                    // 5. Registrar el archivo de apoyo en el backend SOLO si hay fileId
+                    if (fileId != null && !fileId.isEmpty()) {
+                        courseFileServiceFront.registerApoyoAcademico(courseId, fileId, tipoSeleccionado, token);
+                        javafx.application.Platform.runLater(() -> {
+                            removerOverlayCarga(overlay);
+                            mostrarAlerta("Éxito", "Archivo de apoyo '" + selectedFile.getName() + "' subido y registrado como " + tipoSeleccionado + " correctamente.", Alert.AlertType.INFORMATION);
+                        });
+                    } else {
+                        javafx.application.Platform.runLater(() -> {
+                            removerOverlayCarga(overlay);
+                            mostrarAlerta("Advertencia", "El archivo fue subido pero no se pudo registrar en la plataforma porque el backend no retornó un identificador único (UUID). El archivo no será visible ni gestionable desde la plataforma.", Alert.AlertType.WARNING);
+                        });
+                    }
                 } catch (Exception ex) {
                     ex.printStackTrace();
                     javafx.application.Platform.runLater(() -> {

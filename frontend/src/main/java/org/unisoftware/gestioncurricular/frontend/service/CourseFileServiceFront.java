@@ -51,9 +51,8 @@ public class CourseFileServiceFront {
         if (responseCode == HttpURLConnection.HTTP_OK) {
             String presignedUrlString = new String(conn.getInputStream().readAllBytes(), StandardCharsets.UTF_8);
             System.out.println("[CourseFileServiceFront] URL prefirmada para apoyo recibida del backend: " + presignedUrlString); // Diagnóstico
-            String fileId = extractFileIdFromUrlPath(presignedUrlString);
-            System.out.println("[CourseFileServiceFront] fileId extraído para apoyo: " + fileId); // Diagnóstico
-            return new FileUploadInfoDTO(presignedUrlString, fileId);
+            // Ya no es necesario extraer ni usar fileId
+            return new FileUploadInfoDTO(presignedUrlString, null);
         } else {
             String errorBody = "";
             if (conn.getErrorStream() != null) {
