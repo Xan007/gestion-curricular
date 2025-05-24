@@ -43,7 +43,7 @@ public class CourseFileController {
                     @ApiResponse(responseCode = "403", description = "Acceso denegado")
             }
     )
-    @PreAuthorize("hasRole('DOCENTE')")
+    @PreAuthorize("hasRole('DIRECTOR_DE_PROGRAMA')")
     @GetMapping("/apoyos/upload-url")
     public ResponseEntity<String> generateApoyoUploadUrl(
             @PathVariable Long courseId,
@@ -66,7 +66,7 @@ public class CourseFileController {
                     @ApiResponse(responseCode = "403", description = "Acceso denegado")
             }
     )
-    @PreAuthorize("hasRole('DOCENTE')")
+    @PreAuthorize("hasRole('DIRECTOR_DE_PROGRAMA')")
     @PostMapping("/apoyos/{fileId}")
     public ResponseEntity<Void> registerApoyoAcademico(
             @PathVariable Long courseId,
