@@ -37,4 +37,18 @@ public class ProgramServiceFront {
             ObjectMapper mapper = new ObjectMapper();
             return mapper.readValue(in, new TypeReference<List<StudyPlanEntryDTO>>() {});
         }
-    }}
+    }
+
+    /**
+     * Obtiene los años disponibles del plan de estudios de un programa
+     */
+    public List<Integer> getAniosPlanEstudios(Long programaId) throws Exception {
+        URL url = new URL(BASE_URL + "/" + programaId + "/plan-estudio/years");
+        HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+        conn.setRequestMethod("GET");
+        try (InputStream in = conn.getInputStream()) {
+            ObjectMapper mapper = new ObjectMapper();
+            return mapper.readValue(in, new TypeReference<List<Integer>>() {});
+        }
+    }
+}

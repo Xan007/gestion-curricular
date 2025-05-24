@@ -515,18 +515,32 @@ public class MainScreenController implements Initializable {
 
     private void abrirCursosPrograma(Long programaId, String nombrePrograma) {
         try {
-            FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/ProgramCoursesScreen.fxml"));
-            loader.setControllerFactory(applicationContext::getBean);
-            Parent root = loader.load();
-            ProgramCoursesScreenController controller = loader.getController();
-            controller.initData(programaId, nombrePrograma);
-
-            Stage stage = (Stage) cardContainer.getScene().getWindow();
-            stage.setScene(new Scene(root));
-            stage.setTitle("Cursos de " + nombrePrograma);
-            stage.show();
-        } catch (IOException e) {
+            // Obtener años disponibles del backend (puedes ajustar esto según tu lógica real)
+            List<Integer> aniosDisponibles = programServiceFront.getAniosPlanEstudios(programaId);
+            if (aniosDisponibles == null || aniosDisponibles.isEmpty()) {
+                mostrarAlerta("Sin años", "No hay años disponibles para este programa.", Alert.AlertType.INFORMATION);
+                return;
+            }
+            ChoiceDialog<Integer> dialog = new ChoiceDialog<>(aniosDisponibles.get(0), aniosDisponibles);
+            dialog.setTitle("Seleccionar año");
+            dialog.setHeaderText("¿Qué año desea ver?");
+            dialog.setContentText("Año:");
+            java.util.Optional<Integer> result = dialog.showAndWait();
+            if (result.isPresent()) {
+                Integer anioSeleccionado = result.get();
+                FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/ProgramCoursesScreen.fxml"));
+                loader.setControllerFactory(applicationContext::getBean);
+                Parent root = loader.load();
+                ProgramCoursesScreenController controller = loader.getController();
+                controller.initData(programaId, nombrePrograma, anioSeleccionado); // Nuevo parámetro año
+                Stage stage = (Stage) cardContainer.getScene().getWindow();
+                stage.setScene(new Scene(root));
+                stage.setTitle("Cursos de " + nombrePrograma);
+                stage.show();
+            }
+        } catch (Exception e) {
             e.printStackTrace();
+            mostrarAlerta("Error", "No se pudo cargar los años disponibles: " + e.getMessage(), Alert.AlertType.ERROR);
         }
     }
 

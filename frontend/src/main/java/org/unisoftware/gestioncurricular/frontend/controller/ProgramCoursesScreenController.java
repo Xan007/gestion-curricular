@@ -65,10 +65,12 @@ public class ProgramCoursesScreenController {
     private final CourseFileServiceFront courseFileServiceFront = new CourseFileServiceFront(); // Nuevo servicio
 
     private Long programaId;
+    private Integer anioSeleccionado;
 
-    public void initData(Long programaId, String nombrePrograma) {
+    public void initData(Long programaId, String nombrePrograma, Integer anio) {
         this.programaId = programaId;
-        programNameLabel.setText("Plan de Estudios de: " + nombrePrograma);
+        this.anioSeleccionado = anio;
+        programNameLabel.setText("Plan de Estudios de: " + nombrePrograma + " - Año: " + anio);
         // Mostrar botón solo si el usuario es DIRECTOR_DE_PROGRAMA
         if (SessionManager.getInstance().hasRole("DIRECTOR_DE_PROGRAMA")) {
             btnAsignarDocente.setVisible(true);
@@ -85,6 +87,16 @@ public class ProgramCoursesScreenController {
         coursesContainer.getChildren().clear();
         try {
             List<StudyPlanEntryDTO> plan = programServiceFront.getStudyPlan(programaId);
+            // Filtrar por año si corresponde
+            if (anioSeleccionado != null) {
+                List<StudyPlanEntryDTO> filtrado = new ArrayList<>();
+                for (StudyPlanEntryDTO entry : plan) {
+                    if (entry.getId() != null && entry.getId().getYear() != null && entry.getId().getYear().intValue() == anioSeleccionado) {
+                        filtrado.add(entry);
+                    }
+                }
+                plan = filtrado;
+            }
 
             if (plan == null || plan.isEmpty()) {
                 coursesContainer.getChildren().add(new Label(
@@ -171,6 +183,7 @@ public class ProgramCoursesScreenController {
 
             coursesContainer.getChildren().add(scroll);
 
+            List<StudyPlanEntryDTO> finalPlan = plan;
             Runnable drawLines = () -> {
                 stack.getChildren().removeIf(n -> n instanceof javafx.scene.canvas.Canvas);
                 javafx.scene.canvas.Canvas canvas = new javafx.scene.canvas.Canvas(stack.getWidth(), stack.getHeight());
@@ -181,7 +194,7 @@ public class ProgramCoursesScreenController {
                 Map<String, Integer> usedOffsets = new HashMap<>();
                 int offsetStep = 18;
 
-                for (StudyPlanEntryDTO entry : plan) {
+                for (StudyPlanEntryDTO entry : finalPlan) {
                     // Usa directamente getRequirements() que devuelve List<Long>
                     List<Long> currentEntryReqList = entry.getRequirements();
 
