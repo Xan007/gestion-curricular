@@ -11,7 +11,7 @@
         <HBox alignment="CENTER_LEFT" spacing="18" styleClass="modern-header">
             <Button text="⟵ Volver" onAction="#handleVolver" styleClass="btn-logout"/>
             <Button fx:id="btnAsignarDocente" text="Asignar Docente" visible="false" managed="false" styleClass="card-btn-white"/>
-            <Label fx:id="programNameLabel" styleClass="main-title" style="-fx-font-size: 22px;"/>
+            <Label fx:id="programNameLabel" styleClass="main-title" style="-fx-font-size: 17px;"/>
 
         </HBox>
         <ScrollPane fitToWidth="true" fitToHeight="true"

@@ -86,17 +86,7 @@ public class ProgramCoursesScreenController {
     private void cargarPlanEstudios() {
         coursesContainer.getChildren().clear();
         try {
-            List<StudyPlanEntryDTO> plan = programServiceFront.getStudyPlan(programaId);
-            // Filtrar por año si corresponde
-            if (anioSeleccionado != null) {
-                List<StudyPlanEntryDTO> filtrado = new ArrayList<>();
-                for (StudyPlanEntryDTO entry : plan) {
-                    if (entry.getId() != null && entry.getId().getYear() != null && entry.getId().getYear().intValue() == anioSeleccionado) {
-                        filtrado.add(entry);
-                    }
-                }
-                plan = filtrado;
-            }
+            List<StudyPlanEntryDTO> plan = programServiceFront.getStudyPlan(programaId, anioSeleccionado);
 
             if (plan == null || plan.isEmpty()) {
                 coursesContainer.getChildren().add(new Label(

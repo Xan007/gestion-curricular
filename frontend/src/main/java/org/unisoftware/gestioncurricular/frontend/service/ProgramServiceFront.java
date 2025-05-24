@@ -27,16 +27,29 @@ public class ProgramServiceFront {
     }
 
     /**
-     * Obtiene el plan de estudios de un programa por su ID
+     * Obtiene el plan de estudios de un programa por su ID y año.
+     * Si el año es null, se solicita el último plan registrado al backend.
      */
-    public List<StudyPlanEntryDTO> getStudyPlan(Long programaId) throws Exception {
-        URL url = new URL(BASE_URL + "/" + programaId + "/plan-estudio");
+    public List<StudyPlanEntryDTO> getStudyPlan(Long programaId, Integer year) throws Exception {
+        String urlString = BASE_URL + "/" + programaId + "/plan-estudio";
+        if (year != null) {
+            urlString += "?year=" + year;
+        }
+        URL url = new URL(urlString);
         HttpURLConnection conn = (HttpURLConnection) url.openConnection();
         conn.setRequestMethod("GET");
         try (InputStream in = conn.getInputStream()) {
             ObjectMapper mapper = new ObjectMapper();
             return mapper.readValue(in, new TypeReference<List<StudyPlanEntryDTO>>() {});
         }
+    }
+
+    /**
+     * Obtiene el plan de estudios más reciente de un programa por su ID.
+     * Este método es un wrapper para llamar a getStudyPlan(programaId, null).
+     */
+    public List<StudyPlanEntryDTO> getStudyPlan(Long programaId) throws Exception {
+        return getStudyPlan(programaId, null);
     }
 
     /**
