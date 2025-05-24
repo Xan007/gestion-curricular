@@ -8,13 +8,7 @@ import javafx.geometry.Pos;
 import javafx.scene.Node;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
-import javafx.scene.control.Button;
-import javafx.scene.control.Label;
-import javafx.scene.control.Alert;
-import javafx.scene.control.ScrollPane;
-import javafx.scene.control.TableColumn;
-import javafx.scene.control.TablePosition;
-import javafx.scene.control.TableView;
+import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.control.cell.TextFieldTableCell;
 import javafx.scene.layout.VBox;
@@ -641,24 +635,135 @@ public class MainScreenController implements Initializable {
     private void mostrarPropuestasMicro(String tipo) {
         VBox modalContent = new VBox(18);
         modalContent.setStyle("-fx-background-color: #fff; -fx-padding: 32; -fx-background-radius: 14; -fx-effect: dropshadow(three-pass-box, #d32f2f, 12, 0.18, 0, 4); -fx-border-color: #d32f2f; -fx-border-width: 3;");
-        modalContent.setPrefWidth(400);
-        modalContent.setMinWidth(320);
+        modalContent.setPrefWidth(800);
+        modalContent.setMinWidth(600);
         modalContent.setAlignment(Pos.CENTER);
-        Label title = new Label("Propuestas Microcurrículo - " + tipo);
-        title.setStyle("-fx-font-size: 20px; -fx-font-weight: bold; -fx-text-fill: #d32f2f;");
-        Label info = new Label("Aquí se mostrarán las propuestas de microcurrículo para: " + tipo);
-        info.setWrapText(true);
+        Label titleLabel = new Label("Propuestas Microcurrículo - " + tipo);
+        titleLabel.setStyle("-fx-font-size: 20px; -fx-font-weight: bold; -fx-text-fill: #d32f2f;");
+        modalContent.getChildren().add(titleLabel);
+
+        List<Map<String, Object>> propuestas = new ArrayList<>();
+        String token = SessionManager.getInstance().getToken();
+        String role = SessionManager.getInstance().getUserRole();
+        try {
+            String endpointUrl = "http://localhost:8080/proposals"; // URL por defecto
+
+            // Si es Director de Escuela viendo sus propuestas para firmar, usar el endpoint específico
+            if ("DIRECTOR_DE_ESCUELA".equals(role) && "Escuela".equals(tipo)) {
+                endpointUrl = "http://localhost:8080/proposals/pending-signatures";
+            }
+            // Para DIRECTOR_DE_PROGRAMA y COMITE_DE_PROGRAMA, la URL general /proposals es adecuada
+            // ya que el backend filtra según el rol.
+
+            if ("DIRECTOR_DE_PROGRAMA".equals(role) || "COMITE_DE_PROGRAMA".equals(role) || "DIRECTOR_DE_ESCUELA".equals(role)) {
+                java.net.URL urlObj = new java.net.URL(endpointUrl);
+                java.net.HttpURLConnection conn = (java.net.HttpURLConnection) urlObj.openConnection();
+                conn.setRequestMethod("GET");
+                conn.setRequestProperty("Authorization", "Bearer " + token);
+                conn.setRequestProperty("Accept", "application/json");
+                int responseCode = conn.getResponseCode();
+                if (responseCode >= 200 && responseCode < 300) {
+                    String responseBody = new String(conn.getInputStream().readAllBytes(), StandardCharsets.UTF_8);
+                    com.fasterxml.jackson.databind.ObjectMapper mapper = new com.fasterxml.jackson.databind.ObjectMapper();
+                    propuestas = mapper.readValue(responseBody, List.class);
+                } else {
+                    String errorBody = "";
+                    if (conn.getErrorStream() != null) {
+                        errorBody = new String(conn.getErrorStream().readAllBytes(), StandardCharsets.UTF_8);
+                    }
+                    throw new IOException("Error del servidor (" + responseCode + "): " + errorBody);
+                }
+            }
+        } catch (Exception ex) {
+            modalContent.getChildren().add(new Label("Error al cargar propuestas: " + ex.getMessage()));
+        }
+
+        if (propuestas.isEmpty()) {
+            modalContent.getChildren().add(new Label("No hay propuestas disponibles para su rol y vista actual."));
+        } else {
+            VBox listaPropuestas = new VBox(12);
+            listaPropuestas.setAlignment(Pos.TOP_CENTER);
+            for (Map<String, Object> propuesta : propuestas) {
+                VBox card = new VBox(8);
+                card.setStyle("-fx-background-color: #f7f7fa; -fx-background-radius: 10; -fx-padding: 18; -fx-effect: dropshadow(gaussian, #d32f2f22, 4,0,0,1);");
+                card.setMinWidth(500);
+                card.setAlignment(Pos.TOP_LEFT);
+                String titulo = (String) propuesta.get("title");
+                String estado = (String) propuesta.get("status");
+                String observaciones = (String) propuesta.get("observations");
+                Map file = (Map) propuesta.get("file");
+                Long id = ((Number) propuesta.get("id")).longValue();
+                Long courseId = ((Number) propuesta.get("courseId")).longValue();
+                Label lblTitulo = new Label("Título: " + titulo);
+                lblTitulo.setStyle("-fx-font-size: 16px; -fx-font-weight: bold; -fx-text-fill: #d32f2f;");
+                Label lblEstado = new Label("Estado: " + estado);
+                Label lblObs = new Label("Observaciones: " + (observaciones != null ? observaciones : "Sin observaciones"));
+                Button btnVerArchivo = new Button("Ver Archivo");
+                btnVerArchivo.setOnAction(e -> abrirPdfEnNavegador(() -> (file != null ? (String) file.get("url") : null)));
+                card.getChildren().addAll(lblTitulo, lblEstado, lblObs, btnVerArchivo);
+
+                // Lógica de acciones según estado y rol
+                if ("DIRECTOR_DE_PROGRAMA".equals(role) && "EN_REVISION_DIRECTOR".equals(estado)) {
+                    Button btnAprobar = new Button("Aprobar");
+                    Button btnRechazar = new Button("Solicitar Ajustes");
+                    btnAprobar.setOnAction(e -> revisarPropuesta(id, true));
+                    btnRechazar.setOnAction(e -> revisarPropuesta(id, false));
+                    card.getChildren().addAll(btnAprobar, btnRechazar);
+                } else if ("COMITE_DE_PROGRAMA".equals(role) && "EN_REVISION_COMITE".equals(estado)) {
+                    Button btnAprobar = new Button("Aprobar");
+                    Button btnRechazar = new Button("Rechazar");
+                    btnAprobar.setOnAction(e -> revisarPropuesta(id, true));
+                    btnRechazar.setOnAction(e -> revisarPropuesta(id, false));
+                    card.getChildren().addAll(btnAprobar, btnRechazar);
+                } else if (("DIRECTOR_DE_PROGRAMA".equals(role) || "DIRECTOR_DE_ESCUELA".equals(role)) && "ESPERANDO_FIRMAS".equals(estado)) {
+                    boolean yaFirmoDirectorPrograma = Boolean.TRUE.equals(propuesta.get("signedByDirectorPrograma"));
+                    boolean yaFirmoDirectorEscuela = Boolean.TRUE.equals(propuesta.get("signedByDirectorEscuela"));
+                    boolean mostrarBotonesFirma = false;
+
+                    if ("DIRECTOR_DE_PROGRAMA".equals(role) && !yaFirmoDirectorPrograma) {
+                        mostrarBotonesFirma = true;
+                    } else if ("DIRECTOR_DE_ESCUELA".equals(role) && !yaFirmoDirectorEscuela) {
+                        mostrarBotonesFirma = true;
+                    }
+
+                    if (mostrarBotonesFirma) {
+                        Button btnFirmar = new Button("Firmar Propuesta");
+                        Button btnRechazarFirma = new Button("Rechazar Firma");
+                        btnFirmar.setOnAction(e -> firmarPropuesta(id, true));
+                        btnRechazarFirma.setOnAction(e -> firmarPropuesta(id, false));
+                        card.getChildren().addAll(btnFirmar, btnRechazarFirma);
+                    } else {
+                        if (("DIRECTOR_DE_PROGRAMA".equals(role) && yaFirmoDirectorPrograma) ||
+                            ("DIRECTOR_DE_ESCUELA".equals(role) && yaFirmoDirectorEscuela)) {
+                            Label lblYaFirmado = new Label("Ya has procesado tu firma para esta propuesta.");
+                            lblYaFirmado.setStyle("-fx-font-style: italic; -fx-text-fill: #555;");
+                            card.getChildren().add(lblYaFirmado);
+                        }
+                    }
+                }
+
+                Boolean firmadoDirProg = (Boolean) propuesta.get("signedByDirectorPrograma");
+                Boolean firmadoDirEsc = (Boolean) propuesta.get("signedByDirectorEscuela");
+                // El botón de subir microcurrículo solo aparece si AMBOS han firmado y el estado es ACEPTADA.
+                // Esta condición se mantiene, ya que es el resultado final deseado.
+                if (Boolean.TRUE.equals(firmadoDirProg) && Boolean.TRUE.equals(firmadoDirEsc) && "ACEPTADA".equals(estado)) {
+                    Button btnSubirMicro = new Button("Subir como Microcurrículo");
+                    btnSubirMicro.setOnAction(e -> subirMicrocurriculoDesdePropuesta(courseId, file != null ? (String) file.get("url") : null));
+                    card.getChildren().add(btnSubirMicro);
+                }
+                listaPropuestas.getChildren().add(card);
+            }
+            modalContent.getChildren().add(listaPropuestas);
+        }
         Button cerrar = new Button("Cerrar");
         cerrar.getStyleClass().add("cerrar-btn");
-        modalContent.getChildren().addAll(title, info, cerrar);
-
+        modalContent.getChildren().add(cerrar);
         VBox modalWrapper = new VBox();
         modalWrapper.setAlignment(Pos.CENTER);
         modalWrapper.setFillWidth(true);
-        modalWrapper.setPrefWidth(400);
-        modalWrapper.setMinWidth(320);
+        modalWrapper.setPrefWidth(800);
+        modalWrapper.setMinWidth(600);
         modalWrapper.getChildren().add(modalContent);
-
         AnchorPane anchorPane = (AnchorPane) cardContainer.getScene().getRoot();
         StackPane overlay = new StackPane();
         overlay.setStyle("-fx-background-color: rgba(30,32,48,0.18);");
@@ -675,6 +780,144 @@ public class MainScreenController implements Initializable {
         AnchorPane.setRightAnchor(overlay, 0.0);
         final StackPane overlayFinal = overlay;
         cerrar.setOnAction(ev -> anchorPane.getChildren().remove(overlayFinal));
+    }
+
+    // Lógica para aprobar/rechazar propuesta
+    private void revisarPropuesta(Long id, boolean aprobar) {
+        javafx.application.Platform.runLater(() -> {
+            TextInputDialog dialog = new TextInputDialog();
+            dialog.setTitle(aprobar ? "Aprobar Propuesta" : "Rechazar Propuesta");
+            dialog.setHeaderText("Observaciones (opcional):");
+            dialog.setContentText("Observaciones:");
+            java.util.Optional<String> result = dialog.showAndWait();
+            String observaciones = result.orElse("");
+            new Thread(() -> {
+                try {
+                    String token = SessionManager.getInstance().getToken();
+                    String url = "http://localhost:8080/proposals/" + id + "/revisar";
+                    java.net.URL urlObj = new java.net.URL(url);
+                    java.net.HttpURLConnection conn = (java.net.HttpURLConnection) urlObj.openConnection();
+                    conn.setRequestMethod("PUT");
+                    conn.setRequestProperty("Authorization", "Bearer " + token);
+                    conn.setRequestProperty("Content-Type", "application/json");
+                    conn.setDoOutput(true);
+                    String action = aprobar ? "ACCEPT" : "REJECT"; // Corregido aquí
+                    String body = String.format("{\"action\":\"%s\",\"observations\":\"%s\"}", action, observaciones.replace("\"", "'"));
+                    try (java.io.OutputStream os = conn.getOutputStream()) {
+                        os.write(body.getBytes(StandardCharsets.UTF_8));
+                    }
+                    int responseCode = conn.getResponseCode();
+                    if (responseCode >= 200 && responseCode < 300) {
+                        javafx.application.Platform.runLater(() -> {
+                            mostrarAlerta("Éxito", "Propuesta revisada correctamente.", Alert.AlertType.INFORMATION);
+                            // Actualizar la vista de propuestas
+                            String currentRole = SessionManager.getInstance().getUserRole();
+                            String tipoVista = "";
+                            if ("DIRECTOR_DE_PROGRAMA".equals(currentRole)) tipoVista = "Programa";
+                            else if ("COMITE_DE_PROGRAMA".equals(currentRole)) tipoVista = "Comité de Programa";
+                            else if ("DIRECTOR_DE_ESCUELA".equals(currentRole)) tipoVista = "Escuela";
+                            if (!tipoVista.isEmpty()) {
+                                mostrarPropuestasMicro(tipoVista);
+                            }
+                        });
+                    } else {
+                        String errorBody = "";
+                        if (conn.getErrorStream() != null) {
+                            errorBody = new String(conn.getErrorStream().readAllBytes(), StandardCharsets.UTF_8);
+                        }
+                        final String finalErrorBody = errorBody;
+                        javafx.application.Platform.runLater(() -> mostrarAlerta("Error", "No se pudo revisar la propuesta. Servidor dice: " + finalErrorBody, Alert.AlertType.ERROR));
+                    }
+                } catch (Exception ex) {
+                    javafx.application.Platform.runLater(() -> mostrarAlerta("Error", "No se pudo revisar la propuesta: " + ex.getMessage(), Alert.AlertType.ERROR));
+                }
+            }).start();
+        });
+    }
+
+    // Lógica para firmar/rechazar propuesta
+    private void firmarPropuesta(Long id, boolean aceptar) {
+        javafx.application.Platform.runLater(() -> {
+            TextInputDialog dialog = new TextInputDialog();
+            dialog.setTitle(aceptar ? "Firmar Propuesta" : "Rechazar Firma");
+            dialog.setHeaderText("Observaciones (opcional):");
+            dialog.setContentText("Observaciones:");
+            java.util.Optional<String> result = dialog.showAndWait();
+            String observaciones = result.orElse("");
+            new Thread(() -> {
+                try {
+                    String token = SessionManager.getInstance().getToken();
+                    String url = "http://localhost:8080/proposals/" + id + "/sign";
+                    java.net.URL urlObj = new java.net.URL(url);
+                    java.net.HttpURLConnection conn = (java.net.HttpURLConnection) urlObj.openConnection();
+                    conn.setRequestMethod("PUT");
+                    conn.setRequestProperty("Authorization", "Bearer " + token);
+                    conn.setRequestProperty("Content-Type", "application/json");
+                    conn.setDoOutput(true);
+                    String body = String.format("{\"accept\":%s,\"observations\":\"%s\"}", aceptar, observaciones.replace("\"", "'"));
+                    try (java.io.OutputStream os = conn.getOutputStream()) {
+                        os.write(body.getBytes(StandardCharsets.UTF_8));
+                    }
+                    int responseCode = conn.getResponseCode();
+                    if (responseCode >= 200 && responseCode < 300) {
+                        javafx.application.Platform.runLater(() -> {
+                            mostrarAlerta("Éxito", "Firma procesada correctamente.", Alert.AlertType.INFORMATION);
+                            // Actualizar la vista de propuestas
+                            String currentRole = SessionManager.getInstance().getUserRole();
+                            String tipoVista = "";
+                            if ("DIRECTOR_DE_PROGRAMA".equals(currentRole)) tipoVista = "Programa";
+                            else if ("COMITE_DE_PROGRAMA".equals(currentRole)) tipoVista = "Comité de Programa";
+                            else if ("DIRECTOR_DE_ESCUELA".equals(currentRole)) tipoVista = "Escuela";
+                            if (!tipoVista.isEmpty()) {
+                                mostrarPropuestasMicro(tipoVista);
+                            }
+                        });
+                    } else {
+                        String errorBody = "";
+                        if (conn.getErrorStream() != null) {
+                            errorBody = new String(conn.getErrorStream().readAllBytes(), StandardCharsets.UTF_8);
+                        }
+                        final String finalErrorBody = errorBody;
+                        javafx.application.Platform.runLater(() -> mostrarAlerta("Error", "No se pudo procesar la firma. Servidor dice: " + finalErrorBody, Alert.AlertType.ERROR));
+                    }
+                } catch (Exception ex) {
+                    javafx.application.Platform.runLater(() -> mostrarAlerta("Error", "No se pudo procesar la firma: " + ex.getMessage(), Alert.AlertType.ERROR));
+                }
+            }).start();
+        });
+    }
+
+    private void subirMicrocurriculoDesdePropuesta(Long courseId, String fileUrl) {
+        if (fileUrl == null || fileUrl.isBlank()) {
+            mostrarAlerta("Error", "No hay archivo disponible en la propuesta.", Alert.AlertType.ERROR);
+            return;
+        }
+        // Descargar el archivo temporalmente y subirlo como microcurrículo
+        new Thread(() -> {
+            try {
+                java.net.URL url = new java.net.URL(fileUrl);
+                java.io.File tempFile = java.io.File.createTempFile("microcurriculo_", ".tmp");
+                try (java.io.InputStream in = url.openStream(); java.io.FileOutputStream fos = new java.io.FileOutputStream(tempFile)) {
+                    byte[] buffer = new byte[8192];
+                    int bytesRead;
+                    while ((bytesRead = in.read(buffer)) != -1) {
+                        fos.write(buffer, 0, bytesRead);
+                    }
+                }
+                // Subir usando el servicio de microcurrículo
+                org.unisoftware.gestioncurricular.frontend.service.CourseFileServiceFront courseFileServiceFront = new org.unisoftware.gestioncurricular.frontend.service.CourseFileServiceFront();
+                String token = SessionManager.getInstance().getToken();
+                org.unisoftware.gestioncurricular.frontend.dto.FileUploadInfoDTO uploadInfo = courseFileServiceFront.getMicrocurriculumUploadUrl(courseId, token);
+                String presignedUrl = uploadInfo.getUploadUrl();
+                String contentType = java.nio.file.Files.probeContentType(tempFile.toPath());
+                if (contentType == null) contentType = "application/octet-stream";
+                courseFileServiceFront.uploadFileToPresignedUrl(presignedUrl, tempFile, contentType, token);
+                javafx.application.Platform.runLater(() -> mostrarAlerta("Éxito", "Microcurrículo subido correctamente al curso.", Alert.AlertType.INFORMATION));
+                tempFile.delete();
+            } catch (Exception ex) {
+                javafx.application.Platform.runLater(() -> mostrarAlerta("Error", "No se pudo subir el microcurrículo: " + ex.getMessage(), Alert.AlertType.ERROR));
+            }
+        }).start();
     }
 
     private void mostrarMisCursos() {
@@ -1309,4 +1552,5 @@ public class MainScreenController implements Initializable {
         }
     }
 }
+
 
