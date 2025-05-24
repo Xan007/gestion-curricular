@@ -38,6 +38,14 @@ import org.unisoftware.gestioncurricular.frontend.dto.CourseDTO;
 import java.util.UUID;
 import org.unisoftware.gestioncurricular.frontend.service.UserServiceFront;
 import org.unisoftware.gestioncurricular.frontend.dto.UserInfoDTO;
+import org.unisoftware.gestioncurricular.frontend.dto.FileUploadInfoDTO;
+import org.unisoftware.gestioncurricular.frontend.service.CourseFileServiceFront;
+import javafx.scene.control.TextInputDialog;
+import javafx.scene.control.ChoiceDialog;
+import java.util.Arrays;
+import java.io.File; // Asegúrate que File está importado
+import javafx.stage.FileChooser; // Asegúrate que FileChooser está importado
+import java.nio.file.Files; // Para Files.probeContentType
 
 @Component
 public class ProgramCoursesScreenController {
@@ -50,6 +58,7 @@ public class ProgramCoursesScreenController {
     @Autowired private ApplicationContext applicationContext;
     @Autowired private CourseServiceFront courseServiceFront;
     @Autowired private UserServiceFront userServiceFront;
+    private final CourseFileServiceFront courseFileServiceFront = new CourseFileServiceFront(); // Nuevo servicio
 
     private Long programaId;
 
@@ -286,7 +295,39 @@ public class ProgramCoursesScreenController {
 
         Button cerrar = new Button("Cerrar");
         cerrar.getStyleClass().add("cerrar-btn");
-        modalContent.getChildren().addAll(title, codigo, nombre, area, ciclo, tipo, creditos, relacion, requisitos, cerrar);
+
+        // Botones para subir archivos (solo para Director de Programa)
+        HBox botonesArchivos = new HBox(10);
+        botonesArchivos.setAlignment(Pos.CENTER_LEFT);
+        if (SessionManager.getInstance().hasRole("DIRECTOR_DE_PROGRAMA")) {
+            Button btnSubirApoyo = new Button("Subir Archivo de Apoyo");
+            btnSubirApoyo.getStyleClass().add("card-btn-white");
+            btnSubirApoyo.setOnAction(e -> {
+                if (entry.getId() != null && entry.getId().getCourseId() != null) {
+                    handleSubirArchivoApoyo(entry.getId().getCourseId());
+                } else {
+                    mostrarAlerta("Error", "No se pudo obtener el ID del curso.", Alert.AlertType.ERROR);
+                }
+            });
+
+            Button btnSubirMicro = new Button("Subir Microcurrículo");
+            btnSubirMicro.getStyleClass().add("card-btn-white");
+            btnSubirMicro.setOnAction(e -> {
+                if (entry.getId() != null && entry.getId().getCourseId() != null) {
+                    handleSubirMicrocurriculum(entry.getId().getCourseId());
+                } else {
+                    mostrarAlerta("Error", "No se pudo obtener el ID del curso.", Alert.AlertType.ERROR);
+                }
+            });
+
+            botonesArchivos.getChildren().addAll(btnSubirApoyo, btnSubirMicro);
+        }
+
+        modalContent.getChildren().addAll(title, codigo, nombre, area, ciclo, tipo, creditos, relacion, requisitos);
+        if (!botonesArchivos.getChildren().isEmpty()) {
+            modalContent.getChildren().add(botonesArchivos);
+        }
+        modalContent.getChildren().add(cerrar);
 
         // Obtener el AnchorPane raíz de la escena
         AnchorPane anchorPane = (AnchorPane) coursesContainer.getScene().getRoot();
@@ -316,6 +357,148 @@ public class ProgramCoursesScreenController {
 
         final StackPane overlayFinal = overlay;
         cerrar.setOnAction(ev -> anchorPane.getChildren().remove(overlayFinal));
+    }
+
+    private void handleSubirArchivoApoyo(Long courseId) {
+        // 1. Pedir tipo de apoyo
+        List<String> tiposApoyo = Arrays.asList("SYLLABUS", "GUIA_CATEDRA", "MATERIAL_COMPLEMENTARIO", "EVALUACION", "OTRO");
+        ChoiceDialog<String> dialogTipo = new ChoiceDialog<>(tiposApoyo.get(0), tiposApoyo);
+        dialogTipo.setTitle("Tipo de Archivo de Apoyo");
+        dialogTipo.setHeaderText("Seleccione el tipo de archivo de apoyo que desea subir.");
+        dialogTipo.setContentText("Tipo:");
+        applyDialogStyles(dialogTipo.getDialogPane());
+
+        java.util.Optional<String> tipoResult = dialogTipo.showAndWait();
+        if (!tipoResult.isPresent()) {
+            return; // Usuario canceló
+        }
+        String tipoSeleccionado = tipoResult.get();
+
+        // 2. Seleccionar archivo
+        FileChooser fileChooser = new FileChooser();
+        fileChooser.setTitle("Seleccionar Archivo de Apoyo para el curso " + courseId);
+        File selectedFile = fileChooser.showOpenDialog(coursesContainer.getScene().getWindow());
+
+        if (selectedFile != null) {
+            StackPane overlay = crearOverlayCarga("Subiendo archivo de apoyo...");
+            new Thread(() -> {
+                try {
+                    String token = SessionManager.getInstance().getToken();
+                    // 3. Obtener URL de subida del backend
+                    FileUploadInfoDTO uploadInfo = courseFileServiceFront.getApoyoUploadUrl(courseId, selectedFile.getName(), token);
+                    String presignedUrl = uploadInfo.getUploadUrl();
+                    String fileId = uploadInfo.getFileId();
+
+                    if (presignedUrl == null || fileId == null) {
+                        throw new IOException("No se pudo obtener la URL prefirmada o el fileId del backend.");
+                    }
+
+                    // 4. Subir archivo a la URL prefirmada
+                    String contentType = Files.probeContentType(selectedFile.toPath());
+                    contentType = (contentType == null) ? "application/octet-stream" : contentType;
+                    courseFileServiceFront.uploadFileToPresignedUrl(presignedUrl, selectedFile, contentType, token);
+
+                    // 5. Registrar el archivo de apoyo en el backend
+                    courseFileServiceFront.registerApoyoAcademico(courseId, fileId, tipoSeleccionado, token);
+
+                    javafx.application.Platform.runLater(() -> {
+                        removerOverlayCarga(overlay);
+                        mostrarAlerta("Éxito", "Archivo de apoyo \"" + selectedFile.getName() + "\" subido y registrado como " + tipoSeleccionado + " correctamente.", Alert.AlertType.INFORMATION);
+                    });
+                } catch (Exception ex) {
+                    ex.printStackTrace();
+                    javafx.application.Platform.runLater(() -> {
+                        removerOverlayCarga(overlay);
+                        mostrarAlerta("Error", "No se pudo subir el archivo de apoyo: " + ex.getMessage(), Alert.AlertType.ERROR);
+                    });
+                }
+            }).start();
+        }
+    }
+
+    private void handleSubirMicrocurriculum(Long courseId) {
+        FileChooser fileChooser = new FileChooser();
+        fileChooser.setTitle("Seleccionar Archivo de Microcurrículo para el curso " + courseId);
+        File selectedFile = fileChooser.showOpenDialog(coursesContainer.getScene().getWindow());
+
+        if (selectedFile != null) {
+            StackPane overlay = crearOverlayCarga("Subiendo microcurrículo...");
+            new Thread(() -> {
+                try {
+                    String token = SessionManager.getInstance().getToken();
+                    // 1. Obtener URL de subida del backend
+                    FileUploadInfoDTO uploadInfo = courseFileServiceFront.getMicrocurriculumUploadUrl(courseId, token);
+                    String presignedUrl = uploadInfo.getUploadUrl();
+                    // String fileId = uploadInfo.getFileId(); // El fileId se extrae y está en uploadInfo.getFileId()
+                                                        // No es explícitamente necesario para un POST de registro separado aquí,
+                                                        // ya que el backend asocia el microcurrículo al subirlo a la URL.
+
+                    if (presignedUrl == null) {
+                        throw new IOException("No se pudo obtener la URL prefirmada del backend para el microcurrículo.");
+                    }
+
+                    // 2. Subir archivo a la URL prefirmada
+                    String contentType = Files.probeContentType(selectedFile.toPath());
+                    contentType = (contentType == null) ? "application/octet-stream" : contentType;
+                    courseFileServiceFront.uploadFileToPresignedUrl(presignedUrl, selectedFile, contentType, token);
+
+                    javafx.application.Platform.runLater(() -> {
+                        removerOverlayCarga(overlay);
+                        mostrarAlerta("Éxito", "Microcurrículo \"" + selectedFile.getName() + "\" subido correctamente.", Alert.AlertType.INFORMATION);
+                    });
+                } catch (Exception ex) {
+                    ex.printStackTrace();
+                    javafx.application.Platform.runLater(() -> {
+                        removerOverlayCarga(overlay);
+                        mostrarAlerta("Error", "No se pudo subir el microcurrículo: " + ex.getMessage(), Alert.AlertType.ERROR);
+                    });
+                }
+            }).start();
+        }
+    }
+
+    // Métodos de ayuda para overlay de carga (refactorizados)
+    private StackPane crearOverlayCarga(String mensaje) {
+        VBox modalContentCarga = new VBox(18);
+        modalContentCarga.setStyle("-fx-background-color: #fff; -fx-padding: 32; -fx-background-radius: 14; -fx-effect: dropshadow(three-pass-box, #d32f2f, 12, 0.18, 0, 4); -fx-border-color: #d32f2f; -fx-border-width: 3;");
+        modalContentCarga.setPrefWidth(400);
+        modalContentCarga.setMinWidth(320);
+        modalContentCarga.setAlignment(Pos.CENTER);
+        Label esperando = new Label(mensaje);
+        esperando.setStyle("-fx-font-size: 17px; -fx-font-weight: bold; -fx-text-fill: #d32f2f;");
+        modalContentCarga.getChildren().add(esperando);
+
+        VBox modalWrapperCarga = new VBox(modalContentCarga);
+        modalWrapperCarga.setAlignment(Pos.CENTER);
+
+        AnchorPane anchorPane = (AnchorPane) coursesContainer.getScene().getRoot();
+        StackPane overlayCarga = new StackPane(modalWrapperCarga);
+        overlayCarga.setStyle("-fx-background-color: rgba(30,32,48,0.18);");
+        overlayCarga.setPrefSize(anchorPane.getWidth(), anchorPane.getHeight());
+        overlayCarga.setAlignment(Pos.CENTER);
+
+        anchorPane.getChildren().add(overlayCarga);
+        AnchorPane.setTopAnchor(overlayCarga, 0.0);
+        AnchorPane.setBottomAnchor(overlayCarga, 0.0);
+        AnchorPane.setLeftAnchor(overlayCarga, 0.0);
+        AnchorPane.setRightAnchor(overlayCarga, 0.0);
+        return overlayCarga;
+    }
+
+    private void removerOverlayCarga(StackPane overlay) {
+        if (overlay != null && overlay.getParent() instanceof AnchorPane) {
+            ((AnchorPane) overlay.getParent()).getChildren().remove(overlay);
+        }
+    }
+
+    // Método de ayuda para aplicar estilos a diálogos
+    private void applyDialogStyles(javafx.scene.control.DialogPane dialogPane) {
+        dialogPane.getStylesheets().add(getClass().getResource("/css/styles.css").toExternalForm());
+        dialogPane.getStyleClass().add("dialog-pane-custom");
+        dialogPane.lookupButton(javafx.scene.control.ButtonType.OK).getStyleClass().addAll("dialog-ok");
+        dialogPane.lookupButton(javafx.scene.control.ButtonType.CANCEL).getStyleClass().addAll("dialog-cancel");
+        javafx.scene.Node combo = dialogPane.lookup(".combo-box");
+        if (combo != null) combo.getStyleClass().add("dialog-combo");
     }
 
     private void handleAsignarDocente() {
