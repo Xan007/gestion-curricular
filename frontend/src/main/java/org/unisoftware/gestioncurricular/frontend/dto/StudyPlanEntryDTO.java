@@ -7,12 +7,16 @@ public class StudyPlanEntryDTO {
     public static class Id {
         private Long programId;
         private Long courseId;
+        private Long year;
 
         public Long getProgramId() { return programId; }
         public void setProgramId(Long programId) { this.programId = programId; }
 
         public Long getCourseId() { return courseId; }
         public void setCourseId(Long courseId) { this.courseId = courseId; }
+
+        public Long getYear() { return year; }
+        public void setYear(Long year) { this.year = year; }
     }
 
     private Id id;

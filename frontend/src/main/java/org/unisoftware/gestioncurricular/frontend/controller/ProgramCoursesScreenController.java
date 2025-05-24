@@ -46,6 +46,10 @@ import java.util.Arrays;
 import java.io.File; // Asegúrate que File está importado
 import javafx.stage.FileChooser; // Asegúrate que FileChooser está importado
 import java.nio.file.Files; // Para Files.probeContentType
+import javafx.scene.web.WebView; // Necesario para abrirPdfEnNavegador
+import java.net.URLEncoder; // Necesario para abrirPdfEnNavegador
+import java.nio.charset.StandardCharsets; // Necesario para abrirPdfEnNavegador
+import java.util.function.Supplier; // Necesario para abrirPdfEnNavegador
 
 @Component
 public class ProgramCoursesScreenController {
@@ -296,6 +300,32 @@ public class ProgramCoursesScreenController {
         Button cerrar = new Button("Cerrar");
         cerrar.getStyleClass().add("cerrar-btn");
 
+        // Botones para visualizar archivos (todos los usuarios)
+        HBox botonesVisualizarArchivos = new HBox(10);
+        botonesVisualizarArchivos.setAlignment(Pos.CENTER_LEFT);
+
+        Button btnVerApoyos = new Button("Ver Archivos de Apoyo");
+        btnVerApoyos.getStyleClass().add("card-btn-white");
+        btnVerApoyos.setOnAction(e -> {
+            if (entry.getId() != null && entry.getId().getCourseId() != null) {
+                handleVerArchivosApoyo(entry.getId().getCourseId());
+            } else {
+                mostrarAlerta("Error", "No se pudo obtener el ID del curso.", Alert.AlertType.ERROR);
+            }
+        });
+
+        Button btnVerMicro = new Button("Ver Microcurrículo");
+        btnVerMicro.getStyleClass().add("card-btn-white");
+        btnVerMicro.setOnAction(e -> {
+            if (entry.getId() != null && entry.getId().getCourseId() != null) {
+                handleVerMicrocurriculum(entry.getId().getCourseId());
+            } else {
+                mostrarAlerta("Error", "No se pudo obtener el ID del curso.", Alert.AlertType.ERROR);
+            }
+        });
+        botonesVisualizarArchivos.getChildren().addAll(btnVerApoyos, btnVerMicro);
+
+
         // Botones para subir archivos (solo para Director de Programa)
         HBox botonesArchivos = new HBox(10);
         botonesArchivos.setAlignment(Pos.CENTER_LEFT);
@@ -324,6 +354,7 @@ public class ProgramCoursesScreenController {
         }
 
         modalContent.getChildren().addAll(title, codigo, nombre, area, ciclo, tipo, creditos, relacion, requisitos);
+        modalContent.getChildren().add(botonesVisualizarArchivos); // Añadir botones de visualización
         if (!botonesArchivos.getChildren().isEmpty()) {
             modalContent.getChildren().add(botonesArchivos);
         }
@@ -436,8 +467,8 @@ public class ProgramCoursesScreenController {
                     FileUploadInfoDTO uploadInfo = courseFileServiceFront.getMicrocurriculumUploadUrl(courseId, token);
                     String presignedUrl = uploadInfo.getUploadUrl();
                     // String fileId = uploadInfo.getFileId(); // El fileId se extrae y está en uploadInfo.getFileId()
-                                                        // No es explícitamente necesario para un POST de registro separado aquí,
-                                                        // ya que el backend asocia el microcurrículo al subirlo a la URL.
+                    // No es explícitamente necesario para un POST de registro separado aquí,
+                    // ya que el backend asocia el microcurrículo al subirlo a la URL.
 
                     if (presignedUrl == null) {
                         throw new IOException("No se pudo obtener la URL prefirmada del backend para el microcurrículo.");
@@ -494,6 +525,54 @@ public class ProgramCoursesScreenController {
     private void removerOverlayCarga(StackPane overlay) {
         if (overlay != null && overlay.getParent() instanceof AnchorPane) {
             ((AnchorPane) overlay.getParent()).getChildren().remove(overlay);
+        }
+    }
+
+    private void handleVerArchivosApoyo(Long courseId) {
+        try {
+            Map<String, String> apoyosPorTipo = courseFileServiceFront.getApoyosUrlsPorTipo(courseId);
+            if (apoyosPorTipo == null || apoyosPorTipo.isEmpty()) {
+                mostrarAlerta("Información", "No hay archivos de apoyo disponibles para este curso.", Alert.AlertType.INFORMATION);
+                return;
+            }
+
+            List<String> tiposDisponibles = new ArrayList<>(apoyosPorTipo.keySet());
+            if (tiposDisponibles.isEmpty()) {
+                mostrarAlerta("Información", "No hay tipos de archivos de apoyo definidos.", Alert.AlertType.INFORMATION);
+                return;
+            }
+
+            ChoiceDialog<String> dialogTipo = new ChoiceDialog<>(tiposDisponibles.get(0), tiposDisponibles);
+            dialogTipo.setTitle("Ver Archivo de Apoyo");
+            dialogTipo.setHeaderText("Seleccione el tipo de archivo de apoyo que desea ver.");
+            dialogTipo.setContentText("Tipo:");
+            applyDialogStyles(dialogTipo.getDialogPane());
+
+            java.util.Optional<String> tipoResult = dialogTipo.showAndWait();
+            if (tipoResult.isPresent()) {
+                String tipoSeleccionado = tipoResult.get();
+                String urlArchivo = apoyosPorTipo.get(tipoSeleccionado);
+                if (urlArchivo != null && !urlArchivo.isBlank()) {
+                    abrirPdfEnNavegador(() -> urlArchivo);
+                } else {
+                    mostrarAlerta("Error", "No se encontró la URL para el tipo de apoyo seleccionado.", Alert.AlertType.ERROR);
+                }
+            }
+        } catch (Exception ex) {
+            mostrarAlerta("Error", "No se pudo obtener la lista de archivos de apoyo: " + ex.getMessage(), Alert.AlertType.ERROR);
+        }
+    }
+
+    private void handleVerMicrocurriculum(Long courseId) {
+        try {
+            String urlMicrocurriculum = courseFileServiceFront.getMicrocurriculoUrl(courseId);
+            if (urlMicrocurriculum != null && !urlMicrocurriculum.isBlank()) {
+                abrirPdfEnNavegador(() -> urlMicrocurriculum);
+            } else {
+                mostrarAlerta("Información", "No hay microcurrículo disponible para este curso.", Alert.AlertType.INFORMATION);
+            }
+        } catch (Exception ex) {
+            mostrarAlerta("Error", "No se pudo obtener la URL del microcurrículo: " + ex.getMessage(), Alert.AlertType.ERROR);
         }
     }
 
@@ -573,7 +652,62 @@ public class ProgramCoursesScreenController {
         alerta.setTitle(titulo);
         alerta.setHeaderText(null);
         alerta.setContentText(mensaje);
+        alerta.getDialogPane().getStylesheets().add(getClass().getResource("/css/styles.css").toExternalForm());
+        alerta.getDialogPane().getStyleClass().add("dialog-pane-custom");
         alerta.showAndWait();
+    }
+
+    private void abrirPdfEnNavegador(Supplier<String> urlSupplier) {
+        new Thread(() -> {
+            try {
+                String originalPdfUrl = urlSupplier.get();
+                if (originalPdfUrl != null && !originalPdfUrl.isBlank()) {
+                    System.out.println("URL original del PDF: " + originalPdfUrl);
+
+                    // Codificar la URL del PDF para usarla como parámetro
+                    String encodedPdfUrl = URLEncoder.encode(originalPdfUrl, StandardCharsets.UTF_8.toString());
+                    String googleDocsViewerUrl = "https://docs.google.com/gview?url=" + encodedPdfUrl + "&embedded=true";
+
+                    System.out.println("Intentando cargar PDF con Google Docs Viewer: " + googleDocsViewerUrl);
+
+                    javafx.application.Platform.runLater(() -> {
+                        Stage pdfStage = new Stage();
+                        WebView webView = new WebView();
+
+                        webView.getEngine().getLoadWorker().exceptionProperty().addListener((obs, oldEx, newEx) -> {
+                            if (newEx != null) {
+                                System.err.println("Error al cargar URL en WebView (Google Docs Viewer): " + newEx.getMessage());
+                                newEx.printStackTrace();
+                                // Intentar abrir en navegador externo como fallback si Google Viewer falla
+                                try {
+                                    System.out.println("Fallback: Intentando abrir URL original en navegador externo: " + originalPdfUrl);
+                                    java.awt.Desktop.getDesktop().browse(new java.net.URI(originalPdfUrl));
+                                    mostrarAlerta("Visor no disponible", "Se abrirá el PDF en tu navegador web.", Alert.AlertType.INFORMATION);
+                                } catch (Exception fallbackEx) {
+                                    System.err.println("Error en fallback al navegador externo: " + fallbackEx.getMessage());
+                                    mostrarAlerta("Error", "No se pudo cargar el PDF en el visor ni en el navegador: " + newEx.getMessage(), Alert.AlertType.ERROR);
+                                }
+                                pdfStage.close(); // Cerrar la ventana del WebView si falla
+                            }
+                        });
+
+                        webView.getEngine().load(googleDocsViewerUrl);
+                        VBox root = new VBox(webView);
+                        VBox.setVgrow(webView, javafx.scene.layout.Priority.ALWAYS); // Hacer que el WebView ocupe todo el espacio
+                        Scene scene = new Scene(root, 800, 700);
+                        pdfStage.setTitle("Visor de Documento");
+                        pdfStage.setScene(scene);
+                        pdfStage.show();
+                    });
+                } else {
+                    javafx.application.Platform.runLater(() -> mostrarAlerta("Información", "No hay archivo para mostrar.", Alert.AlertType.INFORMATION));
+                }
+            } catch (Exception ex) {
+                System.err.println("Error general al intentar abrir PDF: " + ex.getMessage());
+                ex.printStackTrace();
+                javafx.application.Platform.runLater(() -> mostrarAlerta("Error", "No se pudo abrir el PDF: " + ex.getMessage(), Alert.AlertType.ERROR));
+            }
+        }).start();
     }
 
     @FXML
@@ -587,4 +721,3 @@ public class ProgramCoursesScreenController {
         stage.show();
     }
 }
-

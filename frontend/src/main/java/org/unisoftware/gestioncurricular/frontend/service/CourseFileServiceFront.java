@@ -133,4 +133,102 @@ public class CourseFileServiceFront {
             throw new IOException("Error al subir archivo a URL prefirmada ('" + presignedUrl + "'): " + responseCode + " " + conn.getResponseMessage() + ". Cuerpo: " + errorBody);
         }
     }
+
+    public String getApoyosUrl(Long courseId) {
+        String endpoint = String.format("%s/courses/%d/files/apoyos", BASE_URL, courseId);
+        try {
+            java.net.URL url = new java.net.URL(endpoint);
+            java.net.HttpURLConnection conn = (java.net.HttpURLConnection) url.openConnection();
+            conn.setRequestMethod("GET");
+            String token = org.unisoftware.gestioncurricular.frontend.util.SessionManager.getInstance().getToken();
+            if (token != null && !token.isEmpty()) {
+                conn.setRequestProperty("Authorization", "Bearer " + token);
+            }
+            int responseCode = conn.getResponseCode();
+            if (responseCode == java.net.HttpURLConnection.HTTP_OK) {
+                // Se espera un JSON con la lista de archivos de apoyo
+                String json = new String(conn.getInputStream().readAllBytes(), java.nio.charset.StandardCharsets.UTF_8);
+                // Extraer la URL del primer archivo de apoyo (si existe)
+                com.fasterxml.jackson.databind.JsonNode root = objectMapper.readTree(json);
+                if (root.isArray() && root.size() > 0) {
+                    com.fasterxml.jackson.databind.JsonNode primerArchivo = root.get(0);
+                    if (primerArchivo.has("url")) {
+                        return primerArchivo.get("url").asText();
+                    }
+                }
+                return null; // No hay archivos de apoyo
+            } else {
+                String errorBody = "";
+                if (conn.getErrorStream() != null) {
+                    errorBody = new String(conn.getErrorStream().readAllBytes(), java.nio.charset.StandardCharsets.UTF_8);
+                }
+                throw new RuntimeException("No se pudo obtener la lista de apoyos: " + errorBody);
+            }
+        } catch (Exception e) {
+            throw new RuntimeException("Error al obtener la lista de apoyos: " + e.getMessage(), e);
+        }
+    }
+
+    public String getMicrocurriculoUrl(Long courseId) {
+        String endpoint = String.format("%s/courses/%d/files/microcurriculos/main", BASE_URL, courseId);
+        try {
+            java.net.URL url = new java.net.URL(endpoint);
+            java.net.HttpURLConnection conn = (java.net.HttpURLConnection) url.openConnection();
+            conn.setRequestMethod("GET");
+            String token = org.unisoftware.gestioncurricular.frontend.util.SessionManager.getInstance().getToken();
+            if (token != null && !token.isEmpty()) {
+                conn.setRequestProperty("Authorization", "Bearer " + token);
+            }
+            int responseCode = conn.getResponseCode();
+            if (responseCode == java.net.HttpURLConnection.HTTP_OK) {
+                // Se espera que el backend retorne la URL como texto plano
+                return new String(conn.getInputStream().readAllBytes(), java.nio.charset.StandardCharsets.UTF_8);
+            } else {
+                String errorBody = "";
+                if (conn.getErrorStream() != null) {
+                    errorBody = new String(conn.getErrorStream().readAllBytes(), java.nio.charset.StandardCharsets.UTF_8);
+                }
+                throw new RuntimeException("No se pudo obtener la URL del microcurrículo: " + errorBody);
+            }
+        } catch (Exception e) {
+            throw new RuntimeException("Error al obtener la URL del microcurrículo: " + e.getMessage(), e);
+        }
+    }
+
+    public java.util.Map<String, String> getApoyosUrlsPorTipo(Long courseId) {
+        String endpoint = String.format("%s/courses/%d/files/apoyos", BASE_URL, courseId);
+        try {
+            java.net.URL url = new java.net.URL(endpoint);
+            java.net.HttpURLConnection conn = (java.net.HttpURLConnection) url.openConnection();
+            conn.setRequestMethod("GET");
+            String token = org.unisoftware.gestioncurricular.frontend.util.SessionManager.getInstance().getToken();
+            if (token != null && !token.isEmpty()) {
+                conn.setRequestProperty("Authorization", "Bearer " + token);
+            }
+            int responseCode = conn.getResponseCode();
+            if (responseCode == java.net.HttpURLConnection.HTTP_OK) {
+                String json = new String(conn.getInputStream().readAllBytes(), java.nio.charset.StandardCharsets.UTF_8);
+                com.fasterxml.jackson.databind.JsonNode root = objectMapper.readTree(json);
+                java.util.Map<String, String> apoyosPorTipo = new java.util.HashMap<>();
+                if (root.isArray()) {
+                    for (com.fasterxml.jackson.databind.JsonNode archivo : root) {
+                        String tipo = archivo.has("tipo") ? archivo.get("tipo").asText() : "OTRO";
+                        String urlArchivo = archivo.has("url") ? archivo.get("url").asText() : null;
+                        if (urlArchivo != null && !urlArchivo.isBlank()) {
+                            apoyosPorTipo.put(tipo, urlArchivo);
+                        }
+                    }
+                }
+                return apoyosPorTipo;
+            } else {
+                String errorBody = "";
+                if (conn.getErrorStream() != null) {
+                    errorBody = new String(conn.getErrorStream().readAllBytes(), java.nio.charset.StandardCharsets.UTF_8);
+                }
+                throw new RuntimeException("No se pudo obtener la lista de apoyos: " + errorBody);
+            }
+        } catch (Exception e) {
+            throw new RuntimeException("Error al obtener la lista de apoyos: " + e.getMessage(), e);
+        }
+    }
 }
