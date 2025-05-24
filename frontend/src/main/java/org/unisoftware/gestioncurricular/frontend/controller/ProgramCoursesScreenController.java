@@ -429,17 +429,17 @@ public class ProgramCoursesScreenController {
                     contentType = (contentType == null) ? "application/octet-stream" : contentType;
                     courseFileServiceFront.uploadFileToPresignedUrl(presignedUrl, selectedFile, contentType, token);
 
-                    // 5. Registrar el archivo de apoyo en el backend SOLO si hay fileId
+                    // 5. Actualizar el tipo del archivo de apoyo en el backend
                     if (fileId != null && !fileId.isEmpty()) {
-                        courseFileServiceFront.registerApoyoAcademico(courseId, fileId, tipoSeleccionado, token);
+                        courseFileServiceFront.updateApoyoAcademicoTipo(courseId, fileId, tipoSeleccionado, token);
                         javafx.application.Platform.runLater(() -> {
                             removerOverlayCarga(overlay);
-                            mostrarAlerta("Éxito", "Archivo de apoyo '" + selectedFile.getName() + "' subido y registrado como " + tipoSeleccionado + " correctamente.", Alert.AlertType.INFORMATION);
+                            mostrarAlerta("Éxito", "Archivo de apoyo '" + selectedFile.getName() + "' subido y actualizado a tipo " + tipoSeleccionado + " correctamente.", Alert.AlertType.INFORMATION);
                         });
                     } else {
                         javafx.application.Platform.runLater(() -> {
                             removerOverlayCarga(overlay);
-                            mostrarAlerta("Advertencia", "El archivo fue subido pero no se pudo registrar en la plataforma porque el backend no retornó un identificador único (UUID). El archivo no será visible ni gestionable desde la plataforma.", Alert.AlertType.WARNING);
+                            mostrarAlerta("Advertencia", "El archivo fue subido pero no se pudo actualizar su tipo porque el backend no retornó un identificador único (UUID). El archivo podría estar registrado como 'OTRO'.", Alert.AlertType.WARNING);
                         });
                     }
                 } catch (Exception ex) {

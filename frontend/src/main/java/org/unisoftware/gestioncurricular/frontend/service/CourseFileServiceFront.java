@@ -51,8 +51,9 @@ public class CourseFileServiceFront {
         if (responseCode == HttpURLConnection.HTTP_OK) {
             String presignedUrlString = new String(conn.getInputStream().readAllBytes(), StandardCharsets.UTF_8);
             System.out.println("[CourseFileServiceFront] URL prefirmada para apoyo recibida del backend: " + presignedUrlString); // Diagnóstico
-            // Ya no es necesario extraer ni usar fileId
-            return new FileUploadInfoDTO(presignedUrlString, null);
+            String fileId = extractFileIdFromUrlPath(presignedUrlString); // Extraer fileId
+            System.out.println("[CourseFileServiceFront] fileId extraído para apoyo: " + fileId); // Diagnóstico
+            return new FileUploadInfoDTO(presignedUrlString, fileId); // Devolver fileId
         } else {
             String errorBody = "";
             if (conn.getErrorStream() != null) {
@@ -81,6 +82,29 @@ public class CourseFileServiceFront {
                 errorBody = new String(conn.getErrorStream().readAllBytes(), StandardCharsets.UTF_8);
             }
             throw new IOException("Error al registrar apoyo académico: " + responseCode + " " + conn.getResponseMessage() + ". Cuerpo: " + errorBody);
+        }
+    }
+
+    public void updateApoyoAcademicoTipo(Long courseId, String fileId, String nuevoTipo, String token) throws IOException {
+        if (fileId == null || fileId.trim().isEmpty()){
+            throw new IllegalArgumentException("El fileId no puede ser nulo o vacío para actualizar el tipo de apoyo académico.");
+        }
+        URL url = new URL(BASE_URL + "/courses/" + courseId + "/files/apoyos/" + fileId + "?tipo=" + URLEncoder.encode(nuevoTipo, StandardCharsets.UTF_8.toString()));
+        HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+        conn.setRequestMethod("PUT");
+        if (token != null && !token.isEmpty()) {
+            conn.setRequestProperty("Authorization", "Bearer " + token);
+        }
+        conn.setDoOutput(false); // No request body for this PUT if data is in URL params
+
+        int responseCode = conn.getResponseCode();
+        // Consider HTTP_OK (200) or HTTP_NO_CONTENT (204) as success for PUT
+        if (responseCode != HttpURLConnection.HTTP_OK && responseCode != HttpURLConnection.HTTP_NO_CONTENT) {
+            String errorBody = "";
+            if (conn.getErrorStream() != null) {
+                errorBody = new String(conn.getErrorStream().readAllBytes(), StandardCharsets.UTF_8);
+            }
+            throw new IOException("Error al actualizar tipo de apoyo académico: " + responseCode + " " + conn.getResponseMessage() + ". Cuerpo: " + errorBody);
         }
     }
 
