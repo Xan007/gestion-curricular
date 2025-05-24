@@ -40,19 +40,6 @@ public class CourseFileService {
         return urlBuilder.buildUploadUrl(BucketsConfig.PUBLIC_BUCKET, path);
     }
 
-    @Transactional
-    public void registerApoyoAcademico(Long courseId, UUID fileId, AcademicSupportType tipo) {
-        Course course = courseRepository.findById(courseId).orElseThrow();
-
-        CursoApoyosFile file = new CursoApoyosFile();
-        file.setCourse(course);
-        file.setFileId(fileId);
-        file.setTipo(tipo);
-        file.setUploadedAt(LocalDateTime.now());
-
-        apoyosFileRepository.save(file);
-    }
-
     public List<CourseSupportFileDTO> getAllApoyos(Long courseId, Optional<AcademicSupportType> tipo) {
         List<CursoApoyosFile> archivos = tipo
                 .map(t -> apoyosFileRepository.findByCourseIdAndTipo(courseId, t))

@@ -54,30 +54,6 @@ public class CourseFileController {
     }
 
     @Operation(
-            summary = "Registrar archivo de apoyo académico",
-            description = "Registra un archivo de apoyo previamente subido, asociándolo al curso y tipo correspondiente. **Requiere rol DOCENTE**",
-            parameters = {
-                    @Parameter(name = "courseId", description = "ID del curso", required = true, in = ParameterIn.PATH),
-                    @Parameter(name = "fileId", description = "ID del archivo en Supabase", required = true, in = ParameterIn.PATH),
-                    @Parameter(name = "tipo", description = "Tipo de apoyo académico", required = true)
-            },
-            responses = {
-                    @ApiResponse(responseCode = "204", description = "Archivo registrado correctamente"),
-                    @ApiResponse(responseCode = "403", description = "Acceso denegado")
-            }
-    )
-    @PreAuthorize("hasRole('DIRECTOR_DE_PROGRAMA')")
-    @PostMapping("/apoyos/{fileId}")
-    public ResponseEntity<Void> registerApoyoAcademico(
-            @PathVariable Long courseId,
-            @PathVariable UUID fileId,
-            @RequestParam AcademicSupportType tipo
-    ) {
-        courseFileService.registerApoyoAcademico(courseId, fileId, tipo);
-        return ResponseEntity.noContent().build();
-    }
-
-    @Operation(
             summary = "Listar archivos de apoyo académico",
             description = "Obtiene una lista de URLs de archivos de apoyo académico asociados a un curso. **Sin restricción de rol**",
             parameters = {
