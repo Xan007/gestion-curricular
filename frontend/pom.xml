@@ -83,7 +83,6 @@
             <groupId>org.openjfx</groupId>
             <artifactId>javafx-web</artifactId>
             <version>${javafx.version}</version>
-            <classifier>win</classifier>
         </dependency>
 
 
@@ -92,7 +91,6 @@
             <groupId>org.openjfx</groupId>
             <artifactId>javafx-media</artifactId>
             <version>${javafx.version}</version>
-            <classifier>win</classifier>
         </dependency>
 
 
@@ -102,12 +100,6 @@
             <artifactId>controlsfx</artifactId>
             <version>11.1.2</version>
         </dependency>
-
-      <dependency>
-      <groupId>com.fasterxml.jackson.core</groupId>
-      <artifactId>jackson-databind</artifactId>
-      <version>2.16.1</version>
-      </dependency>
 
     </dependencies>
 
@@ -132,6 +124,14 @@
                 <configuration>
                     <mainClass>org.unisoftware.gestioncurricular.frontend.JavaFXApplication</mainClass>
                     <layout>JAR</layout>
+                    <jvmArguments>
+                        --add-exports javafx.graphics/com.sun.javafx.sg.prism=ALL-UNNAMED
+                        --add-opens javafx.graphics/com.sun.javafx.sg.prism=ALL-UNNAMED
+                        --add-exports javafx.controls/com.sun.javafx.scene.control.behavior=ALL-UNNAMED
+                        --add-exports javafx.controls/com.sun.javafx.scene.control.inputmap=ALL-UNNAMED
+                        --add-exports javafx.graphics/com.sun.javafx.tk=ALL-UNNAMED
+                        --add-opens javafx.graphics/com.sun.javafx.tk=ALL-UNNAMED
+                    </jvmArguments>
                 </configuration>
                 <executions>
                     <execution>
@@ -152,6 +152,18 @@
                     <options>
                         <option>--add-opens</option>
                         <option>java.base/java.lang=ALL-UNNAMED</option>
+                        <option>--add-exports</option>
+                        <option>javafx.graphics/com.sun.javafx.sg.prism=ALL-UNNAMED</option>
+                        <option>--add-opens</option>
+                        <option>javafx.graphics/com.sun.javafx.sg.prism=ALL-UNNAMED</option>
+                        <option>--add-exports</option>
+                        <option>javafx.controls/com.sun.javafx.scene.control.behavior=ALL-UNNAMED</option>
+                        <option>--add-exports</option>
+                        <option>javafx.controls/com.sun.javafx.scene.control.inputmap=ALL-UNNAMED</option>
+                        <option>--add-exports</option>
+                        <option>javafx.graphics/com.sun.javafx.tk=ALL-UNNAMED</option>
+                        <option>--add-opens</option>
+                        <option>javafx.graphics/com.sun.javafx.tk=ALL-UNNAMED</option>
                         <option>--add-modules</option>
                         <option>javafx.controls,javafx.fxml,javafx.web,javafx.media,javafx.graphics</option>
                     </options>
@@ -178,3 +190,4 @@
         </plugins>
     </build>
 </project>
+
