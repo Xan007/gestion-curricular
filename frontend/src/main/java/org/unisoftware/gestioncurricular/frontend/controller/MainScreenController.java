@@ -646,14 +646,9 @@ public class MainScreenController implements Initializable {
         String token = SessionManager.getInstance().getToken();
         String role = SessionManager.getInstance().getUserRole();
         try {
-            String endpointUrl = "http://localhost:8080/proposals"; // URL por defecto
-
-            // Si es Director de Escuela viendo sus propuestas para firmar, usar el endpoint específico
-            if ("DIRECTOR_DE_ESCUELA".equals(role) && "Escuela".equals(tipo)) {
-                endpointUrl = "http://localhost:8080/proposals/pending-signatures";
-            }
-            // Para DIRECTOR_DE_PROGRAMA y COMITE_DE_PROGRAMA, la URL general /proposals es adecuada
-            // ya que el backend filtra según el rol.
+            // Todos los roles de revisión usarán el endpoint general /proposals.
+            // El backend se encargará de filtrar las propuestas según el rol.
+            String endpointUrl = "http://localhost:8080/proposals";
 
             if ("DIRECTOR_DE_PROGRAMA".equals(role) || "COMITE_DE_PROGRAMA".equals(role) || "DIRECTOR_DE_ESCUELA".equals(role)) {
                 java.net.URL urlObj = new java.net.URL(endpointUrl);
@@ -690,7 +685,7 @@ public class MainScreenController implements Initializable {
                 card.setAlignment(Pos.TOP_LEFT);
                 String titulo = (String) propuesta.get("title");
                 String estado = (String) propuesta.get("status");
-                String observaciones = (String) propuesta.get("observations");
+                // String observaciones = (String) propuesta.get("observations"); // Ya no se usa directamente
                 Map<String, Object> fileInfoMap = (Map<String, Object>) propuesta.get("file"); // Contiene información preliminar del archivo
                 Long proposalId = ((Number) propuesta.get("id")).longValue();
                 Long courseId = ((Number) propuesta.get("courseId")).longValue();
@@ -698,7 +693,15 @@ public class MainScreenController implements Initializable {
                 Label lblTitulo = new Label("Título: " + titulo);
                 lblTitulo.setStyle("-fx-font-size: 16px; -fx-font-weight: bold; -fx-text-fill: #d32f2f;");
                 Label lblEstado = new Label("Estado: " + estado);
-                Label lblObs = new Label("Observaciones: " + (observaciones != null ? observaciones : "Sin observaciones"));
+
+                String observacionesRaw = (String) propuesta.get("observations");
+                String observacionesFormateadas = formatarObservaciones(observacionesRaw);
+                Label lblObs = new Label("Observaciones:\n" + observacionesFormateadas);
+                lblObs.setWrapText(false);
+                // Establecer un ancho máximo para el Label de observaciones para que el texto se ajuste correctamente.
+                // El ancho de la tarjeta es 500 (minWidth), con padding de 18 a cada lado (500 - 36 = 464).
+                lblObs.setMaxWidth(460);
+
 
                 Button btnVerArchivo = new Button("Ver Archivo");
 
@@ -769,18 +772,16 @@ public class MainScreenController implements Initializable {
                     }
                 }
 
-                Boolean firmadoDirProg = (Boolean) propuesta.get("signedByDirectorPrograma");
-                Boolean firmadoDirEsc = (Boolean) propuesta.get("signedByDirectorEscuela");
-                // El botón de subir microcurrículo solo aparece si AMBOS han firmado y el estado es ACEPTADA.
-                // Esta condición se mantiene, ya que es el resultado final deseado.
-                if (Boolean.TRUE.equals(firmadoDirProg) && Boolean.TRUE.equals(firmadoDirEsc) && "ACEPTADA".equals(estado)) {
-                    Button btnSubirMicro = new Button("Subir como Microcurrículo");
-                    btnSubirMicro.setOnAction(e -> subirMicrocurriculoDesdePropuesta(courseId, fileInfoMap != null ? (String) fileInfoMap.get("url") : null));
-                    card.getChildren().add(btnSubirMicro);
-                }
                 listaPropuestas.getChildren().add(card);
             }
-            modalContent.getChildren().add(listaPropuestas);
+            // --- CAMBIO: envolver en ScrollPane ---
+            ScrollPane scrollPane = new ScrollPane(listaPropuestas);
+            scrollPane.setFitToWidth(true);
+            scrollPane.setPrefViewportHeight(400); // Altura visible
+            scrollPane.setMaxHeight(400);
+            scrollPane.setMinHeight(200);
+            scrollPane.setStyle("-fx-background-color: transparent;");
+            modalContent.getChildren().add(scrollPane);
         }
         Button cerrar = new Button("Cerrar");
         cerrar.getStyleClass().add("cerrar-btn");
@@ -912,39 +913,6 @@ public class MainScreenController implements Initializable {
                 }
             }).start();
         });
-    }
-
-    private void subirMicrocurriculoDesdePropuesta(Long courseId, String fileUrl) {
-        if (fileUrl == null || fileUrl.isBlank()) {
-            mostrarAlerta("Error", "No hay archivo disponible en la propuesta.", Alert.AlertType.ERROR);
-            return;
-        }
-        // Descargar el archivo temporalmente y subirlo como microcurrículo
-        new Thread(() -> {
-            try {
-                java.net.URL url = new java.net.URL(fileUrl);
-                java.io.File tempFile = java.io.File.createTempFile("microcurriculo_", ".tmp");
-                try (java.io.InputStream in = url.openStream(); java.io.FileOutputStream fos = new java.io.FileOutputStream(tempFile)) {
-                    byte[] buffer = new byte[8192];
-                    int bytesRead;
-                    while ((bytesRead = in.read(buffer)) != -1) {
-                        fos.write(buffer, 0, bytesRead);
-                    }
-                }
-                // Subir usando el servicio de microcurrículo
-                org.unisoftware.gestioncurricular.frontend.service.CourseFileServiceFront courseFileServiceFront = new org.unisoftware.gestioncurricular.frontend.service.CourseFileServiceFront();
-                String token = SessionManager.getInstance().getToken();
-                org.unisoftware.gestioncurricular.frontend.dto.FileUploadInfoDTO uploadInfo = courseFileServiceFront.getMicrocurriculumUploadUrl(courseId, token);
-                String presignedUrl = uploadInfo.getUploadUrl();
-                String contentType = java.nio.file.Files.probeContentType(tempFile.toPath());
-                if (contentType == null) contentType = "application/octet-stream";
-                courseFileServiceFront.uploadFileToPresignedUrl(presignedUrl, tempFile, contentType, token);
-                javafx.application.Platform.runLater(() -> mostrarAlerta("Éxito", "Microcurrículo subido correctamente al curso.", Alert.AlertType.INFORMATION));
-                tempFile.delete();
-            } catch (Exception ex) {
-                javafx.application.Platform.runLater(() -> mostrarAlerta("Error", "No se pudo subir el microcurrículo: " + ex.getMessage(), Alert.AlertType.ERROR));
-            }
-        }).start();
     }
 
     private void mostrarMisCursos() {
@@ -1578,5 +1546,41 @@ public class MainScreenController implements Initializable {
             }).start();
         }
     }
-}
 
+    private String formatarObservaciones(String rawObservations) {
+        if (rawObservations == null || rawObservations.isBlank()) {
+            return "Sin observaciones";
+        }
+        StringBuilder formattedObservations = new StringBuilder();
+        // Manejar saltos de línea Windows (CRLF) y Unix/Linux (LF)
+        String[] entries = rawObservations.split("\\r?\\n|\\n");
+
+        for (String entry : entries) {
+            if (entry.trim().isEmpty()) {
+                continue; // Saltar líneas vacías
+            }
+            // Dividir la entrada por el carácter pipe '|'. Pattern.quote se usa para tratar el pipe literalmente.
+            String[] parts = entry.split(java.util.regex.Pattern.quote("|"));
+
+            // Se espera que parts[1] sea el rol y parts[3] la acción.
+            if (parts.length >= 4) {
+                String role = parts[1].replace("_", " "); // Reemplazar guiones bajos por espacios para mejor legibilidad
+                String action = parts[3];
+
+                if (formattedObservations.length() > 0) {
+                    formattedObservations.append("\n"); // Añadir salto de línea antes de la nueva observación
+                }
+                formattedObservations.append(role).append(": ").append(action);
+            }
+            // Si una entrada no tiene el formato esperado, se ignora en esta versión.
+            // Alternativamente, se podría añadir la entrada original o un mensaje de error.
+        }
+
+        if (formattedObservations.length() == 0) {
+            // Si ninguna entrada pudo ser formateada (e.g., formato inesperado en todas las líneas)
+            return "Sin observaciones (formato no reconocido o vacío)";
+        }
+
+        return formattedObservations.toString();
+    }
+}
