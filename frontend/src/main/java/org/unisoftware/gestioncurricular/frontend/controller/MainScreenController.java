@@ -43,6 +43,10 @@ import org.unisoftware.gestioncurricular.frontend.util.JwtDecodeUtil;
 import org.unisoftware.gestioncurricular.frontend.service.ProgramFileServiceFront;
 import org.unisoftware.gestioncurricular.frontend.service.ProgramFileViewServiceFront;
 import org.springframework.stereotype.Component;
+import com.fasterxml.jackson.databind.ObjectMapper; // Importar ObjectMapper
+import org.unisoftware.gestioncurricular.frontend.dto.ProposalFileDTO; // Importar ProposalFileDTO
+import org.unisoftware.gestioncurricular.frontend.service.ProposalFileServiceFront; // Importar ProposalFileServiceFront
+import java.util.UUID; // Importar UUID
 
 import java.io.File;
 import java.io.IOException;
@@ -72,6 +76,7 @@ public class MainScreenController implements Initializable {
     @Autowired private ApplicationContext applicationContext;
     @Autowired private ProgramFileServiceFront programFileServiceFront;
     @Autowired private ProgramFileViewServiceFront programFileViewServiceFront;
+    private final ProposalFileServiceFront proposalFileServiceFront = new ProposalFileServiceFront(); // Instanciar el nuevo servicio
 
     private int paginaActual = 0;
     private static final int PROGRAMAS_POR_PAGINA = 2;
@@ -816,62 +821,94 @@ public class MainScreenController implements Initializable {
 
             new Thread(() -> {
                 try {
-                    // 1. Subir archivo (asumimos endpoint /files, retorna UUID fileId)
-                    String boundary = "----WebKitFormBoundary" + System.currentTimeMillis();
-                    java.net.URL url = new java.net.URL("http://localhost:8080/files");
-                    java.net.HttpURLConnection conn = (java.net.HttpURLConnection) url.openConnection();
-                    conn.setDoOutput(true);
-                    conn.setRequestMethod("POST");
-                    conn.setRequestProperty("Content-Type", "multipart/form-data; boundary=" + boundary);
-                    java.io.OutputStream output = conn.getOutputStream();
-                    String filePartHeader = "--" + boundary + "\r\n" +
-                            "Content-Disposition: form-data; name=\"file\"; filename=\"" + selectedFile.getName() + "\"\r\n" +
-                            "Content-Type: application/octet-stream\r\n\r\n";
-                    output.write(filePartHeader.getBytes());
-                    java.nio.file.Files.copy(selectedFile.toPath(), output);
-                    output.write("\r\n".getBytes());
-                    output.write(("--" + boundary + "--\r\n").getBytes());
-                    output.flush();
-                    output.close();
-                    int responseCode = conn.getResponseCode();
-                    if (responseCode != 200 && responseCode != 201) {
-                        throw new RuntimeException("Error al subir archivo: " + conn.getResponseMessage());
-                    }
-                    String response;
-                    try (java.io.InputStream in = conn.getInputStream()) {
-                        response = new String(in.readAllBytes());
-                    }
-                    // Se espera que el backend retorne el UUID del archivo en el body (ajusta si es diferente)
-                    // Corrige expresión regular para evitar errores de compilación
-                    String fileId = response.replaceAll("[^a-fA-F0-9-]", "");
-                    if (fileId.isEmpty()) throw new RuntimeException("No se recibió fileId del backend");
+                    String token = SessionManager.getInstance().getToken(); // Obtener token
+                    ObjectMapper objectMapper = new ObjectMapper();
 
-                    // 2. Crear propuesta (POST /proposals)
-                    java.net.URL url2 = new java.net.URL("http://localhost:8080/proposals");
-                    java.net.HttpURLConnection conn2 = (java.net.HttpURLConnection) url2.openConnection();
-                    conn2.setDoOutput(true);
-                    conn2.setRequestMethod("POST");
-                    conn2.setRequestProperty("Content-Type", "application/json");
-                    // Construir JSON de ProposalDTO
-                    String docenteId = org.unisoftware.gestioncurricular.frontend.util.SessionManager.getInstance().getUserId();
-                    String json = String.format("{\"title\":\"Propuesta de microcurrículo\",\"courseId\":%d,\"teacherId\":\"%s\",\"fileId\":\"%s\"}",
-                            curso.getId(), docenteId, fileId);
-                    try (java.io.OutputStream os = conn2.getOutputStream()) {
-                        os.write(json.getBytes());
+                    // Mostrar UI de carga inicial (opcional, pero recomendado)
+                    javafx.application.Platform.runLater(() -> {
+                        // Aquí podrías actualizar la UI para indicar "Creando propuesta..."
+                    });
+
+                    // 1. Crear la propuesta primero para obtener su ID y asociar un fileId temporal
+                    String tempFileId = UUID.randomUUID().toString(); // Generar un fileId temporal
+                    String docenteId = SessionManager.getInstance().getUserId();
+
+                    Map<String, Object> proposalRequestPayload = new HashMap<>();
+                    proposalRequestPayload.put("title", "Propuesta de microcurrículo para " + curso.getName());
+                    proposalRequestPayload.put("courseId", curso.getId());
+                    proposalRequestPayload.put("teacherId", docenteId); // Asegúrate que esto sea un UUID String
+                    proposalRequestPayload.put("fileId", tempFileId); // Enviar el fileId temporal
+
+                    String jsonProposalPayload = objectMapper.writeValueAsString(proposalRequestPayload);
+
+                    java.net.URL urlCreateProposal = new java.net.URL("http://localhost:8080/proposals");
+                    java.net.HttpURLConnection connCreateProposal = (java.net.HttpURLConnection) urlCreateProposal.openConnection();
+                    connCreateProposal.setDoOutput(true);
+                    connCreateProposal.setRequestMethod("POST");
+                    if (token != null && !token.isEmpty()) {
+                        connCreateProposal.setRequestProperty("Authorization", "Bearer " + token);
                     }
-                    int resp2 = conn2.getResponseCode();
-                    if (resp2 != 200 && resp2 != 201) {
-                        String errorMsg = "";
-                        try (java.io.InputStream err = conn2.getErrorStream()) {
-                            if (err != null) errorMsg = new String(err.readAllBytes());
+                    connCreateProposal.setRequestProperty("Content-Type", "application/json");
+                    connCreateProposal.setRequestProperty("Accept", "application/json");
+
+                    try (java.io.OutputStream os = connCreateProposal.getOutputStream()) {
+                        os.write(jsonProposalPayload.getBytes(StandardCharsets.UTF_8));
+                    }
+
+                    int responseCodeProposal = connCreateProposal.getResponseCode();
+                    String responseBodyProposal;
+                    if (responseCodeProposal >= 200 && responseCodeProposal < 300) {
+                        responseBodyProposal = new String(connCreateProposal.getInputStream().readAllBytes(), StandardCharsets.UTF_8);
+                    } else {
+                        String errorBody = "";
+                        if (connCreateProposal.getErrorStream() != null) {
+                            errorBody = new String(connCreateProposal.getErrorStream().readAllBytes(), StandardCharsets.UTF_8);
                         }
-                        throw new RuntimeException("Error al crear propuesta: " + conn2.getResponseMessage() + (errorMsg.isEmpty() ? "" : ". Detalle: " + errorMsg));
+                        throw new RuntimeException("Error al crear propuesta: " + connCreateProposal.getResponseMessage() +
+                                " (Código: " + responseCodeProposal + "). Cuerpo: " + errorBody);
                     }
+
+                    // Parsear la respuesta para obtener el ID de la propuesta creada
+                    Map<String, Object> createdProposal = objectMapper.readValue(responseBodyProposal, Map.class);
+                    Long proposalId = ((Number) createdProposal.get("id")).longValue();
+                    // String actualFileId = (String) createdProposal.get("fileId"); // El fileId que el backend guardó
+
+                    // Actualizar UI (opcional)
+                    javafx.application.Platform.runLater(() -> {
+                        // "Obteniendo URL de subida..."
+                    });
+
+                    // 2. Obtener la URL prefirmada para subir el archivo
+                    ProposalFileDTO proposalFileDto = proposalFileServiceFront.getUploadUrl(curso.getId(), proposalId, token);
+                    String presignedUrl = proposalFileDto.getUrl();
+                    // String fileKeyFromBackend = proposalFileDto.getFileKey(); // Este debería coincidir con actualFileId o tempFileId
+
+                    // Actualizar UI (opcional)
+                    javafx.application.Platform.runLater(() -> {
+                        // "Subiendo archivo..."
+                    });
+
+                    // 3. Subir el archivo a la URL prefirmada
+                    String contentType = java.nio.file.Files.probeContentType(selectedFile.toPath());
+                    if (contentType == null) {
+                        // Fallback si no se puede determinar, o se puede basar en la extensión del archivo
+                        if (selectedFile.getName().endsWith(".pdf")) contentType = "application/pdf";
+                        else if (selectedFile.getName().endsWith(".doc")) contentType = "application/msword";
+                        else if (selectedFile.getName().endsWith(".docx")) contentType = "application/vnd.openxmlformats-officedocument.wordprocessingml.document";
+                        else if (selectedFile.getName().endsWith(".xlsx")) contentType = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
+                        else if (selectedFile.getName().endsWith(".xls")) contentType = "application/vnd.ms-excel";
+                        else if (selectedFile.getName().endsWith(".csv")) contentType = "text/csv";
+                        else contentType = "application/octet-stream"; // Genérico
+                    }
+                    proposalFileServiceFront.uploadFileToPresignedUrl(presignedUrl, selectedFile, contentType, token); // Pasar el token aquí
+
                     javafx.application.Platform.runLater(() -> {
                         anchorPane.getChildren().remove(overlay);
                         mostrarAlerta("Éxito", "Propuesta enviada correctamente.", Alert.AlertType.INFORMATION);
                     });
+
                 } catch (Exception ex) {
+                    ex.printStackTrace(); // Imprimir stack trace para depuración
                     javafx.application.Platform.runLater(() -> {
                         anchorPane.getChildren().remove(overlay);
                         mostrarAlerta("Error", "No se pudo enviar la propuesta: " + ex.getMessage(), Alert.AlertType.ERROR);
