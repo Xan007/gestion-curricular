@@ -64,6 +64,7 @@ public class MainScreenController implements Initializable {
     @FXML private Button btnPropuestasEscuela;
     @FXML private Button btnPropuestasPrograma;
     @FXML private Button btnMisCursos;
+    @FXML private Button btnMisPropuestas; // Nuevo botón para "Mis Propuestas"
 
     @Autowired private ProgramServiceFront programServiceFront;
     @Autowired private ExcelUploadService excelUploadService;
@@ -108,9 +109,16 @@ public class MainScreenController implements Initializable {
             btnMisCursos.setVisible(true);
             btnMisCursos.setManaged(true);
             btnMisCursos.setOnAction(e -> mostrarMisCursos());
+
+            btnMisPropuestas.setVisible(true); // Hacer visible el nuevo botón
+            btnMisPropuestas.setManaged(true); // Manejar el espacio del nuevo botón
+            btnMisPropuestas.setOnAction(e -> mostrarMisPropuestasDocente()); // Asignar acción
         } else {
             btnMisCursos.setVisible(false);
             btnMisCursos.setManaged(false);
+
+            btnMisPropuestas.setVisible(false); // Ocultar si no es DOCENTE
+            btnMisPropuestas.setManaged(false); // No manejar espacio si no es DOCENTE
         }
 
         adminPlantelBtn.setOnAction(e -> abrirAdministracionPlantel(e));
@@ -1742,5 +1750,187 @@ public class MainScreenController implements Initializable {
         return null;
     }
 
-}
+    // Nuevo método para mostrar las propuestas del docente
+    private void mostrarMisPropuestasDocente() {
+        AnchorPane anchorPane = (AnchorPane) cardContainer.getScene().getRoot();
+        // Eliminar overlay anterior si existe
+        StackPane oldOverlay = (StackPane) anchorPane.lookup("#misPropuestasDocenteOverlay");
+        if (oldOverlay != null) {
+            anchorPane.getChildren().remove(oldOverlay);
+        }
 
+        VBox modalContent = new VBox(18);
+        modalContent.setStyle("-fx-background-color: #fff; -fx-padding: 32; -fx-background-radius: 14; -fx-effect: dropshadow(three-pass-box, #d32f2f, 12, 0.18, 0, 4); -fx-border-color: #d32f2f; -fx-border-width: 3;");
+        modalContent.setPrefWidth(800);
+        modalContent.setMinWidth(600);
+        modalContent.setAlignment(Pos.CENTER);
+        Label titleLabel = new Label("Mis Propuestas de Microcurrículo");
+        titleLabel.setStyle("-fx-font-size: 20px; -fx-font-weight: bold; -fx-text-fill: #d32f2f;");
+        modalContent.getChildren().add(titleLabel);
+
+        List<Map<String, Object>> propuestas = new ArrayList<>();
+        String token = SessionManager.getInstance().getToken();
+        // String teacherId = SessionManager.getInstance().getUserId(); // Ya no se necesita para este endpoint
+
+        try {
+            // Endpoint para obtener las propuestas del docente actual
+            String endpointUrl = "http://localhost:8080/proposals"; // Modificado según la solicitud
+            java.net.URL urlObj = new java.net.URL(endpointUrl);
+            java.net.HttpURLConnection conn = (java.net.HttpURLConnection) urlObj.openConnection();
+            conn.setRequestMethod("GET");
+            conn.setRequestProperty("Authorization", "Bearer " + token);
+            conn.setRequestProperty("Accept", "application/json");
+
+            int responseCode = conn.getResponseCode();
+            if (responseCode >= 200 && responseCode < 300) {
+                String responseBody = new String(conn.getInputStream().readAllBytes(), StandardCharsets.UTF_8);
+                com.fasterxml.jackson.databind.ObjectMapper mapper = new com.fasterxml.jackson.databind.ObjectMapper();
+                propuestas = mapper.readValue(responseBody, List.class);
+            } else {
+                String errorBody = "";
+                if (conn.getErrorStream() != null) {
+                    errorBody = new String(conn.getErrorStream().readAllBytes(), StandardCharsets.UTF_8);
+                }
+                throw new IOException("Error del servidor (" + responseCode + "): " + errorBody);
+            }
+        } catch (Exception ex) {
+            modalContent.getChildren().add(new Label("Error al cargar propuestas: " + ex.getMessage()));
+        }
+
+        if (propuestas.isEmpty()) {
+            modalContent.getChildren().add(new Label("No hay propuestas disponibles."));
+        } else {
+            VBox listaPropuestas = new VBox(12);
+            listaPropuestas.setAlignment(Pos.TOP_CENTER);
+            for (Map<String, Object> propuesta : propuestas) {
+                VBox card = new VBox(8);
+                card.setStyle("-fx-background-color: #f7f7fa; -fx-background-radius: 10; -fx-padding: 18; -fx-effect: dropshadow(gaussian, #d32f2f22, 4,0,0,1);");
+                card.setMinWidth(500);
+                card.setAlignment(Pos.TOP_LEFT);
+                String titulo = (String) propuesta.get("title");
+                String estado = (String) propuesta.get("status");
+                // String observaciones = (String) propuesta.get("observations"); // Ya no se usa directamente
+                Map<String, Object> fileInfoMap = (Map<String, Object>) propuesta.get("file"); // Contiene información preliminar del archivo
+                Long proposalId = ((Number) propuesta.get("id")).longValue();
+                Long courseId = ((Number) propuesta.get("courseId")).longValue();
+
+                Label lblTitulo = new Label("Título: " + titulo);
+                lblTitulo.setStyle("-fx-font-size: 16px; -fx-font-weight: bold; -fx-text-fill: #d32f2f;");
+                Label lblEstado = new Label("Estado: " + estado);
+
+                String observacionesRaw = (String) propuesta.get("observations");
+                String observacionesFormateadas = formatarObservaciones(observacionesRaw);
+                Label lblObs = new Label("Observaciones:\n" + observacionesFormateadas);
+                lblObs.setWrapText(false);
+                // Establecer un ancho máximo para el Label de observaciones para que el texto se ajuste correctamente.
+                // El ancho de la tarjeta es 500 (minWidth), con padding de 18 a cada lado (500 - 36 = 464).
+                lblObs.setMaxWidth(460);
+
+
+                Button btnVerArchivo = new Button("Ver Archivo");
+
+                if (fileInfoMap != null) { // Asumimos que si fileInfoMap no es null, hay un archivo potencial
+                    btnVerArchivo.setDisable(false);
+                    btnVerArchivo.setOnAction(e -> {
+                        new Thread(() -> { // Ejecutar en un hilo separado para no bloquear la UI
+                            try {
+                                // Se utiliza el 'token' del ámbito de mostrarPropuestasMicro
+                                ProposalFileDTO fileDto = proposalFileServiceFront.getDisplayUrlDTO(courseId, proposalId, token);
+
+                                if (fileDto != null && fileDto.getUrl() != null && !fileDto.getUrl().isBlank()) {
+                                    final String finalUrl = fileDto.getUrl();
+                                    javafx.application.Platform.runLater(() -> abrirPdfEnNavegador(() -> finalUrl));
+                                } else {
+                                    javafx.application.Platform.runLater(() -> mostrarAlerta("Información", "No se encontró URL para el archivo de la propuesta.", Alert.AlertType.INFORMATION));
+                                }
+                            } catch (Exception ex) {
+                                System.err.println("Error al obtener URL del archivo de propuesta: " + ex.getMessage());
+                                ex.printStackTrace(); // Para depuración
+                                javafx.application.Platform.runLater(() -> mostrarAlerta("Error", "No se pudo obtener la URL del archivo: " + ex.getMessage(), Alert.AlertType.ERROR));
+                            }
+                        }).start();
+                    });
+                } else {
+                    btnVerArchivo.setDisable(true);
+                    btnVerArchivo.setTooltip(new Tooltip("No hay archivo adjunto para esta propuesta o falta información."));
+                }
+                card.getChildren().addAll(lblTitulo, lblEstado, lblObs, btnVerArchivo);
+
+                // Lógica de acciones según estado y rol
+                if ("EN_REVISION_DIRECTOR".equals(estado)) {
+                    Button btnAprobar = new Button("Aprobar");
+                    Button btnRechazar = new Button("Rechazar");
+                    btnAprobar.setOnAction(e -> revisarPropuesta(proposalId, true));
+                    btnRechazar.setOnAction(e -> revisarPropuesta(proposalId, false));
+                    card.getChildren().addAll(btnAprobar, btnRechazar);
+                } else if ("EN_REVISION_COMITE".equals(estado)) {
+                    Button btnAprobar = new Button("Aprobar");
+                    Button btnRechazar = new Button("Rechazar");
+                    btnAprobar.setOnAction(e -> revisarPropuesta(proposalId, true));
+                    btnRechazar.setOnAction(e -> revisarPropuesta(proposalId, false));
+                    card.getChildren().addAll(btnAprobar, btnRechazar);
+                } else if ("ESPERANDO_FIRMAS".equals(estado)) {
+                    boolean yaFirmoDirectorPrograma = Boolean.TRUE.equals(propuesta.get("signedByDirectorPrograma"));
+                    boolean yaFirmoDirectorEscuela = Boolean.TRUE.equals(propuesta.get("signedByDirectorEscuela"));
+                    boolean mostrarBotonesFirma = false;
+
+                    if (!yaFirmoDirectorPrograma) {
+                        mostrarBotonesFirma = true;
+                    } else if (!yaFirmoDirectorEscuela) {
+                        mostrarBotonesFirma = true;
+                    }
+
+                    if (mostrarBotonesFirma) {
+                        Button btnFirmar = new Button("Firmar Propuesta");
+                        Button btnRechazarFirma = new Button("Rechazar Firma");
+                        btnFirmar.setOnAction(e -> firmarPropuesta(proposalId, true));
+                        btnRechazarFirma.setOnAction(e -> firmarPropuesta(proposalId, false));
+                        card.getChildren().addAll(btnFirmar, btnRechazarFirma);
+                    } else {
+                        if (yaFirmoDirectorPrograma || yaFirmoDirectorEscuela) {
+                            Label lblYaFirmado = new Label("Ya has procesado tu firma para esta propuesta.");
+                            lblYaFirmado.setStyle("-fx-font-style: italic; -fx-text-fill: #555;");
+                            card.getChildren().add(lblYaFirmado);
+                        }
+                    }
+                }
+
+                listaPropuestas.getChildren().add(card);
+            }
+            // --- CAMBIO: envolver en ScrollPane ---
+            ScrollPane scrollPane = new ScrollPane(listaPropuestas);
+            scrollPane.setFitToWidth(true);
+            scrollPane.setPrefViewportHeight(400); // Altura visible
+            scrollPane.setMaxHeight(400);
+            scrollPane.setMinHeight(200);
+            scrollPane.setStyle("-fx-background-color: transparent;");
+            modalContent.getChildren().add(scrollPane);
+        }
+        Button cerrar = new Button("Cerrar");
+        cerrar.getStyleClass().add("cerrar-btn");
+        modalContent.getChildren().add(cerrar);
+        VBox modalWrapper = new VBox();
+        modalWrapper.setAlignment(Pos.CENTER);
+        modalWrapper.setFillWidth(true);
+        modalWrapper.setPrefWidth(800);
+        modalWrapper.setMinWidth(600);
+        modalWrapper.getChildren().add(modalContent);
+        StackPane overlay = new StackPane();
+        overlay.setId("misPropuestasDocenteOverlay"); // ID para identificar y eliminar overlays viejos
+        overlay.setStyle("-fx-background-color: rgba(30,32,48,0.18);");
+        overlay.setPickOnBounds(true);
+        overlay.setPrefSize(anchorPane.getWidth(), anchorPane.getHeight());
+        overlay.setMinSize(Region.USE_PREF_SIZE, Region.USE_PREF_SIZE);
+        overlay.setMaxSize(Region.USE_PREF_SIZE, Region.USE_PREF_SIZE);
+        overlay.setAlignment(Pos.CENTER);
+        overlay.getChildren().add(modalWrapper);
+        anchorPane.getChildren().add(overlay);
+        AnchorPane.setTopAnchor(overlay, 0.0);
+        AnchorPane.setBottomAnchor(overlay, 0.0);
+        AnchorPane.setLeftAnchor(overlay, 0.0);
+        AnchorPane.setRightAnchor(overlay, 0.0);
+        final StackPane overlayFinal = overlay;
+        cerrar.setOnAction(ev -> anchorPane.getChildren().remove(overlayFinal));
+    }
+
+}
