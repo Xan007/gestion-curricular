@@ -40,6 +40,7 @@ import org.springframework.stereotype.Component;
 import com.fasterxml.jackson.databind.ObjectMapper; // Importar ObjectMapper
 import org.unisoftware.gestioncurricular.frontend.dto.ProposalFileDTO; // Importar ProposalFileDTO
 import org.unisoftware.gestioncurricular.frontend.service.ProposalFileServiceFront; // Importar ProposalFileServiceFront
+import org.unisoftware.gestioncurricular.frontend.service.ChatServiceFront; // Importar ChatServiceFront
 import java.util.UUID; // Importar UUID
 
 import java.io.File;
@@ -65,6 +66,7 @@ public class MainScreenController implements Initializable {
     @FXML private Button btnPropuestasPrograma;
     @FXML private Button btnMisCursos;
     @FXML private Button btnMisPropuestas; // Nuevo botón para "Mis Propuestas"
+    @FXML private Button btnChatIA; // Nuevo botón para el Chat IA
 
     @Autowired private ProgramServiceFront programServiceFront;
     @Autowired private ExcelUploadService excelUploadService;
@@ -72,6 +74,7 @@ public class MainScreenController implements Initializable {
     @Autowired private ProgramFileServiceFront programFileServiceFront;
     @Autowired private ProgramFileViewServiceFront programFileViewServiceFront;
     private final ProposalFileServiceFront proposalFileServiceFront = new ProposalFileServiceFront(); // Instanciar el nuevo servicio
+    @Autowired private ChatServiceFront chatServiceFront; // Inyectar ChatServiceFront
 
     private int paginaActual = 0;
     private static final int PROGRAMAS_POR_PAGINA = 2;
@@ -125,6 +128,11 @@ public class MainScreenController implements Initializable {
         btnPropuestasComite.setOnAction(e -> mostrarPropuestasMicro("Comité de Programa"));
         btnPropuestasEscuela.setOnAction(e -> mostrarPropuestasMicro("Escuela"));
         btnPropuestasPrograma.setOnAction(e -> mostrarPropuestasMicro("Programa"));
+
+        // Configurar el botón del Chat IA
+        btnChatIA.setOnAction(e -> abrirVentanaChat());
+        btnChatIA.setVisible(true); // Visible para todos los usuarios
+        btnChatIA.setManaged(true);
 
     }
 
@@ -1900,4 +1908,129 @@ public class MainScreenController implements Initializable {
         cerrar.setOnAction(ev -> anchorPane.getChildren().remove(overlayFinal));
     }
 
-}
+    // --- INICIO: Funcionalidad del Chat IA ---
+    private void abrirVentanaChat() {
+        AnchorPane anchorPane = (AnchorPane) cardContainer.getScene().getRoot();
+        StackPane chatOverlay = (StackPane) anchorPane.lookup("#chatOverlay");
+        if (chatOverlay != null) {
+            anchorPane.getChildren().remove(chatOverlay);
+        }
+
+        VBox chatModalContent = new VBox(10);
+        chatModalContent.setStyle("-fx-background-color: #fff; -fx-padding: 20; -fx-background-radius: 14; -fx-effect: dropshadow(three-pass-box, #000000, 10, 0.2, 0, 3); -fx-border-color: #cccccc; -fx-border-width: 1;");
+        chatModalContent.setPrefSize(500, 600);
+        chatModalContent.setMaxSize(500, 600);
+        chatModalContent.setMinSize(400, 500);
+
+        Label chatTitle = new Label("Chat con Asistente IA");
+        chatTitle.setStyle("-fx-font-size: 18px; -fx-font-weight: bold; -fx-text-fill: #333;");
+
+        VBox messagesContainer = new VBox(8);
+        messagesContainer.setStyle("-fx-background-color: #f9f9f9; -fx-padding: 10; -fx-background-radius: 8;");
+        ScrollPane scrollPane = new ScrollPane(messagesContainer);
+        scrollPane.setFitToWidth(true);
+        scrollPane.setHbarPolicy(ScrollPane.ScrollBarPolicy.NEVER);
+        scrollPane.setVbarPolicy(ScrollPane.ScrollBarPolicy.AS_NEEDED);
+        VBox.setVgrow(scrollPane, javafx.scene.layout.Priority.ALWAYS); // Para que el scrollpane crezca
+
+        // Auto-scroll hacia abajo
+        messagesContainer.heightProperty().addListener(observable -> scrollPane.setVvalue(1.0));
+
+
+        TextField inputField = new TextField();
+        inputField.setPromptText("Escribe tu mensaje...");
+        inputField.setStyle("-fx-font-size: 14px;");
+
+        Button sendButton = new Button("Enviar");
+        sendButton.setStyle("-fx-background-color: #d32f2f; -fx-text-fill: white; -fx-font-weight: bold; -fx-background-radius: 5;");
+        sendButton.setDefaultButton(true); // Permite enviar con Enter
+
+        HBox inputBox = new HBox(10, inputField, sendButton);
+        HBox.setHgrow(inputField, javafx.scene.layout.Priority.ALWAYS);
+        inputBox.setAlignment(Pos.CENTER);
+
+        sendButton.setOnAction(e -> {
+            String message = inputField.getText();
+            if (message != null && !message.trim().isEmpty()) {
+                inputField.clear();
+                agregarMensajeUsuario(messagesContainer, message);
+
+                // Enviar mensaje al backend en un nuevo hilo
+                new Thread(() -> {
+                    try {
+                        String response = chatServiceFront.sendMessage(message);
+                        javafx.application.Platform.runLater(() -> agregarMensajeIA(messagesContainer, response));
+                    } catch (Exception ex) {
+                        ex.printStackTrace();
+                        javafx.application.Platform.runLater(() -> agregarMensajeError(messagesContainer, "Error al conectar con el asistente: " + ex.getMessage()));
+                    }
+                }).start();
+            }
+        });
+
+        Button cerrarChatButton = new Button("Cerrar");
+        cerrarChatButton.setStyle("-fx-background-color: #757575; -fx-text-fill: white; -fx-font-weight: bold; -fx-background-radius: 5;");
+
+
+        chatModalContent.getChildren().addAll(chatTitle, scrollPane, inputBox, cerrarChatButton);
+
+        VBox modalWrapper = new VBox(chatModalContent);
+        modalWrapper.setAlignment(Pos.CENTER);
+        modalWrapper.setPrefSize(500, 600);
+        modalWrapper.setMaxSize(500, 600);
+
+
+        StackPane overlay = new StackPane();
+        overlay.setId("chatOverlay");
+        overlay.setStyle("-fx-background-color: rgba(30,32,48,0.18);");
+        overlay.setPickOnBounds(true);
+        overlay.setPrefSize(anchorPane.getWidth(), anchorPane.getHeight());
+        overlay.setAlignment(Pos.CENTER);
+        overlay.getChildren().add(modalWrapper);
+
+        anchorPane.getChildren().add(overlay);
+        AnchorPane.setTopAnchor(overlay, 0.0);
+        AnchorPane.setBottomAnchor(overlay, 0.0);
+        AnchorPane.setLeftAnchor(overlay, 0.0);
+        AnchorPane.setRightAnchor(overlay, 0.0);
+
+        cerrarChatButton.setOnAction(ev -> anchorPane.getChildren().remove(overlay));
+    }
+
+    private void agregarMensajeUsuario(VBox container, String texto) {
+        Label userLabel = new Label(texto);
+        userLabel.setWrapText(true);
+        userLabel.setStyle("-fx-background-color: #d32f2f; -fx-text-fill: white; -fx-padding: 8px; -fx-background-radius: 10px 10px 0 10px; -fx-font-size: 14px;");
+        userLabel.setMaxWidth(Double.MAX_VALUE); // Para que ocupe el ancho disponible
+
+        HBox messageRow = new HBox(userLabel);
+        messageRow.setAlignment(Pos.CENTER_RIGHT); // Alinea el mensaje del usuario a la derecha
+        messageRow.setPadding(new javafx.geometry.Insets(0, 0, 0, 50)); // Margen a la izquierda para no ocupar todo el ancho
+        container.getChildren().add(messageRow);
+    }
+
+    private void agregarMensajeIA(VBox container, String texto) {
+        Label iaLabel = new Label(texto);
+        iaLabel.setWrapText(true);
+        iaLabel.setStyle("-fx-background-color: #e0e0e0; -fx-text-fill: black; -fx-padding: 8px; -fx-background-radius: 10px 10px 10px 0; -fx-font-size: 14px;");
+        iaLabel.setMaxWidth(Double.MAX_VALUE); // Para que ocupe el ancho disponible
+
+        HBox messageRow = new HBox(iaLabel);
+        messageRow.setAlignment(Pos.CENTER_LEFT); // Alinea el mensaje de la IA a la izquierda
+        messageRow.setPadding(new javafx.geometry.Insets(0, 50, 0, 0)); // Margen a la derecha
+        container.getChildren().add(messageRow);
+    }
+
+    private void agregarMensajeError(VBox container, String texto) {
+        Label errorLabel = new Label("Error: " + texto);
+        errorLabel.setWrapText(true);
+        errorLabel.setStyle("-fx-background-color: #ffcdd2; -fx-text-fill: #c62828; -fx-padding: 8px; -fx-background-radius: 10px; -fx-font-size: 14px;");
+        errorLabel.setMaxWidth(Double.MAX_VALUE);
+
+        HBox messageRow = new HBox(errorLabel);
+        messageRow.setAlignment(Pos.CENTER_LEFT);
+        container.getChildren().add(messageRow);
+    }
+    // --- FIN: Funcionalidad del Chat IA ---
+
+} // Este es el cierre de la clase MainScreenController
