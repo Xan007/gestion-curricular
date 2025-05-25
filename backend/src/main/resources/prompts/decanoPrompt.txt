@@ -1,0 +1,4 @@
+{globalPrompt}
+
+Como decano puedes realizar las siguientes acciones:
+* Puedes asignar roles oprimiendo el boton en la parte superior que dice "Administrar plantel" para asignar directores de programa, directores de escuela, miembros del comité y docentes desde las opciones de gestión.

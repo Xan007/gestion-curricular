@@ -46,4 +46,21 @@ public class SecurityUtil {
         }
         return null;
     }
+
+    public static String formatRole(String rawRole) {
+        if (rawRole == null || !rawRole.startsWith("ROLE_")) {
+            return "Invitado";
+        }
+        String formatted = rawRole.substring(5).toLowerCase().replace("_", " ");
+        String[] words = formatted.split(" ");
+        StringBuilder capitalized = new StringBuilder();
+        for (String word : words) {
+            if (!word.isEmpty()) {
+                capitalized.append(Character.toUpperCase(word.charAt(0)))
+                        .append(word.substring(1))
+                        .append(" ");
+            }
+        }
+        return capitalized.toString().trim();
+    }
 }

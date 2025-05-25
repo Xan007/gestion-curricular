@@ -20,6 +20,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.util.StreamUtils;
 import org.springframework.web.bind.annotation.*;
+import org.unisoftware.gestioncurricular.agent.PromptBuilder;
 import org.unisoftware.gestioncurricular.agent.tools.ProgramTools;
 import org.unisoftware.gestioncurricular.entity.AuthUser;
 import org.unisoftware.gestioncurricular.entity.UserDetails;
@@ -57,57 +58,46 @@ public class ChatController {
         this.chatClient = ChatClient.builder(chatModel)
                 .defaultAdvisors(MessageChatMemoryAdvisor.builder(chatMemory).build())
                 .build();
-
-        ClassPathResource resource = new ClassPathResource("prompts/systemPrompt.txt");
-        String systemPromptText = StreamUtils.copyToString(resource.getInputStream(), StandardCharsets.UTF_8);
-
-        this.systemPromptTemplate = new SystemPromptTemplate(systemPromptText);
     }
 
     @GetMapping("/generate")
     public ResponseEntity<Map<String, Object>> generate(@RequestParam String message) {
         UUID userId = SecurityUtil.getCurrentUserId();
-        String role = formatRole(SecurityUtil.getCurrentUserRole());
-
+        String formattedRole = SecurityUtil.formatRole(SecurityUtil.getCurrentUserRole());
         String conversationId = (userId != null) ? userId.toString() : null;
 
-        SystemMessage systemMessage = (SystemMessage) this.systemPromptTemplate.createMessage(
-                Map.of("role", role)
-        );
+        try {
+            String promptBody = PromptBuilder.buildPrompt(formattedRole);
+            this.systemPromptTemplate = new SystemPromptTemplate(promptBody);
 
-        List<Message> promptMessages = List.of(systemMessage, new UserMessage(message));
-        Prompt prompt = new Prompt(promptMessages);
+            System.out.println(promptBody);
 
-        var clientRequest = chatClient.prompt(prompt)
-                .tools(programTools);
+            SystemMessage systemMessage = (SystemMessage) this.systemPromptTemplate.createMessage(
+                    Map.of("role", formattedRole)
+            );
 
-        if (conversationId != null) {
-            clientRequest = clientRequest.advisors(a -> a.param(ChatMemory.CONVERSATION_ID, conversationId));
+            List<Message> promptMessages = List.of(systemMessage, new UserMessage(message));
+            Prompt prompt = new Prompt(promptMessages);
+
+            var clientRequest = chatClient.prompt(prompt)
+                    .tools(programTools);
+
+            if (conversationId != null) {
+                clientRequest = clientRequest.advisors(a -> a.param(ChatMemory.CONVERSATION_ID, conversationId));
+            }
+
+            String response = clientRequest.call().content();
+            return ResponseEntity.ok(Map.of("response", response));
+
+        } catch (IOException e) {
+            return ResponseEntity.status(500).body(Map.of("error", "Error al construir el prompt: " + e.getMessage()));
         }
-
-        String response = clientRequest.call().content();
-
-        return ResponseEntity.ok(Map.of("response", response));
     }
+
 
     private String nonNull(String value) {
         return value != null ? value : "";
     }
 
-    private String formatRole(String rawRole) {
-        if (rawRole == null || !rawRole.startsWith("ROLE_")) {
-            return "Invitado";
-        }
-        String formatted = rawRole.substring(5).toLowerCase().replace("_", " ");
-        String[] words = formatted.split(" ");
-        StringBuilder capitalized = new StringBuilder();
-        for (String word : words) {
-            if (!word.isEmpty()) {
-                capitalized.append(Character.toUpperCase(word.charAt(0)))
-                        .append(word.substring(1))
-                        .append(" ");
-            }
-        }
-        return capitalized.toString().trim();
-    }
+
 }

@@ -1,0 +1,5 @@
+{globalPrompt}
+
+Como Comité de programa:
+* Accedes a las propuestas de microcurrículos reenviadas por los directores de programa. (parte superior)
+* Puedes aceptar o rechazar dichas propuestas, agregando observaciones si es necesario.

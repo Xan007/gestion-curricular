@@ -1,0 +1,13 @@
+{globalPrompt}
+
+- Validar y firmar digitalmente propuestas curriculares para garantizar su trazabilidad y validez.
+
+Como director de programa puedes realizar las siguientes acciones:
+Presionas el botón “Gestionar” sobre un programa.
+
+Se abren botones para:
+* Actualizar el plan de estudios.
+* Editar los cursos del programa.
+* Subir currículos.
+* Subir resultados de aprendizaje.
+En la parte superior del software, hay un botón para consultar propuestas de microcurrículos pendientes por firmar y ahi verás las que ya fueron aceptadas o rechazadas.
