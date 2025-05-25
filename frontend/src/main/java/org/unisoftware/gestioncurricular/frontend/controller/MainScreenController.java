@@ -587,7 +587,7 @@ public class MainScreenController implements Initializable {
 
             if (response == buttonTypeSiDescargar) { // Usuario seleccionó "Sí, descargar"
                 // Descargar plantilla
-                String plantillaUrl = "https://fexiivjyzplakakkiyqm.supabase.co/storage/v1/object/public/documentos-publicos/ejemplos/Plantilla%20Plan%20De%20Estudios.xlsx";
+                String plantillaUrl = "https://fexiivjyzplakakkiyqm.supabase.co/storage/v1/object/public/documentos-publicos/ejemplos/Plantilla%20Plan%20de%20estudios.xlsx";
                 try {
                     java.awt.Desktop desktop = java.awt.Desktop.getDesktop();
                     java.net.URI uri = new java.net.URI(plantillaUrl);
@@ -1634,14 +1634,19 @@ public class MainScreenController implements Initializable {
             String[] parts = entry.split(java.util.regex.Pattern.quote("|"));
 
             // Se espera que parts[1] sea el rol y parts[3] la acción.
+            // La observación puede estar en parts[4]
             if (parts.length >= 4) {
                 String role = parts[1].replace("_", " "); // Reemplazar guiones bajos por espacios para mejor legibilidad
-                String action = parts[3];
+                String action = parts[3].replace("_", " "); // Reemplazar guiones bajos por espacios para mejor legibilidad
+                String observation = "";
+                if (parts.length > 4 && parts[4] != null && !parts[4].trim().isEmpty()) {
+                    observation = " - " + parts[4].trim();
+                }
 
                 if (formattedObservations.length() > 0) {
                     formattedObservations.append("\n"); // Añadir salto de línea antes de la nueva observación
                 }
-                formattedObservations.append(role).append(": ").append(action);
+                formattedObservations.append(role).append(": ").append(action).append(observation);
             }
             // Si una entrada no tiene el formato esperado, se ignora en esta versión.
             // Alternativamente, se podría añadir la entrada original o un mensaje de error.
