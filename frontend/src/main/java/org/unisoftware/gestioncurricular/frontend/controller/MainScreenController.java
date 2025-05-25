@@ -42,6 +42,9 @@ import org.unisoftware.gestioncurricular.frontend.dto.ProposalFileDTO; // Import
 import org.unisoftware.gestioncurricular.frontend.service.ProposalFileServiceFront; // Importar ProposalFileServiceFront
 import org.unisoftware.gestioncurricular.frontend.service.ChatServiceFront; // Importar ChatServiceFront
 import java.util.UUID; // Importar UUID
+import javafx.animation.KeyFrame;
+import javafx.animation.Timeline;
+import javafx.util.Duration;
 
 import java.io.File;
 import java.io.IOException;
@@ -1959,7 +1962,19 @@ public class MainScreenController implements Initializable {
                 new Thread(() -> {
                     try {
                         String response = chatServiceFront.sendMessage(message);
-                        javafx.application.Platform.runLater(() -> agregarMensajeIA(messagesContainer, response));
+                        javafx.application.Platform.runLater(() -> {
+                            Label iaLabel = new Label(""); // Crear Label vacío
+                            iaLabel.setWrapText(true);
+                            iaLabel.setStyle("-fx-background-color: #e0e0e0; -fx-text-fill: black; -fx-padding: 8px; -fx-background-radius: 10px 10px 10px 0; -fx-font-size: 14px;");
+                            iaLabel.setMaxWidth(Double.MAX_VALUE);
+
+                            HBox messageRow = new HBox(iaLabel);
+                            messageRow.setAlignment(Pos.CENTER_LEFT);
+                            messageRow.setPadding(new javafx.geometry.Insets(0, 50, 0, 0));
+                            messagesContainer.getChildren().add(messageRow);
+
+                            agregarMensajeIAConEfectoTipeo(iaLabel, response); // Llamar al nuevo método
+                        });
                     } catch (Exception ex) {
                         ex.printStackTrace();
                         javafx.application.Platform.runLater(() -> agregarMensajeError(messagesContainer, "Error al conectar con el asistente: " + ex.getMessage()));
@@ -2019,6 +2034,20 @@ public class MainScreenController implements Initializable {
         messageRow.setAlignment(Pos.CENTER_LEFT); // Alinea el mensaje de la IA a la izquierda
         messageRow.setPadding(new javafx.geometry.Insets(0, 50, 0, 0)); // Margen a la derecha
         container.getChildren().add(messageRow);
+    }
+
+    private void agregarMensajeIAConEfectoTipeo(Label iaLabel, String textoCompleto) {
+        final Timeline timeline = new Timeline();
+        final String[] textoParcial = {""};
+        for (int i = 0; i < textoCompleto.length(); i++) {
+            final int index = i;
+            KeyFrame keyFrame = new KeyFrame(Duration.millis(20 * i), event -> { // Reducido de 50 a 20 para mayor velocidad
+                textoParcial[0] += textoCompleto.charAt(index);
+                iaLabel.setText(textoParcial[0]);
+            });
+            timeline.getKeyFrames().add(keyFrame);
+        }
+        timeline.play();
     }
 
     private void agregarMensajeError(VBox container, String texto) {
