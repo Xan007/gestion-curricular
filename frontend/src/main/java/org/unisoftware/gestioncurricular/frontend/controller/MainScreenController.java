@@ -1856,44 +1856,6 @@ public class MainScreenController implements Initializable {
                 }
                 card.getChildren().addAll(lblTitulo, lblEstado, lblObs, btnVerArchivo);
 
-                // Lógica de acciones según estado y rol
-                if ("EN_REVISION_DIRECTOR".equals(estado)) {
-                    Button btnAprobar = new Button("Aprobar");
-                    Button btnRechazar = new Button("Rechazar");
-                    btnAprobar.setOnAction(e -> revisarPropuesta(proposalId, true));
-                    btnRechazar.setOnAction(e -> revisarPropuesta(proposalId, false));
-                    card.getChildren().addAll(btnAprobar, btnRechazar);
-                } else if ("EN_REVISION_COMITE".equals(estado)) {
-                    Button btnAprobar = new Button("Aprobar");
-                    Button btnRechazar = new Button("Rechazar");
-                    btnAprobar.setOnAction(e -> revisarPropuesta(proposalId, true));
-                    btnRechazar.setOnAction(e -> revisarPropuesta(proposalId, false));
-                    card.getChildren().addAll(btnAprobar, btnRechazar);
-                } else if ("ESPERANDO_FIRMAS".equals(estado)) {
-                    boolean yaFirmoDirectorPrograma = Boolean.TRUE.equals(propuesta.get("signedByDirectorPrograma"));
-                    boolean yaFirmoDirectorEscuela = Boolean.TRUE.equals(propuesta.get("signedByDirectorEscuela"));
-                    boolean mostrarBotonesFirma = false;
-
-                    if (!yaFirmoDirectorPrograma) {
-                        mostrarBotonesFirma = true;
-                    } else if (!yaFirmoDirectorEscuela) {
-                        mostrarBotonesFirma = true;
-                    }
-
-                    if (mostrarBotonesFirma) {
-                        Button btnFirmar = new Button("Firmar Propuesta");
-                        Button btnRechazarFirma = new Button("Rechazar Firma");
-                        btnFirmar.setOnAction(e -> firmarPropuesta(proposalId, true));
-                        btnRechazarFirma.setOnAction(e -> firmarPropuesta(proposalId, false));
-                        card.getChildren().addAll(btnFirmar, btnRechazarFirma);
-                    } else {
-                        if (yaFirmoDirectorPrograma || yaFirmoDirectorEscuela) {
-                            Label lblYaFirmado = new Label("Ya has procesado tu firma para esta propuesta.");
-                            lblYaFirmado.setStyle("-fx-font-style: italic; -fx-text-fill: #555;");
-                            card.getChildren().add(lblYaFirmado);
-                        }
-                    }
-                }
 
                 listaPropuestas.getChildren().add(card);
             }
