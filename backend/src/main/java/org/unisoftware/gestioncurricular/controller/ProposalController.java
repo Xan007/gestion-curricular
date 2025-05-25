@@ -85,7 +85,9 @@ public class ProposalController {
             Set<ProposalStatus> allowedStatuses = Set.of(
                     ProposalStatus.EN_REVISION_DIRECTOR,
                     ProposalStatus.EN_REVISION_COMITE,
-                    ProposalStatus.ESPERANDO_FIRMAS
+                    ProposalStatus.ESPERANDO_FIRMAS,
+                    ProposalStatus.ACEPTADA,
+                    ProposalStatus.RECHAZADA
             );
             proposals = proposalService.filterProposals(cursoId, docenteId, estado, allowedStatuses);
         } else if ("ROLE_COMITE_DE_PROGRAMA".equals(role)) {
