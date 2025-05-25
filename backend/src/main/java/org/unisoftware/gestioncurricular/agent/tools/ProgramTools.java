@@ -1,11 +1,9 @@
-package org.unisoftware.gestioncurricular.agentTools;
+package org.unisoftware.gestioncurricular.agent.tools;
 
 import org.springframework.ai.tool.annotation.Tool;
 import org.springframework.ai.tool.annotation.ToolParam;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Bean;
 import org.unisoftware.gestioncurricular.dto.ProgramDTO;
-import org.unisoftware.gestioncurricular.entity.StudyPlanEntry;
 import org.unisoftware.gestioncurricular.service.ProgramService;
 
 import java.util.List;
@@ -49,12 +47,42 @@ public class ProgramTools {
                 .collect(Collectors.joining("\n"));
     }
 
-    @Tool(name = "obtenerPlanEstudios", description = "Devuelve el plan de estudios de un programa académico por su nombre")
+    @Tool(name = "obtenerPlanEstudios", description = "Devuelve el plan de estudios de un programa académico por su nombre y opcionalmente por el año, sino se utiliza el ultimo. Esta funcion puede ser utilizada para saber el prerequisito de ciertos cursos teniendo en cuenta el id y buscandolo")
     public String getStudyPlanByProgramName(
             @ToolParam(description = "Nombre del programa") String name,
-            @ToolParam(description = "Año del plan (opcional)", required = false) Integer year
+            @ToolParam(description = "Año del plan (opcional)", required = false) Long year
     ) {
-        return "No me es posible mostrarte el plan de estudios, sin embargo tu puedes consultar el plan de estudios en este mismo software.";
+        ProgramDTO program = programService.findProgramByName(name);
+        if (program == null) {
+            return "Programa no encontrado: " + name;
+        }
+
+        Long programId = program.getId();
+
+        if (year == null) {
+            List<Integer> years = programService.getStudyPlanYears(programId);
+            if (years.isEmpty()) {
+                return "No hay planes de estudio registrados para el programa: " + name;
+            }
+            year = Long.valueOf(years.get(0));
+        }
+
+        List<String> courses = programService.getStudyPlan(programId, year)
+                .stream()
+                .map(course -> String.format("%s (Créditos: %d, Semestre: %d)",
+                        course.getName(),
+                        course.getCredits(),
+                        course.getSemester() != null ? course.getSemester() : 0))
+                .toList();
+
+        if (courses.isEmpty()) {
+            return String.format("No hay cursos registrados para el plan de estudios del año %d en el programa %s.", year, name);
+        }
+
+        return String.format("Plan de estudios para %s, año %d:\n%s",
+                name,
+                year,
+                String.join("\n", courses));
     }
 
     @Tool(name = "listarAniosPlanEstudios", description = "Lista los años disponibles de plan de estudios para un programa")
