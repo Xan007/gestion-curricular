@@ -504,7 +504,7 @@ public class ProgramCoursesScreenController {
                     } else {
                         javafx.application.Platform.runLater(() -> {
                             removerOverlayCarga(overlay);
-                            mostrarAlerta("Advertencia", "El archivo fue subido pero no se pudo actualizar su tipo porque el backend no retornó un identificador único (UUID). El archivo podría estar registrado como 'OTRO'.", Alert.AlertType.INFORMATION);
+                            mostrarAlerta("Advertencia", "El archivo fue subido y podría estar registrado como 'OTRO'.", Alert.AlertType.INFORMATION);
                         });
                     }
                 } catch (Exception ex) {
