@@ -771,7 +771,7 @@ public class MainScreenController implements Initializable {
                 // Lógica de acciones según estado y rol
                 if ("DIRECTOR_DE_PROGRAMA".equals(role) && "EN_REVISION_DIRECTOR".equals(estado)) {
                     Button btnAprobar = new Button("Aprobar");
-                    Button btnRechazar = new Button("Solicitar Ajustes");
+                    Button btnRechazar = new Button("Rechazar");
                     btnAprobar.setOnAction(e -> revisarPropuesta(proposalId, true));
                     btnRechazar.setOnAction(e -> revisarPropuesta(proposalId, false));
                     card.getChildren().addAll(btnAprobar, btnRechazar);
