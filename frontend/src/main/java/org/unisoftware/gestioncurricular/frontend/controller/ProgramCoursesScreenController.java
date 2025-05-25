@@ -67,6 +67,32 @@ public class ProgramCoursesScreenController {
     private Long programaId;
     private Integer anioSeleccionado;
 
+    private String cleanFilename(String originalFilename) {
+        if (originalFilename == null || originalFilename.isEmpty()) {
+            return "archivo_predeterminado"; // Fallback
+        }
+
+        String baseName = originalFilename;
+        String extension = "";
+
+        int lastDotIndex = originalFilename.lastIndexOf('.');
+        if (lastDotIndex > 0 && lastDotIndex < originalFilename.length() - 1) {
+            baseName = originalFilename.substring(0, lastDotIndex);
+            extension = originalFilename.substring(lastDotIndex); // Incluye el punto
+        } else if (lastDotIndex == 0 && originalFilename.length() > 1) {
+            baseName = "";
+            extension = originalFilename;
+        }
+
+        String cleanedBaseName = baseName.replaceAll("[^a-zA-Z0-9]", "");
+
+        if (cleanedBaseName.isEmpty()) {
+            cleanedBaseName = "archivo";
+        }
+
+        return cleanedBaseName + extension;
+    }
+
     public void initData(Long programaId, String nombrePrograma, Integer anio) {
         this.programaId = programaId;
         this.anioSeleccionado = anio;
@@ -446,12 +472,15 @@ public class ProgramCoursesScreenController {
         File selectedFile = fileChooser.showOpenDialog(coursesContainer.getScene().getWindow());
 
         if (selectedFile != null) {
-            StackPane overlay = crearOverlayCarga("Subiendo archivo de apoyo...");
+            String originalFilename = selectedFile.getName();
+            String cleanedFilename = cleanFilename(originalFilename);
+
+            StackPane overlay = crearOverlayCarga("Subiendo archivo de apoyo: " + cleanedFilename);
             new Thread(() -> {
                 try {
                     String token = SessionManager.getInstance().getToken();
-                    // 3. Obtener URL de subida del backend
-                    FileUploadInfoDTO uploadInfo = courseFileServiceFront.getApoyoUploadUrl(courseId, selectedFile.getName(), token);
+                    // 3. Obtener URL de subida del backend usando el nombre limpio
+                    FileUploadInfoDTO uploadInfo = courseFileServiceFront.getApoyoUploadUrl(courseId, cleanedFilename, token);
                     String presignedUrl = uploadInfo.getUploadUrl();
                     String fileId = uploadInfo.getFileId();
 
@@ -467,14 +496,15 @@ public class ProgramCoursesScreenController {
                     // 5. Actualizar el tipo del archivo de apoyo en el backend
                     if (fileId != null && !fileId.isEmpty()) {
                         courseFileServiceFront.updateApoyoAcademicoTipo(courseId, fileId, tipoSeleccionado, token);
+                        final String finalCleanedFilenameForAlert = cleanedFilename;
                         javafx.application.Platform.runLater(() -> {
                             removerOverlayCarga(overlay);
-                            mostrarAlerta("Éxito", "Archivo de apoyo '" + selectedFile.getName() + "' subido y actualizado a tipo " + tipoSeleccionado + " correctamente.", Alert.AlertType.INFORMATION);
+                            mostrarAlerta("Éxito", "Archivo de apoyo '" + finalCleanedFilenameForAlert + "' subido y actualizado a tipo " + tipoSeleccionado + " correctamente.", Alert.AlertType.INFORMATION);
                         });
                     } else {
                         javafx.application.Platform.runLater(() -> {
                             removerOverlayCarga(overlay);
-                            mostrarAlerta("Advertencia", "El archivo fue subido pero no se pudo actualizar su tipo porque el backend no retornó un identificador único (UUID). El archivo podría estar registrado como 'OTRO'.", Alert.AlertType.WARNING);
+                            mostrarAlerta("Advertencia", "El archivo fue subido pero no se pudo actualizar su tipo porque el backend no retornó un identificador único (UUID). El archivo podría estar registrado como 'OTRO'.", Alert.AlertType.INFORMATION);
                         });
                     }
                 } catch (Exception ex) {
@@ -494,16 +524,19 @@ public class ProgramCoursesScreenController {
         File selectedFile = fileChooser.showOpenDialog(coursesContainer.getScene().getWindow());
 
         if (selectedFile != null) {
-            StackPane overlay = crearOverlayCarga("Subiendo microcurrículo...");
+            String originalFilename = selectedFile.getName();
+            String cleanedFilename = cleanFilename(originalFilename); // Limpiar nombre para mensaje
+
+            StackPane overlay = crearOverlayCarga("Subiendo microcurrículo: " + cleanedFilename);
             new Thread(() -> {
                 try {
                     String token = SessionManager.getInstance().getToken();
                     // 1. Obtener URL de subida del backend
-                    FileUploadInfoDTO uploadInfo = courseFileServiceFront.getMicrocurriculumUploadUrl(courseId, token);
+                    // Nota: getMicrocurriculumUploadUrl no toma 'filename' explícitamente en sus parámetros,
+                    // el backend lo determina o lo extrae de la URL prefirmada.
+                    // La limpieza aquí es principalmente para el mensaje de alerta y consistencia.
+                    FileUploadInfoDTO uploadInfo = courseFileServiceFront.getMicrocurriculumUploadUrl(courseId, token); // El nombre limpio no se pasa aquí
                     String presignedUrl = uploadInfo.getUploadUrl();
-                    // String fileId = uploadInfo.getFileId(); // El fileId se extrae y está en uploadInfo.getFileId()
-                    // No es explícitamente necesario para un POST de registro separado aquí,
-                    // ya que el backend asocia el microcurrículo al subirlo a la URL.
 
                     if (presignedUrl == null) {
                         throw new IOException("No se pudo obtener la URL prefirmada del backend para el microcurrículo.");
@@ -512,17 +545,19 @@ public class ProgramCoursesScreenController {
                     // 2. Subir archivo a la URL prefirmada
                     String contentType = Files.probeContentType(selectedFile.toPath());
                     contentType = (contentType == null) ? "application/octet-stream" : contentType;
+                    // Se sube el selectedFile original, la URL prefirmada ya contiene el path/nombre esperado por el backend.
                     courseFileServiceFront.uploadFileToPresignedUrl(presignedUrl, selectedFile, contentType, token);
 
+                    final String finalCleanedFilenameForAlert = cleanedFilename;
                     javafx.application.Platform.runLater(() -> {
                         removerOverlayCarga(overlay);
-                        mostrarAlerta("Éxito", "Microcurrículo \"" + selectedFile.getName() + "\" subido correctamente.", Alert.AlertType.INFORMATION);
+                        mostrarAlerta("Éxito", "Microcurrículo \"" + finalCleanedFilenameForAlert + "\" subido correctamente.", Alert.AlertType.INFORMATION);
                     });
                 } catch (Exception ex) {
                     ex.printStackTrace();
                     javafx.application.Platform.runLater(() -> {
                         removerOverlayCarga(overlay);
-                        mostrarAlerta("Error", "No se pudo subir el microcurrículo: " + ex.getMessage(), Alert.AlertType.ERROR);
+                        mostrarAlerta("Info", "Ya existe un mircocurriculum del curso ", Alert.AlertType.INFORMATION);
                     });
                 }
             }).start();
