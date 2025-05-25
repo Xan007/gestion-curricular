@@ -64,33 +64,28 @@ public class ChatController {
         this.systemPromptTemplate = new SystemPromptTemplate(systemPromptText);
     }
 
-    @PreAuthorize("isAuthenticated()")
     @GetMapping("/generate")
     public ResponseEntity<Map<String, Object>> generate(@RequestParam String message) {
         UUID userId = SecurityUtil.getCurrentUserId();
-        if (userId == null) {
-            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(Map.of("error", "ID de usuario no encontrado."));
-        }
-
         String role = formatRole(SecurityUtil.getCurrentUserRole());
 
-        String conversationId = userId.toString();
+        String conversationId = (userId != null) ? userId.toString() : null;
 
         SystemMessage systemMessage = (SystemMessage) this.systemPromptTemplate.createMessage(
                 Map.of("role", role)
         );
-        System.out.println(systemMessage.getText());
 
-        List<Message> userMessagesHistory = chatMemory.get(conversationId);
         List<Message> promptMessages = List.of(systemMessage, new UserMessage(message));
-
         Prompt prompt = new Prompt(promptMessages);
 
-        String response = chatClient.prompt(prompt)
-                .advisors(a -> a.param(ChatMemory.CONVERSATION_ID, conversationId))
-                .tools(programTools)
-                .call()
-                .content();
+        var clientRequest = chatClient.prompt(prompt)
+                .tools(programTools);
+
+        if (conversationId != null) {
+            clientRequest = clientRequest.advisors(a -> a.param(ChatMemory.CONVERSATION_ID, conversationId));
+        }
+
+        String response = clientRequest.call().content();
 
         return ResponseEntity.ok(Map.of("response", response));
     }
