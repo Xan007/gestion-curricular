@@ -682,6 +682,10 @@ public class MainScreenController implements Initializable {
             // El backend se encargará de filtrar las propuestas según el rol.
             String endpointUrl = "http://localhost:8080/proposals";
 
+            if ("DIRECTOR_DE_ESCUELA".equals(role) && "Escuela".equals(tipo)) {
+                endpointUrl = "http://localhost:8080/proposals/pending-signatures";
+            }
+
             if ("DIRECTOR_DE_PROGRAMA".equals(role) || "COMITE_DE_PROGRAMA".equals(role) || "DIRECTOR_DE_ESCUELA".equals(role)) {
                 java.net.URL urlObj = new java.net.URL(endpointUrl);
                 java.net.HttpURLConnection conn = (java.net.HttpURLConnection) urlObj.openConnection();
@@ -979,7 +983,7 @@ public class MainScreenController implements Initializable {
                     nameLbl.setMaxWidth(Double.MAX_VALUE);
                     Label codeLbl = new Label("Código: " + curso.getId());
                     codeLbl.setStyle("-fx-font-size: 14px; -fx-text-fill: #222;");
-                    Button btnProponer = new Button("Proponer Curriculum");
+                    Button btnProponer = new Button("Proponer Micro-Curriculum");
                     btnProponer.getStyleClass().add("primary-button");
                     btnProponer.setOnAction(ev -> subirPropuestaCurriculum(curso));
                     card.getChildren().addAll(nameLbl, codeLbl, btnProponer);
