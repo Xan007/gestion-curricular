@@ -1480,21 +1480,80 @@ public class MainScreenController implements Initializable {
             btnGuardar.setOnAction(ev -> {
                 try {
                     commitActiveCell(table); // Forzar commit de la celda en edición
-                    boolean huboCambios = false;
+
+                    // Detectar todos los cursos que han cambiado antes de hacer peticiones
+                    List<org.unisoftware.gestioncurricular.frontend.dto.CourseDTO> cursosModificados = new ArrayList<>();
+
                     for (int i = 0; i < data.size(); i++) {
                         org.unisoftware.gestioncurricular.frontend.dto.CourseDTO actual = data.get(i);
                         org.unisoftware.gestioncurricular.frontend.dto.CourseDTO original = cursosOriginales.get(i);
                         if (!equalsCurso(actual, original)) {
-                            courseService.updateCourse(actual);
-                            huboCambios = true;
+                            cursosModificados.add(actual);
                         }
                     }
-                    if (huboCambios) {
-                        mostrarAlerta("Éxito", "Cursos actualizados correctamente.", Alert.AlertType.INFORMATION);
-                        mostrarProgramaCard();
-                    } else {
+
+                    if (cursosModificados.isEmpty()) {
                         mostrarAlerta("Sin cambios", "No se detectaron cambios para guardar.", Alert.AlertType.INFORMATION);
+                        return;
                     }
+
+                    // Mostrar ventana de espera
+                    StackPane loadingOverlay = new StackPane();
+                    loadingOverlay.setStyle("-fx-background-color: rgba(30,32,48,0.5);");
+                    loadingOverlay.setPickOnBounds(true);
+                    loadingOverlay.setPrefSize(anchorPane.getWidth(), anchorPane.getHeight());
+                    loadingOverlay.setMinSize(Region.USE_PREF_SIZE, Region.USE_PREF_SIZE);
+                    loadingOverlay.setMaxSize(Region.USE_PREF_SIZE, Region.USE_PREF_SIZE);
+                    loadingOverlay.setAlignment(Pos.CENTER);
+
+                    Label loadingLabel = new Label("Guardando cambios...");
+                    loadingLabel.setStyle("-fx-font-size: 18px; -fx-text-fill: white; -fx-font-weight: bold;");
+                    loadingOverlay.getChildren().add(loadingLabel);
+
+                    anchorPane.getChildren().add(loadingOverlay); // Usa el anchorPane del ámbito exterior
+                    AnchorPane.setTopAnchor(loadingOverlay, 0.0);
+                    AnchorPane.setBottomAnchor(loadingOverlay, 0.0);
+                    AnchorPane.setLeftAnchor(loadingOverlay, 0.0);
+                    AnchorPane.setRightAnchor(loadingOverlay, 0.0);
+
+                    // Actualizar cursos en un hilo separado para no bloquear la UI
+                    new Thread(() -> {
+                        boolean huboCambios = false;
+                        Exception excepcion = null;
+
+                        try {
+                            // Actualizar todos los cursos modificados de una vez
+                            for (org.unisoftware.gestioncurricular.frontend.dto.CourseDTO curso : cursosModificados) {
+                                courseService.updateCourse(curso);
+                                huboCambios = true;
+                            }
+                        } catch (Exception ex) {
+                            excepcion = ex;
+                        }
+
+                        final boolean exito = huboCambios && excepcion == null;
+                        final Exception errorFinal = excepcion;
+
+                        // Actualizar la UI en el hilo de JavaFX
+                        javafx.application.Platform.runLater(() -> {
+                            // Quitar la pantalla de carga
+                            anchorPane.getChildren().remove(loadingOverlay); // Usa el anchorPane del ámbito exterior
+
+                            if (exito) {
+                                mostrarAlerta("Éxito", "Cursos actualizados correctamente.", Alert.AlertType.INFORMATION);
+                                mostrarProgramaCard();
+                                // Cerrar el modal de edición
+                                Node source = btnGuardar;
+                                StackPane parentOverlay = (StackPane) source.getScene().getRoot().lookup(".stack-pane");
+                                if (overlay != null && overlay.getParent() != null) {
+                                   ((AnchorPane) overlay.getParent()).getChildren().remove(overlay);
+                                }
+                            } else {
+                                mostrarAlerta("Error", "No se pudo guardar: " + (errorFinal != null ? errorFinal.getMessage() : "Error desconocido"), Alert.AlertType.ERROR);
+                            }
+                        });
+                    }).start();
+
                 } catch (Exception ex) {
                     mostrarAlerta("Error", "No se pudo guardar: " + ex.getMessage(), Alert.AlertType.ERROR);
                 }
