@@ -13,7 +13,16 @@ import org.springframework.util.LinkedMultiValueMap;
 @Service
 public class ExcelUploadService {
     public void uploadPlan(Long programId, File file) {
+        uploadPlan(programId, file, null); // Llama al método sobrecargado con año null (actual)
+    }
+
+    public void uploadPlan(Long programId, File file, Integer year) {
         String url = "http://localhost:8080/programas/" + programId + "/upload-plan";
+
+        // Añadir el parámetro de año si se proporciona
+        if (year != null) {
+            url += "?year=" + year;
+        }
 
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.MULTIPART_FORM_DATA);
@@ -29,3 +38,4 @@ public class ExcelUploadService {
         restTemplate.postForEntity(url, requestEntity, String.class);
     }
 }
+

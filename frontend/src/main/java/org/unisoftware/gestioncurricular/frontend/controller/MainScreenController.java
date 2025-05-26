@@ -41,7 +41,9 @@ import com.fasterxml.jackson.databind.ObjectMapper; // Importar ObjectMapper
 import org.unisoftware.gestioncurricular.frontend.dto.ProposalFileDTO; // Importar ProposalFileDTO
 import org.unisoftware.gestioncurricular.frontend.service.ProposalFileServiceFront; // Importar ProposalFileServiceFront
 import org.unisoftware.gestioncurricular.frontend.service.ChatServiceFront; // Importar ChatServiceFront
-import java.util.UUID; // Importar UUID
+
+import java.util.*;
+
 import javafx.animation.KeyFrame;
 import javafx.animation.Timeline;
 import javafx.util.Duration;
@@ -51,12 +53,6 @@ import java.io.IOException;
 import java.net.URL;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.ResourceBundle;
 
 @Component
 public class MainScreenController implements Initializable {
@@ -616,6 +612,13 @@ public class MainScreenController implements Initializable {
             }
 
             if (proceedToUpload) {
+                // Solicitar al usuario que seleccione un año para el plan de estudios
+                Integer selectedYear = mostrarDialogoSeleccionAnio();
+                if (selectedYear == null) {
+                    // El usuario canceló la selección de año
+                    return;
+                }
+
                 // Continuar con el flujo de subida de archivo
                 FileChooser fileChooser = new FileChooser();
                 fileChooser.setTitle("Selecciona el archivo Excel del plan de estudios");
@@ -658,7 +661,7 @@ public class MainScreenController implements Initializable {
                     // Subir archivo en un hilo aparte para no congelar la UI
                     new Thread(() -> {
                         try {
-                            excelUploadService.uploadPlan(programId, selectedFile);
+                            excelUploadService.uploadPlan(programId, selectedFile, selectedYear);
                             javafx.application.Platform.runLater(() -> {
                                 anchorPane.getChildren().remove(overlay);
                                 mostrarAlerta("Éxito", "Archivo subido correctamente.", Alert.AlertType.INFORMATION);
@@ -675,6 +678,30 @@ public class MainScreenController implements Initializable {
         }
         // Si optResponse no está presente (es decir, la alerta se cerró con 'X'), no se hace nada más,
         // cancelando efectivamente el proceso de subida.
+    }
+
+    /**
+     * Muestra un diálogo para que el usuario seleccione un año para el plan de estudios.
+     * Ofrece opciones desde 2010 hasta el año actual.
+     * @return El año seleccionado, o null si el usuario canceló la selección.
+     */
+    private Integer mostrarDialogoSeleccionAnio() {
+        int anioActual = java.time.Year.now().getValue();
+        List<Integer> aniosDisponibles = new ArrayList<>();
+        for (int anio = 2010; anio <= anioActual; anio++) {
+            aniosDisponibles.add(anio);
+        }
+
+        // Ordenar la lista en orden descendente (años más recientes primero)
+        aniosDisponibles.sort(Comparator.reverseOrder());
+
+        ChoiceDialog<Integer> dialog = new ChoiceDialog<>(anioActual, aniosDisponibles);
+        dialog.setTitle("Seleccionar año del plan de estudios");
+        dialog.setHeaderText("Seleccione el año para el plan de estudios");
+        dialog.setContentText("Año:");
+
+        // Mostrar el diálogo y esperar la respuesta del usuario
+        return dialog.showAndWait().orElse(null);
     }
 
     private void mostrarPropuestasMicro(String tipo) {
