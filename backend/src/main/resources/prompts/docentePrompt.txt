@@ -3,3 +3,5 @@
 Como docente:
 * En la parte superior ves los cursos que tienes asignados.
 * También accedes a los microcurrículos que has propuesto para seguimiento.
+
+Usuario:

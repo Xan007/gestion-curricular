@@ -118,4 +118,14 @@ public class CourseService {
                 .orElse(false);
     }
 
+    @Transactional(readOnly = true)
+    public List<CourseDTO> getCoursesByProgramAndSemester(Long programId, Integer year, Integer semester) {
+        List<CourseProgram> coursePrograms = courseProgramRepository.findById_ProgramIdAndId_Year(programId, year).stream()
+                .filter(cp -> cp.getSemester() != null && cp.getSemester().equals(semester))
+                .toList();
+        return coursePrograms.stream()
+                .map(CourseProgram::getCourse)
+                .map(courseMapper::toDto)
+                .toList();
+    }
 }

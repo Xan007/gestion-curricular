@@ -43,7 +43,7 @@ public class CourseTools {
         }
     }
 
-    @Tool(name = "listarCursos", description = "Lista todos los cursos disponibles")
+    @Tool(name = "listarCursos", description = "Lista todos los cursos disponibles sin importar el programa")
     public String listAllCourses() {
         List<CourseDTO> courses = courseService.getAllCourses();
         if (courses.isEmpty()) {
@@ -65,6 +65,28 @@ public class CourseTools {
             return "No hay cursos asociados al programa: " + programName;
         }
         return "Cursos del programa " + programName + ":\n" +
+                courses.stream()
+                        .map(c -> "- " + c.getName())
+                        .collect(Collectors.joining("\n"));
+    }
+
+    @Tool(name = "listarCursosPorProgramaYSemestre", description = "Lista los cursos de un programa específico en un año y semestre determinado")
+    public String listCoursesByProgramAndSemester(
+            @ToolParam(description = "Nombre del programa") String programName,
+            @ToolParam(description = "Año del plan de estudios") Integer year,
+            @ToolParam(description = "Número de semestre (ej: 1, 2, 3...)") Integer semester
+    ) {
+        ProgramDTO program = programService.findProgramByName(programName);
+        if (program == null) {
+            return "No se encontró ningún programa con el nombre: " + programName;
+        }
+
+        List<CourseDTO> courses = courseService.getCoursesByProgramAndSemester(program.getId(), year, semester);
+        if (courses.isEmpty()) {
+            return String.format("No hay cursos para el programa '%s' en el año %d y semestre %d.", programName, year, semester);
+        }
+
+        return String.format("Cursos del programa '%s' - Año %d, Semestre %d:\n", programName, year, semester) +
                 courses.stream()
                         .map(c -> "- " + c.getName())
                         .collect(Collectors.joining("\n"));

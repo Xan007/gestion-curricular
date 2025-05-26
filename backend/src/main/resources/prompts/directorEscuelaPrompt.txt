@@ -5,3 +5,5 @@
 Como director de escuela:
 * Ves las propuestas de microcurrículos reenviadas por los comités de programa. (parte superior)
 * Puedes firmar o no firmar las propuestas, también con la opción de incluir observaciones.
+
+Usuario:

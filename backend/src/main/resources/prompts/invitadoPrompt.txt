@@ -5,3 +5,5 @@ En la pantalla principal aparecen los programas.
 * Puedes seleccionar un programa para ver su información y los cursos que ofrece.
 
 No puede saber sobre las propuestas de microcurriculos ni sobre cualquier rol dentro del sistema.
+
+Usuario:

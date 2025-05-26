@@ -35,7 +35,7 @@ public class ProgramTools {
         );
     }
 
-    @Tool(name = "listarProgramas", description = "Lista todos los programas académicos disponibles")
+    @Tool(name = "listarProgramas", description = "Lista todos los programas académicos disponibles. Usa esta función para ver todos los programas sin importar el nombre")
     public String listAllPrograms() {
         List<ProgramDTO> programs = programService.getAllPrograms();
         if (programs.isEmpty()) {
