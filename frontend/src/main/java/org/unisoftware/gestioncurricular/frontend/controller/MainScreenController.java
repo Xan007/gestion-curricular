@@ -1307,29 +1307,57 @@ public class MainScreenController implements Initializable {
     // Permite al director editar la información del programa y sus cursos
     private void mostrarEdicionProgramaYCursos(ProgramDTO prog) {
         try {
-            // Obtener cursos del programa (CourseDTO generales)
-            org.unisoftware.gestioncurricular.frontend.service.CourseServiceFront courseService = applicationContext.getBean(org.unisoftware.gestioncurricular.frontend.service.CourseServiceFront.class);
-            List<org.unisoftware.gestioncurricular.frontend.dto.CourseDTO> cursos = courseService.listCoursesByProgramaId(prog.getId());
-
-            // Obtener las entradas del plan de estudios (StudyPlanEntryDTO) para este programa
-            List<org.unisoftware.gestioncurricular.frontend.dto.StudyPlanEntryDTO> planEntries = null;
-            try {
-                planEntries = programServiceFront.getStudyPlan(prog.getId());
-            } catch (Exception e) {
-                System.err.println("Error al cargar el plan de estudios para la edición de requisitos: " + e.getMessage());
-                // Opcional: mostrar alerta al usuario
+            // Obtener años disponibles del plan de estudios
+            List<Integer> aniosDisponibles = programServiceFront.getAniosPlanEstudios(prog.getId());
+            if (aniosDisponibles == null || aniosDisponibles.isEmpty()) {
+                mostrarAlerta("Sin años", "No hay años disponibles para este programa.", Alert.AlertType.INFORMATION);
+                return;
             }
 
+            // Encontrar el año más reciente (asumiendo que la lista está ordenada, si no, debemos ordenarla)
+            Integer anioMasReciente = aniosDisponibles.stream()
+                    .max(Integer::compareTo)
+                    .orElse(aniosDisponibles.get(0));
+
+            // Obtener cursos del programa (CourseDTO generales)
+            org.unisoftware.gestioncurricular.frontend.service.CourseServiceFront courseService = applicationContext.getBean(org.unisoftware.gestioncurricular.frontend.service.CourseServiceFront.class);
+
+            // Obtener las entradas del plan de estudios (StudyPlanEntryDTO) para este programa y año específico
+            List<org.unisoftware.gestioncurricular.frontend.dto.StudyPlanEntryDTO> planEntries = null;
+            try {
+                planEntries = programServiceFront.getStudyPlanByYear(prog.getId(), anioMasReciente);
+                if (planEntries == null || planEntries.isEmpty()) {
+                    mostrarAlerta("Sin cursos", "No hay cursos disponibles para el plan de estudios del año " + anioMasReciente, Alert.AlertType.INFORMATION);
+                    return;
+                }
+            } catch (Exception e) {
+                System.err.println("Error al cargar el plan de estudios para la edición de requisitos: " + e.getMessage());
+                mostrarAlerta("Error", "No se pudo cargar el plan de estudios: " + e.getMessage(), Alert.AlertType.ERROR);
+                return;
+            }
+
+            // Extraer los IDs de los cursos del plan de estudios más reciente
+            List<Long> idsCursosDelPlanActual = new ArrayList<>();
             Map<Long, List<Long>> studyPlanRequirementsMap = new java.util.HashMap<>();
             if (planEntries != null) {
                 for (org.unisoftware.gestioncurricular.frontend.dto.StudyPlanEntryDTO planEntry : planEntries) {
                     if (planEntry.getId() != null && planEntry.getId().getCourseId() != null) {
+                        Long cursoId = planEntry.getId().getCourseId();
+                        idsCursosDelPlanActual.add(cursoId);
                         studyPlanRequirementsMap.put(
-                                planEntry.getId().getCourseId(),
+                                cursoId,
                                 planEntry.getRequirements() != null ? planEntry.getRequirements() : new java.util.ArrayList<>()
                         );
                     }
                 }
+            }
+
+            // Obtener solo los cursos del plan actual
+            List<org.unisoftware.gestioncurricular.frontend.dto.CourseDTO> cursos = courseService.listCoursesByIds(idsCursosDelPlanActual);
+
+            if (cursos == null || cursos.isEmpty()) {
+                mostrarAlerta("Sin cursos", "No se encontraron detalles de los cursos para el plan de estudios actual.", Alert.AlertType.INFORMATION);
+                return;
             }
 
             // Actualizar los requisitos en la lista de CourseDTO con los del StudyPlanEntryDTO
@@ -1364,7 +1392,7 @@ public class MainScreenController implements Initializable {
             modalContent.setMinWidth(700);
             modalContent.setAlignment(Pos.TOP_CENTER);
 
-            Label title = new Label("Editar Cursos del Programa");
+            Label title = new Label("Editar Cursos del Programa - Plan " + anioMasReciente);
             title.setStyle("-fx-font-size: 22px; -fx-font-weight: bold; -fx-text-fill: #d32f2f;");
             modalContent.getChildren().add(title);
 

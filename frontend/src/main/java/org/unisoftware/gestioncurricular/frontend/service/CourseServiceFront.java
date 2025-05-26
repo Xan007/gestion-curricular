@@ -7,6 +7,7 @@ import org.springframework.stereotype.Service;
 
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.List;
 import java.io.InputStream;
 
@@ -115,5 +116,30 @@ public class CourseServiceFront {
             }
             throw new RuntimeException("Error al actualizar curso: " + conn.getResponseMessage() + (errorMsg.isEmpty() ? "" : ". Detalle: " + errorMsg));
         }
+    }
+
+    /**
+     * Obtiene una lista de cursos a partir de una lista de IDs.
+     * @param courseIds Lista de IDs de los cursos a obtener
+     * @return Lista de cursos correspondientes a los IDs proporcionados
+     */
+    public List<CourseDTO> listCoursesByIds(List<Long> courseIds) throws Exception {
+        if (courseIds == null || courseIds.isEmpty()) {
+            return new java.util.ArrayList<>();
+        }
+
+        List<CourseDTO> resultado = new ArrayList<>();
+
+        // Obtener todos los cursos disponibles
+        List<CourseDTO> todosCursos = listCourses();
+
+        // Filtrar sólo los cursos cuyos IDs están en la lista proporcionada
+        for (CourseDTO curso : todosCursos) {
+            if (courseIds.contains(curso.getId())) {
+                resultado.add(curso);
+            }
+        }
+
+        return resultado;
     }
 }
