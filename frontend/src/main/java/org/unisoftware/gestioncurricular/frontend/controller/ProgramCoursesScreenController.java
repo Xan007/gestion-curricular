@@ -642,7 +642,7 @@ public class ProgramCoursesScreenController {
                 mostrarAlerta("Información", "No hay microcurrículo disponible para este curso.", Alert.AlertType.INFORMATION);
             }
         } catch (Exception ex) {
-            mostrarAlerta("Error", "No se pudo obtener la URL del microcurrículo: " + ex.getMessage(), Alert.AlertType.ERROR);
+            mostrarAlerta("Info", "No hay microcurriculos para este curso " , Alert.AlertType.INFORMATION);
         }
     }
 
