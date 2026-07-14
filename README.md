@@ -36,6 +36,20 @@
 
 ---
 
+### Contribuidores
+
+<div align="center">
+
+[![Nicolix16](https://img.shields.io/badge/Nicolix16-181717?style=for-the-badge&logo=github&logoColor=white)](https://github.com/Nicolix16)
+[![Bengi-fish](https://img.shields.io/badge/Bengi--fish-181717?style=for-the-badge&logo=github&logoColor=white)](https://github.com/Bengi-fish)
+[![Santiagodutr](https://img.shields.io/badge/Santiagodutr-181717?style=for-the-badge&logo=github&logoColor=white)](https://github.com/Santiagodutr)
+[![MiguelMorales1125](https://img.shields.io/badge/MiguelMorales1125-181717?style=for-the-badge&logo=github&logoColor=white)](https://github.com/MiguelMorales1125)
+[![Xan007](https://img.shields.io/badge/Xan007-181717?style=for-the-badge&logo=github&logoColor=white)](https://github.com/Xan007)
+
+</div>
+
+---
+
 ## Acerca del proyecto
 
 Plataforma desarrollada para la **Universidad de los Llanos (Unillanos)** que **digitaliza la gestión de la estructura curricular**: planes de estudio, microcurrículos y propuestas de creación o modificación de cursos.
@@ -352,18 +366,6 @@ La carpeta `Documentacion Gestion Curricular/` contiene los entregables formales
 
 **Universidad de los Llanos — Unillanos**
 Villavicencio, Meta, Colombia · Sede principal vereda Barcelona.
-
-### Contribuidores
-
-<div align="center">
-
-[![Nicolix16](https://img.shields.io/badge/Nicolix16-181717?style=for-the-badge&logo=github&logoColor=white)](https://github.com/Nicolix16)
-[![Bengi-fish](https://img.shields.io/badge/Bengi--fish-181717?style=for-the-badge&logo=github&logoColor=white)](https://github.com/Bengi-fish)
-[![Santiagodutr](https://img.shields.io/badge/Santiagodutr-181717?style=for-the-badge&logo=github&logoColor=white)](https://github.com/Santiagodutr)
-[![MiguelMorales1125](https://img.shields.io/badge/MiguelMorales1125-181717?style=for-the-badge&logo=github&logoColor=white)](https://github.com/MiguelMorales1125)
-[![Xan007](https://img.shields.io/badge/Xan007-181717?style=for-the-badge&logo=github&logoColor=white)](https://github.com/Xan007)
-
-</div>
 
 <div align="center">
 
